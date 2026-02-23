@@ -1,0 +1,6 @@
+[submodule "teamdev-2026-api"]
+	path = teamdev-2026-api
+	url = https://github.com/Bonbooon/teamdev-2026-api
+[submodule "teamdev-2026-front"]
+	path = teamdev-2026-front
+	url = https://github.com/Bonbooon/teamdev-2026-front

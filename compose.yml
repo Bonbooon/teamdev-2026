@@ -1,0 +1,48 @@
+services:
+  front:
+    build: 
+      context: ./
+      dockerfile: ./docker/front/Dockerfile
+    tty: true
+    volumes:
+      - ./teamdev-2026-front:/app
+      - ./teamdev-2026-api/docs/openapi:/app/openapi
+    working_dir: /app
+    
+  app:
+    build: ./docker/php
+    volumes:
+      - ./teamdev-2026-api/web:/work/web
+      - ./scripts:/usr/local/bin/scripts
+    command: ["/bin/sh", "-c", "chmod -R +x /usr/local/bin/scripts && exec php-fpm"]
+
+  web:
+    image: nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./teamdev-2026-api/web:/work/web
+    depends_on:
+      - app
+
+  postgresql:
+      image: postgres:14.7
+      restart: always
+      environment:
+        POSTGRES_PASSWORD: password
+        POSTGRES_USER: user
+        POSTGRES_DB: posse
+      volumes:
+        - ./docker/postgresql/initdb.d:/docker-entrypoint-initdb.d
+        - ./teamdev-2026-api/db-store:/var/lib/postgresql/data
+      ports:
+        - 5432:5432
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    volumes:
+      - ./teamdev-2026-api/docs/openapi/openapi.json:/app/openapi.json
+    environment:
+      SWAGGER_JSON: /app/openapi.json
+    ports:
+      - 8080:8080
