@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+actor User
+actor Admin
+
+rectangle "TeamDev 2026" {
+  usecase "Register"
+  usecase "Login"
+  usecase "Search Data"
+  usecase "Manage Users"
+}
+
+User --> "Register"
+User --> "Login"
+User --> "Search Data"
+Admin --> "Manage Users"
+
+@enduml
