@@ -139,3 +139,16 @@ zsh: command not found: mise
 
 **注意：** miseの有効化後は、新しいターミナルセッションを開くか `source ~/.zshrc` を実行してください。
 
+## Architecture Diagrams
+
+### System Context
+![System Context](./generated-diagrams/system-context.svg)
+
+### Use Cases
+![Use Cases](./generated-diagrams/use-cases.svg)
+
+### Domain Model
+![Domain Model](./generated-diagrams/domain-model.svg)
+
+### Object Example
+![Object Example](./generated-diagrams/object-example.svg)
