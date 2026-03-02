@@ -37,7 +37,7 @@ mise run build
 
 echo ""
 echo "3️⃣ Starting services..."
-mise run up
+mise run start
 
 echo ""
 echo "4️⃣ Installing dependencies..."
