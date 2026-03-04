@@ -155,6 +155,13 @@ mise fmtl
 mise ft
 """
 
+[tasks.openapi]
+run = """
+cd teamdev-2026/teamdev-2026-front
+pnpm run openapi
+pnpm run format
+"""
+
 # === アプリケーション初期化 ===
 [tasks.laravel-init]
 description = "Initialize Laravel application (env, key, migrate, seed)"
