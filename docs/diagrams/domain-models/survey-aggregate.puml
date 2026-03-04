@@ -1,0 +1,79 @@
+@startuml
+package "Survey Aggregate" {
+
+  class SurveyTemplate <<Aggregate Root>> {
+    +id: UUID
+    +name: String
+    +description: String?
+    +createdAt: DateTime
+    --
+    +addQuestion(question: String, explanation: String?, position: Int)
+  }
+
+  class SurveyQuestion <<Entity>> {
+    +id: UUID
+    +surveyTemplateId: UUID
+    +question: String
+    +explanation: String?
+    +position: Int
+    +createdAt: DateTime
+  }
+
+  class SurveyQuestionOption <<Entity>> {
+    +id: UUID
+    +surveyQuestionId: UUID
+    +label: String
+    +position: Int
+  }
+
+  class SurveySetting <<Aggregate Root>> {
+    +id: UUID
+    +teamId: UUID
+    +surveyTemplateId: UUID
+    +setterId: UUID
+    +recurringRule: String
+    +createdAt: DateTime
+    --
+    +addDeliveryTime(deliveryTime: Time)
+    +changeTemplate(surveyTemplateId: UUID)
+  }
+
+  class SurveySettingTime <<Entity>> {
+    +id: UUID
+    +surveySettingId: UUID
+    +deliveryTime: Time
+  }
+
+  class Survey <<Aggregate Root>> {
+    +id: UUID
+    +surveySettingId: UUID
+    +recipientId: UUID
+    +deliveredAt: DateTime
+    +lastAnsweredAt: DateTime?
+    +createdAt: DateTime
+    --
+    +answer(questionId: UUID, selectedOptionId: UUID, answeredAt: DateTime)
+  }
+
+  class SurveyAnswer <<Entity>> {
+    +surveyId: UUID
+    +surveyQuestionId: UUID
+    +selectedOptionId: UUID
+    +answeredAt: DateTime
+  }
+
+  SurveyTemplate "1" *-- "1..*" SurveyQuestion
+  SurveyQuestion "1" *-- "1..*" SurveyQuestionOption
+  SurveySetting "1" *-- "1..*" SurveySettingTime
+  Survey "1" *-- "0..*" SurveyAnswer
+}
+
+note right of SurveySetting
+Domain Rules:
+- Only active team members receive survey.
+- One active SurveySetting per Team.
+- `setterId` must be a TeamMember of the same Team.
+- Delivery times are interpreted in Team time zone.
+end note
+
+@enduml
