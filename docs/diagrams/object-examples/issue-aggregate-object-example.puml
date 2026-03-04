@@ -1,0 +1,77 @@
+@startuml
+title Issue Aggregate - オブジェクト例（状態バリエーション）
+
+left to right direction
+skinparam shadowing false
+skinparam objectAttributeIconSize 0
+
+object "課題: API契約の最終化（進行中）" as issue_in_progress <<Issue>> {
+  id = "66666666-6666-6666-6666-666666666666"
+  projectId = "55555555-5555-5555-5555-555555555555"
+  teamId = "33333333-3333-3333-3333-333333333333"
+  parentIssueId = null
+  issueTemplateId = "76666666-6666-6666-6666-666666666666"
+  title = "API契約の最終化"
+  deadline = "2026-03-15T18:00:00+09:00"
+  status = "in_progress"
+}
+
+object "課題: OpenAPI生成（レビュー中）" as issue_in_review <<Issue>> {
+  id = "67777777-7777-7777-7777-777777777777"
+  projectId = "55555555-5555-5555-5555-555555555555"
+  teamId = "33333333-3333-3333-3333-333333333333"
+  parentIssueId = "66666666-6666-6666-6666-666666666666"
+  issueTemplateId = "76666666-6666-6666-6666-666666666666"
+  title = "OpenAPI生成"
+  deadline = "2026-03-10T17:00:00+09:00"
+  status = "in_review"
+}
+
+object "課題: 認証機能実装（完了）" as issue_done <<Issue>> {
+  id = "68888888-8888-8888-8888-888888888888"
+  projectId = "55555555-5555-5555-5555-555555555555"
+  teamId = "33333333-3333-3333-3333-333333333333"
+  parentIssueId = null
+  issueTemplateId = "76666666-6666-6666-6666-666666666666"
+  title = "認証機能実装"
+  deadline = "2026-03-01T18:00:00+09:00"
+  status = "done"
+}
+
+object "担当: 佐藤" as assignee_taro <<IssueAssignee>> {
+  issueId = "66666666-6666-6666-6666-666666666666"
+  teamMemberId = "43333333-3333-3333-3333-333333333333"
+}
+
+object "DoD: レビュー完了" as dod_review <<IssueDefinitionOfDone>> {
+  id = "96666666-6666-6666-6666-666666666666"
+  issueId = "68888888-8888-8888-8888-888888888888"
+  description = "コードレビュー承認を得る"
+}
+
+object "DoD: E2E確認" as dod_e2e <<IssueDefinitionOfDone>> {
+  id = "97777777-7777-7777-7777-777777777777"
+  issueId = "68888888-8888-8888-8888-888888888888"
+  description = "主要導線のE2Eテストを通過"
+}
+
+object "プロジェクト参照" as project_ref <<Project>> {
+  id = "55555555-5555-5555-5555-555555555555"
+  title = "TeamDev 2026 Phase1"
+}
+
+issue_in_progress *-- assignee_taro
+issue_done *-- dod_review
+issue_done *-- dod_e2e
+issue_in_progress -- issue_in_review : parent-child
+issue_in_progress -- project_ref
+issue_in_review -- project_ref
+issue_done -- project_ref
+
+note bottom
+in_progress / in_review / done の状態を同時に表現。
+done には Definition of Done が存在する例を示す。
+時刻は Asia/Tokyo。
+end note
+
+@enduml
