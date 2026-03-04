@@ -1,0 +1,24 @@
+@startuml
+!include <C4/C4_Component>
+
+Container(api, "API App", "Laravel")
+
+Component(team, "Team Module\n(Member + Status + Contextual Role)")
+Component(survey, "Survey Module")
+Component(project, "Project Module")
+Component(issue, "Issue Module")
+Component(user, "User/Profile Module")
+
+Component(policy, "Policy Engine")
+Component(alert, "Alert + ActionPlan Model")
+Component(notification, "Notification Adapter")
+
+Rel(survey, team, "Reads active members")
+Rel(issue, team, "Assigns members")
+Rel(issue, project, "Belongs to")
+Rel(project, survey, "Reads aggregate")
+
+Rel(policy, alert, "Creates")
+Rel(policy, notification, "Triggers delivery")
+
+@enduml

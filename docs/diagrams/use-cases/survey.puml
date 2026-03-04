@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+
+actor "マネージャー" as Manager
+actor "メンバー" as Member
+
+rectangle "Survey Domain" {
+
+  usecase "サーベイ配信設定\n(テンプレート選択・頻度・時間帯)"
+  usecase "サーベイ回答"
+  usecase "チーム毎のサーベイ結果閲覧"
+
+}
+
+Manager --> "サーベイ配信設定\n(テンプレート選択・頻度・時間帯)"
+Manager --> "チーム毎のサーベイ結果閲覧"
+Member --> "サーベイ回答"
+
+@enduml

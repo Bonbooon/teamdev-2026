@@ -1,0 +1,35 @@
+@startuml
+package "Invitation Aggregate" {
+
+  class TeamInvitation <<Aggregate Root>> {
+    +id: UUID
+    +teamId: UUID
+    +inviterUserId: UUID
+    +inviteeId: UUID
+    +token: String
+    +status: InvitationStatus
+    +expiresAt: DateTime
+    +createdAt: DateTime
+
+    --
+    +accept(now: DateTime)
+    +expire(now: DateTime)
+    +isExpired(now: DateTime): Boolean
+  }
+
+  enum InvitationStatus {
+    pending
+    accepted
+    expired
+  }
+}
+
+note right of TeamInvitation
+Domain Rules:
+- Invitation target is Team only.
+- Invitee can accept only once and only before expiry.
+- (teamId, inviteeId) must not already exist as an active TeamMember.
+- Token must be unique and non-guessable.
+end note
+
+@enduml

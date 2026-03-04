@@ -1,0 +1,81 @@
+@startuml
+title Alert Aggregate - オブジェクト例（状態バリエーション）
+
+left to right direction
+skinparam shadowing false
+skinparam objectAttributeIconSize 0
+
+object "アラート: API契約遅延（Yellow / 未解決）" as alert_yellow_open <<Alert>> {
+  id = "bbbbbbb1-bbbb-bbbb-bbbb-bbbbbbbbbbb1"
+  projectId = "55555555-5555-5555-5555-555555555555"
+  description = "API契約の確定が24時間以内に期限到達"
+  level = "yellow"
+  isResolved = false
+  createdAt = "2026-03-04T08:00:00+09:00"
+}
+
+object "ログ: 未解決オープン" as log_open <<AlertLog>> {
+  id = 50001
+  alertId = "bbbbbbb1-bbbb-bbbb-bbbb-bbbbbbbbbbb1"
+  triggeredAt = "2026-03-04T08:00:00+09:00"
+  resolvedAt = null
+}
+
+object "提案: 期限再調整" as suggestion_replan <<AlertActionPlanSuggestion>> {
+  alertId = "bbbbbbb1-bbbb-bbbb-bbbb-bbbbbbbbbbb1"
+  actionPlanId = "ccccccc1-cccc-cccc-cccc-ccccccccccc1"
+  priority = 1
+  rationale = "{\"reason\":\"期限超過リスク\",\"timezone\":\"Asia/Tokyo\"}"
+  suggestedAt = "2026-03-04T08:01:00+09:00"
+}
+
+object "アラート: サーベイ未回答（Red / 解決済み）" as alert_red_resolved <<Alert>> {
+  id = "bbbbbbb2-bbbb-bbbb-bbbb-bbbbbbbbbbb2"
+  projectId = "55555555-5555-5555-5555-555555555555"
+  description = "48時間以上サーベイ未回答"
+  level = "red"
+  isResolved = true
+  createdAt = "2026-03-01T09:00:00+09:00"
+}
+
+object "ログ: 解決クローズ" as log_closed <<AlertLog>> {
+  id = 50002
+  alertId = "bbbbbbb2-bbbb-bbbb-bbbb-bbbbbbbbbbb2"
+  triggeredAt = "2026-03-01T09:00:00+09:00"
+  resolvedAt = "2026-03-02T10:00:00+09:00"
+}
+
+object "アクションプラン: 期限再調整" as action_plan_replan <<ActionPlan>> {
+  id = "ccccccc1-cccc-cccc-cccc-ccccccccccc1"
+  code = "AP-REPLAN"
+  title = "タスク分解と期限再調整"
+  description = "依存関係を整理し期限を再設定する"
+}
+
+object "プロジェクト参照" as project_ref <<Project>> {
+  id = "55555555-5555-5555-5555-555555555555"
+  title = "TeamDev 2026 Phase1"
+}
+
+object "トリガー参照" as trigger_ref <<TriggerDefinition>> {
+  id = "aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  name = "課題期限接近"
+}
+
+alert_yellow_open *-- log_open
+alert_yellow_open *-- suggestion_replan
+suggestion_replan --> action_plan_replan
+
+alert_red_resolved *-- log_closed
+
+alert_yellow_open -- project_ref
+alert_red_resolved -- project_ref
+alert_yellow_open .. trigger_ref : 生成元ルール
+
+note bottom
+未解決（resolvedAt=null）と解決済み（resolvedAtあり）を同時に表現。
+提案アクションは再利用可能な ActionPlan を参照。
+時刻は Asia/Tokyo。
+end note
+
+@enduml

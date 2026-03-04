@@ -1,0 +1,52 @@
+@startuml
+package "Team Aggregate" {
+
+  class Team <<Aggregate Root>> {
+    +id: UUID
+    +name: String
+    +description: String?
+    +startOfBusinessHour: Time?
+    +endOfBusinessHour: Time?
+    +timeZone: String
+    +status: TeamStatus
+    +createdAt: DateTime
+    +updatedAt: DateTime
+    --
+    +addMember(userId: UUID, role: String)
+    +changeMemberRole(memberId: UUID, role: String)
+    +changeMemberStatus(memberId: UUID, status: MembershipStatus)
+    +archive()
+  }
+
+  class TeamMember <<Entity>> {
+    +id: UUID
+    +teamId: UUID
+    +userId: UUID
+    +role: String
+    +status: MembershipStatus
+    +createdAt: DateTime
+    +updatedAt: DateTime
+  }
+
+  enum TeamStatus {
+    active
+    archived
+  }
+
+  enum MembershipStatus {
+    active
+    inactive
+  }
+
+  Team "1" *-- "0..*" TeamMember
+}
+
+note right of Team
+Domain Rules:
+- Member must be unique within a Team.
+- MemberStatus determines survey eligibility.
+- Role is contextual per TeamMember.
+- Cannot remove last active manager if policy requires.
+end note
+
+@enduml

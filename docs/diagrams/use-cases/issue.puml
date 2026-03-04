@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+
+actor "メンバー" as Member
+actor "マネージャー" as Manager
+
+rectangle "Issue Domain" {
+
+  usecase "Issue作成"
+  usecase "Issue参照"
+  usecase "Issue更新"
+  usecase "Issue削除"
+
+  usecase "Issueにチームをアサイン"
+  usecase "Issueにメンバーをアサイン"
+
+  usecase "Issueテンプレート作成"
+  usecase "Issueテンプレート参照"
+  usecase "Issueテンプレート更新"
+  usecase "Issueテンプレート削除"
+
+}
+
+Member --> "Issue作成"
+Member --> "Issue参照"
+Member --> "Issue更新"
+Member --> "Issue削除"
+
+Manager --> "Issue作成"
+Manager --> "Issue参照"
+Manager --> "Issue更新"
+Manager --> "Issue削除"
+
+Member --> "Issueテンプレート作成"
+Member --> "Issueテンプレート参照"
+Member --> "Issueテンプレート更新"
+Member --> "Issueテンプレート削除"
+
+Manager --> "Issueテンプレート作成"
+Manager --> "Issueテンプレート参照"
+Manager --> "Issueテンプレート更新"
+Manager --> "Issueテンプレート削除"
+
+@enduml

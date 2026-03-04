@@ -1,0 +1,17 @@
+@startuml
+left to right direction
+
+actor "マネージャー" as Manager
+actor "メンバー" as Member
+
+rectangle "Authentication" {
+  usecase "ログイン"
+  usecase "ログアウト"
+}
+
+Manager --> "ログイン"
+Manager --> "ログアウト"
+Member --> "ログイン"
+Member --> "ログアウト"
+
+@enduml

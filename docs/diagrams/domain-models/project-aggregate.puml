@@ -1,0 +1,46 @@
+@startuml
+package "Project Aggregate" {
+
+  class Project <<Aggregate Root>> {
+    +id: UUID
+    +title: String
+    +description: String?
+    +dueDate: Date?
+    +status: ProjectStatus
+    +createdAt: DateTime
+    +updatedAt: DateTime
+    --
+    +updateOverview(title: String, description: String?)
+    +reschedule(dueDate: Date?)
+    +start()
+    +pause()
+    +complete()
+    +cancelToIdle()
+    +assignTeam(teamId: UUID)
+    +unassignTeam(teamId: UUID)
+  }
+
+  class ProjectTeam <<Entity>> {
+    +projectId: UUID
+    +teamId: UUID
+    +assignedAt: DateTime
+  }
+
+  enum ProjectStatus {
+    not_in_progress
+    in_progress
+    completed
+    idle
+  }
+
+  Project "1" *-- "1..*" ProjectTeam
+}
+
+note right of Project
+Domain Rules:
+- A Project can be assigned to multiple Teams.
+- Project completion prevents new Issues.
+- Due date can be null for backlog projects.
+end note
+
+@enduml

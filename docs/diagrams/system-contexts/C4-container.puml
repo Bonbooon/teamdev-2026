@@ -1,0 +1,28 @@
+@startuml
+!include <C4/C4_Container>
+
+Person(manager, "マネージャー")
+Person(member, "メンバー")
+
+System_Boundary(core, "TeamDev Core") {
+  Container(web, "Web App", "Next.js")
+  Container(api, "API App", "Laravel")
+  ContainerDb(db, "Database", "PostgreSQL")
+}
+
+System_Boundary(auto, "Automation Context") {
+  Container(policy, "Policy Engine", "Laravel Module / Worker")
+  ContainerDb(logdb, "Execution Log DB", "PostgreSQL")
+}
+
+System_Ext(mail, "Mail Provider")
+System_Ext(saml, "SAML")
+
+Rel(api, db, "Reads/Writes")
+Rel(api, saml, "Auth")
+
+Rel(api, policy, "Publishes Domain Events")
+Rel(policy, logdb, "Logs execution")
+Rel(policy, mail, "Sends alerts")
+
+@enduml

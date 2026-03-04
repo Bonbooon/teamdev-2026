@@ -1,0 +1,59 @@
+@startuml
+title Project Aggregate - オブジェクト例（状態バリエーション）
+
+left to right direction
+skinparam shadowing false
+skinparam objectAttributeIconSize 0
+
+object "プロジェクト: TeamDev 2026 Phase1（進行中）" as project_in_progress <<Project>> {
+  id = "55555555-5555-5555-5555-555555555555"
+  title = "TeamDev 2026 Phase1"
+  description = "遅延予防アラートMVP"
+  dueDate = "2026-04-05"
+  status = "in_progress"
+  createdAt = "2026-02-01T10:00:00+09:00"
+  updatedAt = "2026-03-04T21:00:00+09:00"
+}
+
+object "プロジェクト: TeamDev 2025（完了）" as project_completed <<Project>> {
+  id = "56666666-6666-6666-6666-666666666666"
+  title = "TeamDev 2025"
+  dueDate = "2025-12-20"
+  status = "completed"
+}
+
+object "配属: 開発チームA" as project_team_a <<ProjectTeam>> {
+  projectId = "55555555-5555-5555-5555-555555555555"
+  teamId = "33333333-3333-3333-3333-333333333333"
+  assignedAt = "2026-02-02T09:00:00+09:00"
+}
+
+object "配属: 開発チームB" as project_team_b <<ProjectTeam>> {
+  projectId = "55555555-5555-5555-5555-555555555555"
+  teamId = "34444444-4444-4444-4444-444444444444"
+  assignedAt = "2026-02-15T09:00:00+09:00"
+}
+
+object "チーム参照A" as team_a <<Team>> {
+  id = "33333333-3333-3333-3333-333333333333"
+  name = "開発チームA"
+}
+
+object "課題参照" as issue_ref <<Issue>> {
+  id = "66666666-6666-6666-6666-666666666666"
+  projectId = "55555555-5555-5555-5555-555555555555"
+  status = "in_review"
+}
+
+project_in_progress *-- project_team_a
+project_in_progress *-- project_team_b
+project_team_a -- team_a
+project_in_progress -- issue_ref : Issue.projectId
+
+note bottom
+Project の in_progress/completed 状態を表現。
+ProjectTeam により複数チーム配属を表現。
+全日時は Asia/Tokyo（+09:00）。
+end note
+
+@enduml

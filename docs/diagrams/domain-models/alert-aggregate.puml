@@ -1,0 +1,60 @@
+@startuml
+package "Alert Aggregate" {
+
+  class Alert <<Aggregate Root>> {
+    +id: UUID
+    +projectId: UUID
+    +description: String
+    +level: AlertLevel
+    +isResolved: Boolean
+    +createdAt: DateTime
+    --
+    +resolve(resolvedAt: DateTime)
+    +reopen(triggeredAt: DateTime)
+  }
+
+  enum AlertLevel {
+    red
+    yellow
+  }
+
+  class AlertLog <<Entity>> {
+    +id: BigInt
+    +alertId: UUID
+    +triggeredAt: DateTime
+    +resolvedAt: DateTime?
+  }
+
+  class ActionPlan <<Entity>> {
+    +id: UUID
+    +code: String
+    +title: String
+    +description: String
+    +createdAt: DateTime
+    +updatedAt: DateTime
+  }
+
+  class AlertActionPlanSuggestion <<Entity>> {
+    +alertId: UUID
+    +actionPlanId: UUID
+    +priority: Int
+    +rationale: Json?
+    +suggestedAt: DateTime
+  }
+
+  Alert "1" *-- "0..*" AlertLog
+  Alert "1" *-- "1..*" AlertActionPlanSuggestion
+  AlertActionPlanSuggestion "*" --> "1" ActionPlan
+}
+
+note right of Alert
+Domain Rules:
+- Alert is always scoped to exactly one Project.
+- `level` is immutable after creation.
+- Resolving an alert sets `isResolved=true` and closes the latest open AlertLog.
+- Reopening an alert creates a new AlertLog with `resolvedAt = null`.
+- Each Alert must suggest one or more ActionPlans.
+- ActionPlans are reusable across multiple Alerts.
+end note
+
+@enduml
