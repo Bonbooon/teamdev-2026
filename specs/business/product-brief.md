@@ -1,6 +1,19 @@
 # Product Brief: Motivation Cloud Teamwork
 
-**Last Updated:** 2026/03/03
+**Last Updated:** 2026/03/04
+
+---
+
+## Discovery Insights from PO Inquiries
+
+**See also:** `docs/business-logic/prototype-strategy.md` for our prototype strategy based on PO learnings
+
+### Key Learnings (From First 2 PO Inquiries - Completed)
+
+- **Core Problem:** Despite having many excellent tools (GitHub, Jira, Trello, etc.), most software teams cannot complete projects on time and face delays
+- **Our Differentiation:** Tools tackle productivity OR motivation, not both. We solve BOTH + prevent delays
+- **Strategic Insight:** MUST features are baseline; WANT features enable teams to never miss deadlines
+- **Primary User:** Project managers are the overlooked power users who need visibility and actionability
 
 ---
 
@@ -193,8 +206,9 @@ The application succeeds when it becomes **indispensable** to the development te
 
 ## 8. Constraints & Considerations
 
-- Must deliver all 4 pillars (MUST requirements minimum)
+- Must deliver all 4 pillars (MUST requirements minimum) - but WANT features differentiate us
 - Application must be practical for real software development teams
 - Balance between productivity features and motivation features
 - Consider remote work environments
 - Should integrate naturally into existing team workflows
+- **MVP Strategy:** See `docs/business-logic/prototype-strategy.md` for focused first-prototype approach
