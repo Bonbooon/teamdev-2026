@@ -1,0 +1,23 @@
+@startuml
+left to right direction
+
+actor "メンバー" as Member
+actor "マネージャー" as Manager
+
+rectangle "Profile Domain" {
+
+  usecase "プロフィール作成"
+  usecase "プロフィール参照"
+  usecase "プロフィール更新"
+
+}
+
+Member --> "プロフィール作成"
+Member --> "プロフィール参照"
+Member --> "プロフィール更新"
+
+Manager --> "プロフィール作成"
+Manager --> "プロフィール参照"
+Manager --> "プロフィール更新"
+
+@enduml
