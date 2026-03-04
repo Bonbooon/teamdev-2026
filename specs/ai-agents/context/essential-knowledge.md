@@ -17,6 +17,7 @@
 
 **Current Phase**: Development  
 **Timeline**:
+
 - **Kickoff**: 2026/02/14
 - **Development Start**: 2026/03/01
 - **Code Freeze**: 2026/04/05 23:59:00
@@ -150,7 +151,8 @@ teamdev-2026-front/src/api/
 Type-safe API calls
 ```
 
-**CRITICAL**: 
+**CRITICAL**:
+
 - Never manually edit `teamdev-2026-front/src/api/` - it's auto-generated from the Laravel API!
 - Always refer to `teamdev-2026-api/docs/openapi/openapi.json` for the source of truth on API contracts
 
@@ -254,6 +256,7 @@ Typical feature flow:
 **Client**: Link and Motivation Group - A company focused on "Motivation Engineering" to create a meaningful society.
 
 **The Problem We're Solving**:
+
 - Japan has the lowest labor productivity among G7 nations
 - Only 5% of Japanese employees are highly engaged (ranked 145/145 globally)
 - "Working reluctantly" is the norm, causing widespread burnout and low productivity
@@ -274,6 +277,7 @@ See `specs/business/product-brief.md` for detailed requirements, pain points, an
 ### Core Entities
 
 See `docs/diagrams/domain-models/` for:
+
 - Team Aggregate
 - User Aggregate
 - And other domain entities
@@ -334,6 +338,7 @@ Documented in `specs/business/workflows/`
 ## Q&A Sessions with Product Owner
 
 We have 2 remaining opportunities to clarify requirements:
+
 - **Next Session**: 2026/03/12 19:00
 - **Final Session**: 2026/03/19 19:00
 
