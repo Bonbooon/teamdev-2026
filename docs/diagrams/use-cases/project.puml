@@ -1,0 +1,24 @@
+@startuml
+left to right direction
+
+actor "マネージャー" as Manager
+
+rectangle "Project Domain" {
+
+  usecase "PJ作成"
+  usecase "PJ概要更新"
+  usecase "PJ削除"
+  usecase "PJ完了"
+  usecase "PJにチームを追加"
+  usecase "PJ毎のサーベイ平均結果閲覧"
+
+}
+
+Manager --> "PJ作成"
+Manager --> "PJ概要更新"
+Manager --> "PJ削除"
+Manager --> "PJ完了"
+Manager --> "PJにチームを追加"
+Manager --> "PJ毎のサーベイ平均結果閲覧"
+
+@enduml
