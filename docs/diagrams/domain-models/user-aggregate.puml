@@ -1,0 +1,83 @@
+@startuml
+title Identity & Access Context - User Aggregate
+
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+package "Identity & Access Context" {
+
+  package "User Aggregate" {
+
+    class User <<Aggregate Root>> {
+      +id: UUID
+      +email: String
+      +emailVerifiedAt: DateTime?
+      +createdAt: DateTime
+      +updatedAt: DateTime
+      --
+      +changeEmail(newEmail: String)
+      +verifyEmail(at: DateTime)
+      +updateProfile(data)
+      +addExternalLink(platform: String?, label: String?, url: String)
+      +removeExternalLink(externalLinkId: UUID)
+      +linkOAuthAccount(provider: String, providerUserId: String)
+      +unlinkOAuthAccount(oauthAccountId: UUID)
+    }
+
+    class Profile <<Entity>> {
+      +userId: UUID
+      +firstName: String
+      +lastName: String
+      +firstNameKana: String?
+      +lastNameKana: String?
+      +avatarUrl: String?
+      +aboutMe: String?
+      +hobby: String?
+      +jobTitle: String?
+      +expertise: String?
+      +joinedTeamAt: Date?
+      +joinedProjectAt: Date?
+      +workHistory: String?
+      +updatedAt: DateTime
+    }
+
+    class ProfileExternalLink <<Entity>> {
+      +id: UUID
+      +userId: UUID
+      +platform: String?
+      +label: String?
+      +url: String
+      +position: Int
+      +createdAt: DateTime
+      +updatedAt: DateTime
+    }
+
+    class OAuthAccount <<Entity>> {
+      +id: UUID
+      +userId: UUID
+      +provider: String
+      +providerUserId: String
+      +createdAt: DateTime
+    }
+
+    User *-- "0..1" Profile
+    User *-- "0..*" ProfileExternalLink
+    User *-- "0..*" OAuthAccount
+  }
+
+  note right of User
+  == Domain Rules (User Aggregate) ==
+
+  1. Email must be unique, normalized, and non-null.
+  2. Profile cannot exist without User.
+  3. (provider, providerUserId) must be globally unique.
+  4. Email verification can transition to verified only once.
+  5. Deleting User removes Profile/OAuthAccounts by cascade.
+  6. A User can have multiple external links (Instagram, Wantedly, etc.).
+  7. External link URL must be unique per User.
+  end note
+
+}
+
+@enduml
