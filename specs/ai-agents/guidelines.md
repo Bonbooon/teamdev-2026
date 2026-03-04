@@ -83,6 +83,7 @@ Guidelines for AI agents working on this project.
 ### Diagrams as Source of Truth
 
 AI agents MUST consult `docs/diagrams/` for domain understanding:
+
 - `domain-models/` - Entity relationships and aggregates
 - `system-context.puml` - System boundaries and external systems
 - `use-cases.puml` - User interactions and workflows
@@ -161,17 +162,20 @@ These diagrams are critical for understanding the problem domain before implemen
 **MANDATORY**: Specs must include test cases.
 
 **Mock Policy**: Minimize mocking - only use mocks for:
+
 - External APIs (payment gateways, third-party services)
 - Time/date dependencies when testing time-sensitive logic
 - Random number generation in specific test scenarios
 
 Prefer real implementations over mocks for:
+
 - Database interactions
 - Business logic
 - Service collaborations
 - Domain models
 
 **Test Coverage**:
+
 - Run existing tests before making changes
 - Add tests for new features
 - Frontend: Component tests, integration tests

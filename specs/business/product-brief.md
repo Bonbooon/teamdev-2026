@@ -23,13 +23,16 @@
 ### Japan's Productivity Crisis
 
 **Labor Productivity:**
+
 - Japan's labor productivity is currently the **lowest among the G7 nations**
 
 **Employee Engagement Statistics:**
+
 - Only **5%** of Japanese employees are considered "enthusiastic" (highly engaged)
 - Japan ranks **145th out of 145 countries** surveyed by Gallup
 
 **Societal Issues:**
+
 - "Working reluctantly" has become the norm
 - Prevalent issues like the "Sazae-san syndrome" (Monday blues)
 - Low motivation combined with strangely low turnover rate
@@ -59,6 +62,7 @@
 ### Target Audience
 
 **Primary Target:** **Software development teams**
+
 - Teams where Engineers, Product Managers, and Designers collaborate
 - Trust-building and close collaboration are extremely important
 - Any company size (both in-house and contract development)
@@ -73,15 +77,17 @@
 
 ### Market Positioning
 
-**No direct competitors** that successfully tackle *both* productivity and motivation.
+**No direct competitors** that successfully tackle _both_ productivity and motivation.
 
 **Productivity Competitors:**
+
 - Asana
 - JIRA
 - Trello
 - Wrike
 
 **Motivation Competitors:**
+
 - 15Five
 - Geppo
 - Unipos
@@ -115,10 +121,12 @@ The application must be built around **four mandatory functional pillars**:
 **Problem Solved:** Role division becomes vague, and nobody knows who is doing what.
 
 **MUST Requirements:**
+
 - Ability to add and assign roles for each project/task
 - A centralized list to confirm who is handling which role
 
 **WANT Requirements:**
+
 - Visibility into the difficulty level of each role
 
 ---
@@ -128,10 +136,12 @@ The application must be built around **four mandatory functional pillars**:
 **Problem Solved:** Project/task progress isn't shared within the team, causing delays in detecting issues and taking corrective action.
 
 **MUST Requirements:**
+
 - Ability to list, update, and manage progress per project/task
 - Visual indicators of good/bad progress to easily grasp the current situation
 
 **WANT Requirements:**
+
 - Clear guidance on necessary next steps/actions when a delay is detected
 
 ---
@@ -141,10 +151,12 @@ The application must be built around **four mandatory functional pillars**:
 **Problem Solved:** Unawareness of members' motivation states hinders collaboration; delays in noticing poor physical/mental conditions lead to project delays.
 
 **MUST Requirements:**
+
 - Mutual visibility into the physical and psychological conditions of all team members
 - Ability to understand the team's overall current state and issues
 
 **WANT Requirements:**
+
 - Visibility into the specific causes of poor conditions and what support is needed
 
 ---
@@ -154,9 +166,11 @@ The application must be built around **four mandatory functional pillars**:
 **Problem Solved:** Weak relationships make it hard to collaborate with newly joined members; remote work environments lack casual chat, preventing mutual understanding.
 
 **MUST Requirements:**
+
 - Features to view each other's profiles, including work experience, strong areas/skills, and hobbies
 
 **WANT Requirements:**
+
 - Mechanisms or features that help members share personal values and foster deeper friendships
 
 ---
