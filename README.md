@@ -54,7 +54,6 @@ pnpm dev
 - **フロントエンド**: http://localhost:3000
 - **バックエンドAPI**: http://localhost
 - **Swagger UI**: http://localhost:8080
-- **Solr管理画面**: http://localhost:8983
 - **PostgreSQL**: `mise run db-shell`でコンテナに接続し、`psql -d posse -U user`でPostgreSQLにアクセス後、`\dt`でテーブル一覧を確認
 
 ## 基本操作
