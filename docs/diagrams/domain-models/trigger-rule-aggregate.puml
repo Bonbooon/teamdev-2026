@@ -1,0 +1,50 @@
+@startuml
+package "TriggerRule Aggregate" {
+
+  class TriggerDefinition <<Aggregate Root>> {
+    +id: UUID
+    +name: String
+    +targetType: TriggerTargetType
+    +conditionType: String
+    +conditionValue: Int
+    +alertLevel: AlertLevel
+    +isActive: Boolean
+    +createdAt: DateTime
+    --
+    +activate()
+    +deactivate()
+    +evaluate(targetEntityId: UUID): TriggerExecutionLog
+  }
+
+  enum TriggerTargetType {
+    survey
+    issue
+    project
+    team_member
+  }
+
+  enum AlertLevel {
+    red
+    yellow
+  }
+
+  class TriggerExecutionLog <<Entity>> {
+    +id: BigInt
+    +triggerDefinitionId: UUID
+    +targetEntityId: UUID
+    +triggeredAt: DateTime
+    +status: String
+    +metadata: Json
+  }
+
+  TriggerDefinition "1" *-- "0..*" TriggerExecutionLog
+}
+
+note right of TriggerDefinition
+Domain Rules:
+- `conditionType` and `conditionValue` must be compatible.
+- Disabled rules cannot produce TriggerExecutionLog.
+- Evaluation should be idempotent for same rule + target + time window.
+end note
+
+@enduml
