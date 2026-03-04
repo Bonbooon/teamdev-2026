@@ -25,7 +25,9 @@
   - Elimination Round (Engineering Judges): 2026/04/11 (10 min presentation + 7 min Q&A)
   - Final Round (Product Owner): 2026/04/12 (10 min presentation + 7 min Q&A)
 
-**See Also**: `specs/business/product-brief.md` for complete product requirements and business context
+**See Also**: 
+- `specs/business/product-brief.md` - Complete product requirements and business context
+- `docs/business-logic/prototype-strategy.md` - Our MVP strategy for first prototype (focus on project managers, alerts, and GitHub integration)
 
 ---
 
@@ -259,13 +261,28 @@ Typical feature flow:
 
 - Japan has the lowest labor productivity among G7 nations
 - Only 5% of Japanese employees are highly engaged (ranked 145/145 globally)
+- Despite having excellent tools (GitHub, Jira, Trello), teams still miss deadlines
 - "Working reluctantly" is the norm, causing widespread burnout and low productivity
 
-**Our Solution**: Motivation Cloud Teamwork - An app tackling BOTH productivity AND motivation simultaneously.
+**Our Solution**: Motivation Cloud Teamwork - An app tackling BOTH productivity AND motivation while solving the delay prevention problem.
 
-**Required Reading**: `specs/business/product-brief.md` for complete details
+**Key Insight from PO**: WANT features (not MUST features) are what enable teams to actually avoid delays.
 
-### Four Core Pillars (All MUST be implemented)
+**Required Reading**:
+- `specs/business/product-brief.md` - Complete product requirements and business context
+- `docs/business-logic/prototype-strategy.md` - Our MVP strategy for first prototype
+
+### First Prototype Focus (Based on First 2 PO Inquiries)
+
+We're focusing on three key features:
+
+1. **Alert & Next-Action System** - Yellow/Red alerts via email to help PMs prevent/manage delays
+2. **SMART-Style Issue Templates** - Enable team members to precisely track progress
+3. **GitHub Actions Integration** - Real-time progress from commits (no manual updates)
+
+**Primary User**: Project managers who oversee multiple teams and need visibility + actionability
+
+### Four Core Pillars (All MUST be in final product)
 
 1. **Role Design (Productivity)** - Clear role assignments and visibility
 2. **Progress Management (Productivity)** - Shared progress tracking with visual indicators
