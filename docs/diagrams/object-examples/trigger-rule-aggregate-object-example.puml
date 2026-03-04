@@ -1,0 +1,58 @@
+@startuml
+title TriggerRule Aggregate - オブジェクト例（状態バリエーション）
+
+left to right direction
+skinparam shadowing false
+skinparam objectAttributeIconSize 0
+
+object "トリガー定義: 課題期限接近（有効）" as rule_issue_deadline <<TriggerDefinition>> {
+  id = "aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  name = "課題期限接近"
+  targetType = "issue"
+  conditionType = "hours_to_deadline_lte"
+  conditionValue = 24
+  alertLevel = "yellow"
+  isActive = true
+  createdAt = "2026-02-20T10:00:00+09:00"
+}
+
+object "実行ログ: 期限接近発火" as log_triggered <<TriggerExecutionLog>> {
+  id = 10001
+  triggerDefinitionId = "aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  targetEntityId = "66666666-6666-6666-6666-666666666666"
+  triggeredAt = "2026-03-04T08:00:00+09:00"
+  status = "triggered"
+  metadata = "{\"remainingHours\":20,\"timezone\":\"Asia/Tokyo\"}"
+}
+
+object "トリガー定義: サーベイ未回答（無効）" as rule_survey_disabled <<TriggerDefinition>> {
+  id = "aaaaaaa2-aaaa-aaaa-aaaa-aaaaaaaaaaa2"
+  name = "サーベイ未回答"
+  targetType = "survey"
+  conditionType = "hours_since_delivery_gte"
+  conditionValue = 48
+  alertLevel = "red"
+  isActive = false
+  createdAt = "2026-02-22T10:00:00+09:00"
+}
+
+object "課題参照" as issue_ref <<Issue>> {
+  id = "66666666-6666-6666-6666-666666666666"
+  status = "in_progress"
+}
+
+object "サーベイ参照" as survey_ref <<Survey>> {
+  id = "90000000-0000-0000-0000-000000000000"
+  lastAnsweredAt = null
+}
+
+rule_issue_deadline *-- log_triggered
+log_triggered -- issue_ref : targetEntityId
+rule_survey_disabled .. survey_ref : 評価対象（無効なのでログなし）
+
+note bottom
+isActive=true のみ実行ログを生成する状態差分を表現。
+判定基準時刻は Asia/Tokyo。
+end note
+
+@enduml
