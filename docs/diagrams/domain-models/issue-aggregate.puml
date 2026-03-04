@@ -1,0 +1,59 @@
+@startuml
+package "Issue Aggregate" {
+
+  class Issue <<Aggregate Root>> {
+    +id: UUID
+    +projectId: UUID
+    +teamId: UUID
+    +parentIssueId: UUID?
+    +issueTemplateId: UUID
+    +title: String
+    +deadline: DateTime?
+    +status: IssueStatus
+    +createdAt: DateTime
+    +updatedAt: DateTime
+    --
+    +rename(title: String)
+    +reschedule(deadline: DateTime)
+    +startProgress()
+    +markInReview()
+    +markDone()
+    +addAssignee(teamMemberId: UUID)
+    +removeAssignee(teamMemberId: UUID)
+    +addDefinitionOfDone(description: String)
+  }
+
+  enum IssueStatus {
+    not_in_progress
+    in_progress
+    in_review
+    done
+  }
+
+  class IssueAssignee <<Entity>> {
+    +issueId: UUID
+    +teamMemberId: UUID
+  }
+
+  class IssueDefinitionOfDone <<Entity>> {
+    +id: UUID
+    +issueId: UUID
+    +description: String
+  }
+
+  Issue "1" *-- "0..*" IssueAssignee
+  Issue "1" *-- "0..*" IssueDefinitionOfDone
+}
+
+note right of Issue
+Domain Rules:
+- Issue belongs to exactly one Project.
+- Issue is scoped to exactly one Team inside the Project.
+- `teamId` must be one of the Project's assigned teams.
+- Assignee(s) must be TeamMember(s) of the Issue's Team.
+- Cannot assign inactive TeamMember.
+- Cannot transition to `done` without at least one Definition of Done.
+- Child issue (`parentIssueId`) must belong to the same Project.
+end note
+
+@enduml
