@@ -1,0 +1,38 @@
+@startuml
+left to right direction
+
+actor "マネージャー" as Manager
+actor "メンバー" as Member
+actor "Domain Event Stream" as Event
+
+rectangle "TriggerRule" {
+
+  usecase "トリガールール作成"
+  usecase "トリガールール更新"
+  usecase "トリガールール削除"
+
+  usecase "トリガー評価"
+  usecase "アラート生成"
+  usecase "アクションプラン提示"
+  usecase "アラート確認・対応"
+
+  usecase "実行ログ参照"
+
+}
+
+Manager --> "トリガールール作成"
+Manager --> "トリガールール更新"
+Manager --> "トリガールール削除"
+Manager --> "実行ログ参照"
+
+Event --> "トリガー評価"
+"トリガー評価" --> "アラート生成"
+"アラート生成" --> "アクションプラン提示"
+
+Manager --> "アクションプラン提示"
+Member --> "アクションプラン提示"
+
+Manager --> "アラート確認・対応"
+Member --> "アラート確認・対応"
+
+@enduml
