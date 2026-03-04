@@ -47,9 +47,12 @@ Guidelines for AI agents working on this project.
 ### 5. Product Alignment
 
 - Every feature must align with at least one of the 4 core pillars (see `specs/business/product-brief.md`)
+- For the **first prototype**, prioritize features in this order (see `docs/business-logic/prototype-strategy.md`):
+  1. **Alert & Next-Action System** - Help PMs detect and prevent delays
+  2. **SMART-Style Issue Templates** - Enable precise progress tracking
+  3. **GitHub Actions Integration** - Real-time progress from commits
 - Balance productivity features with motivation features
-- Remember: we're solving BOTH productivity AND motivation problems simultaneously
-- Validate features against real team pain points (we are the target users)
+- Remember: WANT features (not MUST features) are what actually prevent delays
 
 ## Working with Specs
 
