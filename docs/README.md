@@ -18,9 +18,8 @@ Human-readable documentation for the {{template}} project.
 
 #### Architecture
 
-- [System Design](./architecture/system-design.md) - High-level architecture
-- [Data Flow](./architecture/data-flow.md) - How data moves through the system
-- [Directory Structure](./architecture/directory-structure.md) - Project organization
+- [Architecture Overview](./architecture/README.md) - Layer responsibilities and decision navigation
+- [Directory Structure](./architecture/directory-structure.md) - Clean Architecture + CQRS + frontend feature pattern
 - [ADRs](./architecture/adr/) - Architecture Decision Records
 
 #### Business Logic
@@ -188,4 +187,4 @@ docs/
 
 ---
 
-Last updated: 2025-11-14
+Last updated: 2026-03-05
