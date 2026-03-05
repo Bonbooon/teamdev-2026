@@ -9,12 +9,14 @@ System(automation, "Automation / Policy Engine")
 
 System_Ext(saml, "SAML認証")
 System_Ext(mail, "Mail Provider")
+System_Ext(cron, "Scheduler (Cron)")
 
 Rel(manager, core, "Uses")
 Rel(member, core, "Uses")
 
 Rel(core, automation, "Publishes domain events")
 Rel(automation, core, "Reads projections if needed")
+Rel(cron, automation, "Triggers daily snapshot jobs")
 
 Rel(automation, mail, "Sends alert notifications")
 Rel(core, saml, "Authentication")
