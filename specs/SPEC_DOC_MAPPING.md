@@ -18,6 +18,8 @@ Every spec should have corresponding human documentation that explains it.
 | `specs/ai-agents/context/essential-knowledge.md` | `docs/00-START-HERE.md` | Project onboarding | When project fundamentals change |
 | `specs/ai-agents/context/project-context.md` | `docs/project/overview.md` | Project overview | When project goals/scope changes |
 | `specs/ai-agents/context/technical-context.md` | `docs/architecture/system-design.md` + `docs/project/tech-stack.md` | Technical architecture | When tech stack or architecture changes |
+| `specs/ai-agents/context/essential-knowledge.md` + `specs/ai-agents/guidelines.md` | `docs/architecture/README.md` + `docs/architecture/directory-structure.md` | Layer ownership and implementation boundaries | When architecture conventions change |
+| `specs/ai-agents/guidelines.md` | `docs/architecture/adr/*.md` | Architecture decisions and rationale | When architectural decisions are made/updated |
 | `specs/ai-agents/context/business-context.md` | `docs/business-logic/core-concepts.md` | Business concepts | When business rules change |
 | `specs/ai-agents/guidelines.md` | `docs/development/workflow.md` | Development process | When workflow changes |
 | `specs/ai-agents/prompts/*.md` | `docs/development/coding-standards.md` | Coding standards per role | When standards change |
