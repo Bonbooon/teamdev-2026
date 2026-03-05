@@ -45,6 +45,7 @@ Domain Rules:
 - `conditionType` and `conditionValue` must be compatible.
 - Disabled rules cannot produce TriggerExecutionLog.
 - Evaluation should be idempotent for same rule + target + time window.
+- TriggerDefinition lifecycle (create/update/delete) is managed by Admin actor.
 end note
 
 @enduml

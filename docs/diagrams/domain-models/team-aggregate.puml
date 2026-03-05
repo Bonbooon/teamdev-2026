@@ -12,9 +12,12 @@ package "Team Aggregate" {
     +createdAt: DateTime
     +updatedAt: DateTime
     --
-    +addMember(userId: UUID, role: String)
-    +changeMemberRole(memberId: UUID, role: String)
+    +addMember(userId: UUID, permissionRole: TeamMemberPermissionRole)
+    +changeMemberPermissionRole(memberId: UUID, permissionRole: TeamMemberPermissionRole)
     +changeMemberStatus(memberId: UUID, status: MembershipStatus)
+    +addRoleDefinition(name: String, description: String?)
+    +updateRoleDefinition(roleDefinitionId: UUID, name: String, description: String?)
+    +configureConditionWindow(defaultWindowDays: ConditionWindowDays)
     +archive()
   }
 
@@ -22,10 +25,40 @@ package "Team Aggregate" {
     +id: UUID
     +teamId: UUID
     +userId: UUID
-    +role: String
+    +permissionRole: TeamMemberPermissionRole
     +status: MembershipStatus
     +createdAt: DateTime
     +updatedAt: DateTime
+  }
+
+  class RoleDefinition <<Entity>> {
+    +id: UUID
+    +teamId: UUID
+    +name: String
+    +description: String?
+    +difficultyLevel: Int?
+    +isActive: Boolean
+    +createdAt: DateTime
+    +updatedAt: DateTime
+  }
+
+  class TeamConditionSetting <<Entity>> {
+    +teamId: UUID
+    +defaultWindowDays: ConditionWindowDays
+    +createdAt: DateTime
+    +updatedAt: DateTime
+  }
+
+  enum TeamMemberPermissionRole {
+    manager
+    member
+  }
+
+  enum ConditionWindowDays {
+    d7
+    d14
+    d30
+    d90
   }
 
   enum TeamStatus {
@@ -39,13 +72,18 @@ package "Team Aggregate" {
   }
 
   Team "1" *-- "0..*" TeamMember
+  Team "1" *-- "0..*" RoleDefinition
+  Team "1" *-- "0..1" TeamConditionSetting
 }
 
 note right of Team
 Domain Rules:
 - Member must be unique within a Team.
 - MemberStatus determines survey eligibility.
-- Role is contextual per TeamMember.
+- TeamMember permission role is `manager` or `member`.
+- RoleDefinition name must be unique within a Team.
+- Inactive RoleDefinition cannot be newly assigned.
+- Team keeps a default condition window (7/14/30/90 days).
 - Cannot remove last active manager if policy requires.
 end note
 

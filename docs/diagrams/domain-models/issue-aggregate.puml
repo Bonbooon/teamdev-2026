@@ -8,7 +8,11 @@ package "Issue Aggregate" {
     +parentIssueId: UUID?
     +issueTemplateId: UUID
     +title: String
+    +storyPoints: Decimal
+    +estimatedMinutes: Int
     +deadline: DateTime?
+    +startedAt: DateTime?
+    +closedAt: DateTime?
     +status: IssueStatus
     +createdAt: DateTime
     +updatedAt: DateTime
@@ -21,6 +25,10 @@ package "Issue Aggregate" {
     +addAssignee(teamMemberId: UUID)
     +removeAssignee(teamMemberId: UUID)
     +addDefinitionOfDone(description: String)
+    +logWork(teamMemberId: UUID, startedAt: DateTime, endedAt: DateTime?, minutes: Int, source: WorkLogSource)
+    +recordStatusEvent(from: IssueStatus?, to: IssueStatus, changedBy: UUID?)
+    +assignIssueRole(roleDefinitionId: UUID)
+    +setIssueRoleOwners(issueRoleAssignmentId: UUID, teamMemberIds: UUID[])
   }
 
   enum IssueStatus {
@@ -41,8 +49,54 @@ package "Issue Aggregate" {
     +description: String
   }
 
+  enum WorkLogSource {
+    manual
+    github_api
+    github_actions
+  }
+
+  class IssueWorkLog <<Entity>> {
+    +id: UUID
+    +issueId: UUID
+    +teamMemberId: UUID
+    +source: WorkLogSource
+    +externalLogId: String?
+    +startedAt: DateTime
+    +endedAt: DateTime?
+    +minutes: Int
+    +payload: Json?
+    +createdAt: DateTime
+    +updatedAt: DateTime
+  }
+
+  class IssueStatusEvent <<Entity>> {
+    +id: Long
+    +issueId: UUID
+    +fromStatus: IssueStatus?
+    +toStatus: IssueStatus
+    +changedByTeamMemberId: UUID?
+    +changedAt: DateTime
+  }
+
+  class IssueRoleAssignment <<Entity>> {
+    +id: UUID
+    +issueId: UUID
+    +roleDefinitionId: UUID
+    +createdAt: DateTime
+    +updatedAt: DateTime
+  }
+
+  class IssueRoleAssignmentOwner <<Entity>> {
+    +issueRoleAssignmentId: UUID
+    +teamMemberId: UUID
+  }
+
   Issue "1" *-- "0..*" IssueAssignee
   Issue "1" *-- "0..*" IssueDefinitionOfDone
+  Issue "1" *-- "0..*" IssueWorkLog
+  Issue "1" *-- "0..*" IssueStatusEvent
+  Issue "1" *-- "0..*" IssueRoleAssignment
+  IssueRoleAssignment "1" *-- "1..*" IssueRoleAssignmentOwner
 }
 
 note right of Issue
@@ -54,6 +108,12 @@ Domain Rules:
 - Cannot assign inactive TeamMember.
 - Cannot transition to `done` without at least one Definition of Done.
 - Child issue (`parentIssueId`) must belong to the same Project.
+- `startedAt`/`closedAt` must be time-consistent with `createdAt`.
+- Workload contribution is tracked by `storyPoints` and work log minutes.
+- GitHub integration can append work logs via `github_api` / `github_actions` sources.
+- Issue-level roles are managed by RoleDefinition catalog.
+- An issue role can have single or multiple owners.
+- Issue role owners must be active TeamMember(s) of the Issue's Team.
 end note
 
 @enduml

@@ -5,14 +5,17 @@ package "Invitation Aggregate" {
     +id: UUID
     +teamId: UUID
     +inviterUserId: UUID
-    +inviteeId: UUID
+    +inviteeEmail: String
     +token: String
     +status: InvitationStatus
     +expiresAt: DateTime
+    +acceptedAt: DateTime?
+    +revokedAt: DateTime?
     +createdAt: DateTime
 
     --
     +accept(now: DateTime)
+    +revoke(now: DateTime)
     +expire(now: DateTime)
     +isExpired(now: DateTime): Boolean
   }
@@ -21,15 +24,19 @@ package "Invitation Aggregate" {
     pending
     accepted
     expired
+    revoked
   }
 }
 
 note right of TeamInvitation
 Domain Rules:
 - Invitation target is Team only.
-- Invitee can accept only once and only before expiry.
-- (teamId, inviteeId) must not already exist as an active TeamMember.
+- Invitee can accept only once per invitation and only before expiry.
+- Re-invite is allowed; only one pending invitation per (teamId, inviteeEmail).
 - Token must be unique and non-guessable.
+- Only pending invitations can be revoked.
+- `accepted` status requires `acceptedAt`.
+- `revoked` status requires `revokedAt`.
 end note
 
 @enduml

@@ -1,6 +1,7 @@
 @startuml
 left to right direction
 
+actor "管理者" as Admin
 actor "マネージャー" as Manager
 actor "メンバー" as Member
 actor "Domain Event Stream" as Event
@@ -20,9 +21,10 @@ rectangle "TriggerRule" {
 
 }
 
-Manager --> "トリガールール作成"
-Manager --> "トリガールール更新"
-Manager --> "トリガールール削除"
+Admin --> "トリガールール作成"
+Admin --> "トリガールール更新"
+Admin --> "トリガールール削除"
+Admin --> "実行ログ参照"
 Manager --> "実行ログ参照"
 
 Event --> "トリガー評価"

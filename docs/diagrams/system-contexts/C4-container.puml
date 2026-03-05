@@ -12,6 +12,7 @@ System_Boundary(core, "TeamDev Core") {
 
 System_Boundary(auto, "Automation Context") {
   Container(policy, "Policy Engine", "Laravel Module / Worker")
+  Container(snapshot, "Snapshot Scheduler Worker", "Laravel Scheduler / Queue Worker")
   ContainerDb(logdb, "Execution Log DB", "PostgreSQL")
 }
 
@@ -22,7 +23,9 @@ Rel(api, db, "Reads/Writes")
 Rel(api, saml, "Auth")
 
 Rel(api, policy, "Publishes Domain Events")
+Rel(api, snapshot, "Provides issue/project/team data")
 Rel(policy, logdb, "Logs execution")
 Rel(policy, mail, "Sends alerts")
+Rel(snapshot, db, "Writes daily performance snapshots")
 
 @enduml

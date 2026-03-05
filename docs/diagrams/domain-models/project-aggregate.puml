@@ -18,12 +18,67 @@ package "Project Aggregate" {
     +cancelToIdle()
     +assignTeam(teamId: UUID)
     +unassignTeam(teamId: UUID)
+    +assignProjectRole(roleDefinitionId: UUID)
+    +setProjectRoleOwners(projectRoleAssignmentId: UUID, teamMemberIds: UUID[])
+    +getRoleOwnershipBoard(): RoleOwnershipBoard
+    +snapshotDailyPerformance(snapshotDate: Date)
   }
 
   class ProjectTeam <<Entity>> {
     +projectId: UUID
     +teamId: UUID
     +assignedAt: DateTime
+  }
+
+  class ProjectRoleAssignment <<Entity>> {
+    +id: UUID
+    +projectId: UUID
+    +roleDefinitionId: UUID
+    +createdAt: DateTime
+    +updatedAt: DateTime
+  }
+
+  class ProjectRoleAssignmentOwner <<Entity>> {
+    +projectRoleAssignmentId: UUID
+    +teamMemberId: UUID
+  }
+
+  class RoleOwnershipBoard <<Value Object>> {
+    +rows: RoleOwnershipRow[]
+  }
+
+  class RoleOwnershipRow <<Value Object>> {
+    +roleDefinitionId: UUID
+    +ownerTeamMemberIds: UUID[]
+    +issueCount: Int
+  }
+
+  class TeamProjectPerformanceDaily <<Entity>> {
+    +snapshotDate: Date
+    +projectId: UUID
+    +teamId: UUID
+    +closedIssueCount: Int
+    +overdueOpenIssueCount: Int
+    +completedStoryPoints: Decimal
+    +estimatedMinutesClosed: Int
+    +actualMinutesLogged: Int
+    +onTimeCompletionRate: Decimal?
+    +avgCycleTimeHours: Decimal?
+    +createdAt: DateTime
+  }
+
+  class TeamMemberProjectPerformanceDaily <<Entity>> {
+    +snapshotDate: Date
+    +projectId: UUID
+    +teamId: UUID
+    +teamMemberId: UUID
+    +closedIssueCount: Int
+    +completedStoryPoints: Decimal
+    +estimatedMinutesClosed: Int
+    +actualMinutesLogged: Int
+    +onTimeCompletionRate: Decimal?
+    +avgCycleTimeHours: Decimal?
+    +createdAt: DateTime
   }
 
   enum ProjectStatus {
@@ -34,6 +89,10 @@ package "Project Aggregate" {
   }
 
   Project "1" *-- "1..*" ProjectTeam
+  Project "1" *-- "0..*" ProjectRoleAssignment
+  Project "1" *-- "0..*" TeamProjectPerformanceDaily
+  TeamProjectPerformanceDaily "1" *-- "0..*" TeamMemberProjectPerformanceDaily
+  ProjectRoleAssignment "1" *-- "1..*" ProjectRoleAssignmentOwner
 }
 
 note right of Project
@@ -41,6 +100,10 @@ Domain Rules:
 - A Project can be assigned to multiple Teams.
 - Project completion prevents new Issues.
 - Due date can be null for backlog projects.
+- Project-level roles are managed by RoleDefinition catalog.
+- A project role can have single or multiple owners.
+- Project role owners must belong to teams assigned to the project.
+- Team and member contribution metrics are captured in daily snapshots.
 end note
 
 @enduml

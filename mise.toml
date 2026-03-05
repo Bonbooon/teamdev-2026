@@ -155,9 +155,10 @@ mise fmtl
 mise ft
 """
 
-[tasks.openapi]
+[tasks.codegen-openapi]
+description = "Regenerate frontend OpenAPI artifacts from canonical API spec"
 run = """
-cd teamdev-2026/teamdev-2026-front
+cd teamdev-2026-front
 pnpm run openapi
 pnpm run format
 """
