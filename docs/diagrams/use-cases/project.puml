@@ -2,23 +2,37 @@
 left to right direction
 
 actor "マネージャー" as Manager
+actor "メンバー" as Member
+actor "スケジューラー(Cron/Worker)" as Scheduler
 
 rectangle "Project Domain" {
 
   usecase "PJ作成"
   usecase "PJ概要更新"
-  usecase "PJ削除"
   usecase "PJ完了"
   usecase "PJにチームを追加"
+  usecase "PJ進捗管理ボード参照"
+  usecase "PJロール割当"
+  usecase "PJロール担当者更新"
+  usecase "PJロール所有状況一覧参照"
   usecase "PJ毎のサーベイ平均結果閲覧"
+  usecase "日次パフォーマンス\nスナップショット記録"
 
 }
 
 Manager --> "PJ作成"
 Manager --> "PJ概要更新"
-Manager --> "PJ削除"
 Manager --> "PJ完了"
 Manager --> "PJにチームを追加"
+Manager --> "PJ進捗管理ボード参照"
+Manager --> "PJロール割当"
+Manager --> "PJロール担当者更新"
+Manager --> "PJロール所有状況一覧参照"
 Manager --> "PJ毎のサーベイ平均結果閲覧"
+
+Member --> "PJ進捗管理ボード参照"
+Member --> "PJロール所有状況一覧参照"
+
+Scheduler --> "日次パフォーマンス\nスナップショット記録"
 
 @enduml
