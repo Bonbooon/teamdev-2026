@@ -53,6 +53,7 @@ package "Survey Aggregate" {
     +createdAt: DateTime
     --
     +answer(questionId: UUID, selectedOptionId: UUID, answeredAt: DateTime)
+    +getMemberConditionHistory(recipientId: UUID, windowDays: Int): MemberConditionHistory
   }
 
   class SurveyAnswer <<Entity>> {
@@ -60,6 +61,25 @@ package "Survey Aggregate" {
     +surveyQuestionId: UUID
     +selectedOptionId: UUID
     +answeredAt: DateTime
+  }
+
+  class TeamConditionSummary <<Value Object>> {
+    +teamId: UUID
+    +windowDays: Int
+    +averageScore: Decimal
+    +responseRate: Decimal
+  }
+
+  class MemberConditionHistory <<Value Object>> {
+    +teamMemberId: UUID
+    +windowDays: Int
+    +points: ConditionScorePoint[]
+  }
+
+  class ConditionScorePoint <<Value Object>> {
+    +surveyId: UUID
+    +answeredAt: DateTime
+    +score: Decimal
   }
 
   SurveyTemplate "1" *-- "1..*" SurveyQuestion
@@ -74,6 +94,8 @@ Domain Rules:
 - One active SurveySetting per Team.
 - `setterId` must be a TeamMember of the same Team.
 - Delivery times are interpreted in Team time zone.
+- Condition windows support 7/14/30/90 days (default 14 days).
+- Member condition history returns score timeline (not raw answers).
 end note
 
 @enduml
