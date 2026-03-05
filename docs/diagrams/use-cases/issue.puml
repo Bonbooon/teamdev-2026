@@ -3,42 +3,61 @@ left to right direction
 
 actor "メンバー" as Member
 actor "マネージャー" as Manager
+actor "GitHub連携" as GitHub
 
 rectangle "Issue Domain" {
 
   usecase "Issue作成"
   usecase "Issue参照"
   usecase "Issue更新"
-  usecase "Issue削除"
+  usecase "Issueステータス更新"
+  usecase "作業ログ記録\n(手動/自動)"
+  usecase "Issue進捗率参照(予実差分)"
+  usecase "サブIssue追加(予期せぬ作業含む)"
+  usecase "受け入れ条件(DoD)管理"
 
   usecase "Issueにチームをアサイン"
   usecase "Issueにメンバーをアサイン"
+  usecase "Issueロール割当"
+  usecase "Issueロール担当者更新"
 
-  usecase "Issueテンプレート作成"
   usecase "Issueテンプレート参照"
-  usecase "Issueテンプレート更新"
-  usecase "Issueテンプレート削除"
+  usecase "Issueテンプレート作成"
 
 }
 
 Member --> "Issue作成"
 Member --> "Issue参照"
 Member --> "Issue更新"
-Member --> "Issue削除"
+Member --> "Issueステータス更新"
+Member --> "作業ログ記録\n(手動/自動)"
+Member --> "Issue進捗率参照(予実差分)"
+Member --> "サブIssue追加(予期せぬ作業含む)"
+Member --> "受け入れ条件(DoD)管理"
+Member --> "Issueにチームをアサイン"
+Member --> "Issueにメンバーをアサイン"
+Member --> "Issueロール割当"
+Member --> "Issueロール担当者更新"
 
 Manager --> "Issue作成"
 Manager --> "Issue参照"
 Manager --> "Issue更新"
-Manager --> "Issue削除"
+Manager --> "Issueステータス更新"
+Manager --> "作業ログ記録\n(手動/自動)"
+Manager --> "Issue進捗率参照(予実差分)"
+Manager --> "サブIssue追加(予期せぬ作業含む)"
+Manager --> "受け入れ条件(DoD)管理"
+Manager --> "Issueにチームをアサイン"
+Manager --> "Issueにメンバーをアサイン"
+Manager --> "Issueロール割当"
+Manager --> "Issueロール担当者更新"
 
 Member --> "Issueテンプレート作成"
 Member --> "Issueテンプレート参照"
-Member --> "Issueテンプレート更新"
-Member --> "Issueテンプレート削除"
 
 Manager --> "Issueテンプレート作成"
 Manager --> "Issueテンプレート参照"
-Manager --> "Issueテンプレート更新"
-Manager --> "Issueテンプレート削除"
+
+GitHub --> "作業ログ記録\n(手動/自動)"
 
 @enduml
