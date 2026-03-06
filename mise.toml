@@ -163,6 +163,12 @@ pnpm run openapi
 pnpm run format
 """
 
+[tasks.render-puml]
+description = "Render PlantUML SVGs locally (mirrors GitHub Actions workflow)"
+run = """
+bash scripts/render-puml.sh
+"""
+
 # === アプリケーション初期化 ===
 [tasks.laravel-init]
 description = "Initialize Laravel application (env, key, migrate, seed)"
