@@ -19,7 +19,7 @@ package "Identity & Access Context" {
       +changeEmail(newEmail: String)
       +verifyEmail(at: DateTime)
       +updateProfile(data)
-      +addExternalLink(platform: String?, label: String?, url: String)
+      +addExternalLink(platform: String?, url: String)
       +removeExternalLink(externalLinkId: UUID)
       +linkOAuthAccount(provider: String, providerUserId: String)
       +unlinkOAuthAccount(oauthAccountId: UUID)
@@ -36,8 +36,7 @@ package "Identity & Access Context" {
       +hobby: String?
       +jobTitle: String?
       +expertise: String?
-      +joinedTeamAt: Date?
-      +joinedProjectAt: Date?
+      +joinedCompanyAt: Date?
       +workHistory: String?
       +updatedAt: DateTime
     }
@@ -46,7 +45,6 @@ package "Identity & Access Context" {
       +id: UUID
       +userId: UUID
       +platform: String?
-      +label: String?
       +url: String
       +position: Int
       +createdAt: DateTime
