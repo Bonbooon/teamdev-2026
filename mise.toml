@@ -156,11 +156,20 @@ mise ft
 """
 
 [tasks.codegen-openapi]
-description = "Regenerate frontend OpenAPI artifacts from canonical API spec"
+description = "Generate OpenAPI spec from l5-swagger annotations, then regenerate frontend types"
 run = """
+echo "1️⃣  Generating OpenAPI spec from PHP annotations..."
+docker compose exec app php artisan l5-swagger:generate
+
+echo "2️⃣  Copying spec to docs/openapi/ ..."
+cp teamdev-2026-api/web/storage/api-docs/api-docs.json teamdev-2026-api/docs/openapi/openapi.json
+
+echo "3️⃣  Regenerating frontend types..."
 cd teamdev-2026-front
 pnpm run openapi
 pnpm run format
+
+echo "✅ OpenAPI codegen complete"
 """
 
 [tasks.render-puml]
