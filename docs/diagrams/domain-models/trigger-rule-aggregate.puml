@@ -5,7 +5,7 @@ package "TriggerRule Aggregate" {
     +id: UUID
     +name: String
     +targetType: TriggerTargetType
-    +conditionType: String
+    +conditionType: TriggerConditionType
     +conditionValue: Int
     +alertLevel: AlertLevel
     +isActive: Boolean
@@ -14,6 +14,15 @@ package "TriggerRule Aggregate" {
     +activate()
     +deactivate()
     +evaluate(targetEntityId: UUID): TriggerExecutionLog
+  }
+
+  enum TriggerConditionType {
+    not_answered_within
+    progress_gap_exceeds
+    workload_below_required
+    document_stale_days
+    assignee_missing_duration
+    absence_impact_detected
   }
 
   enum TriggerTargetType {
@@ -33,8 +42,16 @@ package "TriggerRule Aggregate" {
     +triggerDefinitionId: UUID
     +targetEntityId: UUID
     +triggeredAt: DateTime
-    +status: String
+    +status: TriggerExecutionStatus
     +metadata: Json
+  }
+
+  enum TriggerExecutionStatus {
+    queued
+    evaluated
+    triggered
+    skipped
+    failed
   }
 
   TriggerDefinition "1" *-- "0..*" TriggerExecutionLog
