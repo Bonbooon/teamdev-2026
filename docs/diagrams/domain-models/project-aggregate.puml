@@ -5,13 +5,13 @@ package "Project Aggregate" {
     +id: UUID
     +title: String
     +description: String?
-    +dueDate: Date?
+    +dueAt: DateTime?
     +status: ProjectStatus
     +createdAt: DateTime
     +updatedAt: DateTime
     --
     +updateOverview(title: String, description: String?)
-    +reschedule(dueDate: Date?)
+    +reschedule(dueAt: DateTime?)
     +start()
     +pause()
     +complete()
@@ -59,7 +59,7 @@ package "Project Aggregate" {
     +teamId: UUID
     +closedIssueCount: Int
     +overdueOpenIssueCount: Int
-    +completedStoryPoints: Decimal
+    +completedStoryPoints: Int
     +estimatedMinutesClosed: Int
     +actualMinutesLogged: Int
     +onTimeCompletionRate: Decimal?
@@ -73,7 +73,7 @@ package "Project Aggregate" {
     +teamId: UUID
     +teamMemberId: UUID
     +closedIssueCount: Int
-    +completedStoryPoints: Decimal
+    +completedStoryPoints: Int
     +estimatedMinutesClosed: Int
     +actualMinutesLogged: Int
     +onTimeCompletionRate: Decimal?
@@ -99,7 +99,7 @@ note right of Project
 Domain Rules:
 - A Project can be assigned to multiple Teams.
 - Project completion prevents new Issues.
-- Due date can be null for backlog projects.
+- Due date-time can be null for backlog projects and is timezone-aware.
 - Project-level roles are managed by RoleDefinition catalog.
 - A project role can have single or multiple owners.
 - Project role owners must belong to teams assigned to the project.

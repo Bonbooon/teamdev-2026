@@ -13,20 +13,20 @@ Every spec should have corresponding human documentation that explains it.
 
 ## 📋 Spec-to-Doc Mapping Table
 
-| Spec File | Doc File | Purpose | Sync Frequency |
-|-----------|----------|---------|----------------|
-| `specs/ai-agents/context/essential-knowledge.md` | `docs/00-START-HERE.md` | Project onboarding | When project fundamentals change |
-| `specs/ai-agents/context/project-context.md` | `docs/project/overview.md` | Project overview | When project goals/scope changes |
-| `specs/ai-agents/context/technical-context.md` | `docs/architecture/system-design.md` + `docs/project/tech-stack.md` | Technical architecture | When tech stack or architecture changes |
-| `specs/ai-agents/context/essential-knowledge.md` + `specs/ai-agents/guidelines.md` | `docs/architecture/README.md` + `docs/architecture/directory-structure.md` | Layer ownership and implementation boundaries | When architecture conventions change |
-| `specs/ai-agents/guidelines.md` | `docs/architecture/adr/*.md` | Architecture decisions and rationale | When architectural decisions are made/updated |
-| `specs/ai-agents/context/business-context.md` | `docs/business-logic/core-concepts.md` | Business concepts | When business rules change |
-| `specs/ai-agents/guidelines.md` | `docs/development/workflow.md` | Development process | When workflow changes |
-| `specs/ai-agents/prompts/*.md` | `docs/development/coding-standards.md` | Coding standards per role | When standards change |
-| `specs/api/openapi.json` | `docs/api/guide.md` | API usage guide | After API changes |
-| `specs/business/rules.yaml` | `docs/business-logic/validation-rules.md` | Business validation | When rules change |
-| `specs/business/workflows.yaml` | `docs/business-logic/workflows/*.md` | Business workflows | When workflows change |
-| `specs/database/schema.md` | `docs/architecture/data-model.md` | Database structure | After schema changes |
+| Spec File                                                                          | Doc File                                                                   | Purpose                                       | Sync Frequency                                |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| `specs/ai-agents/context/essential-knowledge.md`                                   | `docs/00-START-HERE.md`                                                    | Project onboarding                            | When project fundamentals change              |
+| `specs/ai-agents/context/project-context.md`                                       | `docs/project/overview.md`                                                 | Project overview                              | When project goals/scope changes              |
+| `specs/ai-agents/context/technical-context.md`                                     | `docs/architecture/system-design.md` + `docs/project/tech-stack.md`        | Technical architecture                        | When tech stack or architecture changes       |
+| `specs/ai-agents/context/essential-knowledge.md` + `specs/ai-agents/guidelines.md` | `docs/architecture/README.md` + `docs/architecture/directory-structure.md` | Layer ownership and implementation boundaries | When architecture conventions change          |
+| `specs/ai-agents/guidelines.md`                                                    | `docs/architecture/adr/*.md`                                               | Architecture decisions and rationale          | When architectural decisions are made/updated |
+| `specs/ai-agents/context/business-context.md`                                      | `docs/business-logic/core-concepts.md`                                     | Business concepts                             | When business rules change                    |
+| `specs/ai-agents/guidelines.md`                                                    | `docs/development/workflow.md`                                             | Development process                           | When workflow changes                         |
+| `specs/ai-agents/prompts/*.md`                                                     | `docs/development/coding-standards.md`                                     | Coding standards per role                     | When standards change                         |
+| `specs/api/openapi.json`                                                           | `docs/api/guide.md`                                                        | API usage guide                               | After API changes                             |
+| `specs/business/rules.yaml`                                                        | `docs/business-logic/validation-rules.md`                                  | Business validation                           | When rules change                             |
+| `specs/business/workflows.yaml`                                                    | `docs/business-logic/workflows/*.md`                                       | Business workflows                            | When workflows change                         |
+| `specs/database/schema.md`                                                         | `docs/architecture/data-model.md`                                          | Database structure                            | After schema changes                          |
 
 ---
 
@@ -47,6 +47,7 @@ Every spec should have corresponding human documentation that explains it.
 4. **Note changes** in commit message
 
 ### Example Workflow
+
 ```bash
 # 1. Update spec
 vim specs/business/rules.yaml
@@ -67,12 +68,14 @@ git commit -m "feat: add email validation rule
 ## 📝 Documentation Standards
 
 ### Specs (Machine-Readable)
+
 - **Format**: YAML, JSON, or structured Markdown
 - **Content**: Definitions, contracts, rules
 - **Style**: Precise, unambiguous, parseable
 - **Audience**: AI agents, code generators
 
 **Example Spec** (`specs/business/rules.yaml`):
+
 ```yaml
 validation:
   email:
@@ -84,18 +87,21 @@ validation:
 ```
 
 ### Docs (Human-Readable)
+
 - **Format**: Markdown with examples
 - **Content**: Explanations, rationale, examples
 - **Style**: Clear, teaching-oriented, contextual
 - **Audience**: Developers, stakeholders
 
 **Example Doc** (`docs/business-logic/validation-rules.md`):
+
 ```markdown
 ## Email Validation
 
 User emails must be unique across the system to prevent duplicate accounts.
 
 **Rules**:
+
 - Must be valid email format (e.g., user@example.com)
 - Maximum 255 characters
 - Required field
@@ -130,6 +136,7 @@ User emails must be unique across the system to prevent duplicate accounts.
 ## 🔗 Cross-Referencing Format
 
 ### In Spec Files
+
 Add reference to human docs at the top:
 
 ```markdown
@@ -138,10 +145,12 @@ Add reference to human docs at the top:
 **Human Documentation**: See `docs/business-logic/validation-rules.md` for explanations.
 
 ---
+
 [spec content]
 ```
 
 ### In Doc Files
+
 Add reference to spec at the top:
 
 ```markdown
@@ -152,6 +161,7 @@ Add reference to spec at the top:
 This document explains the business validation rules defined in the spec.
 
 ---
+
 [doc content]
 ```
 
@@ -160,12 +170,14 @@ This document explains the business validation rules defined in the spec.
 ## 🚨 What to Do When Specs & Docs Diverge
 
 ### If You Notice Divergence
+
 1. Determine which is correct (usually the spec)
 2. Update the incorrect one
 3. Document why divergence occurred
 4. Consider process improvement
 
 ### Prevention
+
 - Always update both together
 - Include both in PR reviews
 - Use automation where possible (see below)
@@ -175,6 +187,7 @@ This document explains the business validation rules defined in the spec.
 ## 🤖 Automation Ideas (Future)
 
 ### Spec → Doc Generation Helpers
+
 ```bash
 # Script to check if spec has corresponding doc
 make check-spec-doc-sync
@@ -187,6 +200,7 @@ make validate-cross-refs
 ```
 
 ### Git Hooks
+
 ```bash
 # Pre-commit hook to warn about orphaned specs
 # Pre-commit hook to check cross-references exist
@@ -197,6 +211,7 @@ make validate-cross-refs
 ## 📚 File Templates
 
 ### Spec File Template
+
 ```markdown
 # [Feature Name] Specification
 
@@ -205,13 +220,16 @@ make validate-cross-refs
 **Human Documentation**: `docs/[category]/[name].md`
 
 ## Purpose
+
 [What this spec defines]
 
 ## Specification
+
 [Machine-readable content]
 ```
 
 ### Doc File Template
+
 ```markdown
 # [Feature Name] Documentation
 
@@ -219,12 +237,15 @@ make validate-cross-refs
 **Last Updated**: YYYY-MM-DD
 
 ## Overview
+
 [Human-friendly explanation]
 
 ## Details
+
 [Detailed explanation with examples]
 
 ## See Also
+
 - Related specs
 - Related docs
 ```
@@ -252,12 +273,12 @@ make validate-cross-refs
 
 ## 📊 Current Mappings Status
 
-| Category | Specs Created | Docs Created | Synced |
-|----------|---------------|--------------|--------|
-| AI Agents | ✅ | ⏳ Partial | ⏳ |
-| API | ⏳ | ⏳ | ⏳ |
-| Business Logic | ⏳ | ⏳ | ⏳ |
-| Database | ⏳ | ⏳ | ⏳ |
+| Category       | Specs Created | Docs Created | Synced |
+| -------------- | ------------- | ------------ | ------ |
+| AI Agents      | ✅            | ⏳ Partial   | ⏳     |
+| API            | ⏳            | ⏳           | ⏳     |
+| Business Logic | ⏳            | ⏳           | ⏳     |
+| Database       | ⏳            | ⏳           | ⏳     |
 
 Legend: ✅ Complete | ⏳ In Progress | ❌ Not Started
 

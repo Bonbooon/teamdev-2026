@@ -4,12 +4,11 @@ package "Issue Aggregate" {
   class Issue <<Aggregate Root>> {
     +id: UUID
     +projectId: UUID
-    +teamId: UUID
     +parentIssueId: UUID?
     +issueTemplateId: UUID
     +title: String
-    +storyPoints: Decimal
-    +estimatedMinutes: Int
+    +storyPoints: StoryPoints
+    +estimatedMinutes: EstimatedMinutes
     +deadline: DateTime?
     +startedAt: DateTime?
     +closedAt: DateTime?
@@ -29,6 +28,34 @@ package "Issue Aggregate" {
     +recordStatusEvent(from: IssueStatus?, to: IssueStatus, changedBy: UUID?)
     +assignIssueRole(roleDefinitionId: UUID)
     +setIssueRoleOwners(issueRoleAssignmentId: UUID, teamMemberIds: UUID[])
+  }
+
+  class IssueTeam <<Entity>> {
+    +issueId: UUID
+    +teamId: UUID
+    +assignedAt: DateTime
+  }
+
+  class StoryPoints <<Value Object>> {
+    +value: Int
+    --
+    +fromInt(value: Int): StoryPoints
+  }
+
+  class EstimatedMinutes <<Value Object>> {
+    +value: Int
+    --
+    +fromInt(value: Int): EstimatedMinutes
+  }
+
+  enum IssueTemplateItemValueType {
+    string
+    integer
+    date
+    datetime
+    boolean
+    number
+    json
   }
 
   enum IssueStatus {
@@ -64,7 +91,6 @@ package "Issue Aggregate" {
     +startedAt: DateTime
     +endedAt: DateTime?
     +minutes: Int
-    +payload: Json?
     +createdAt: DateTime
     +updatedAt: DateTime
   }
@@ -75,6 +101,7 @@ package "Issue Aggregate" {
     +fromStatus: IssueStatus?
     +toStatus: IssueStatus
     +changedByTeamMemberId: UUID?
+    +isInitial: Boolean
     +changedAt: DateTime
   }
 
@@ -91,29 +118,56 @@ package "Issue Aggregate" {
     +teamMemberId: UUID
   }
 
+  class IssueTemplateItem <<Entity>> {
+    +id: UUID
+    +issueTemplateId: UUID
+    +itemKey: String
+    +label: String
+    +position: Int
+    +isRequired: Boolean
+    +valueType: IssueTemplateItemValueType
+  }
+
+  class IssueTemplateItemValue <<Entity>> {
+    +issueId: UUID
+    +issueTemplateItemId: UUID
+    +value: Json
+    +createdAt: DateTime
+    +updatedAt: DateTime
+  }
+
+  Issue "1" *-- "1..*" IssueTeam
+  Issue *-- StoryPoints
+  Issue *-- EstimatedMinutes
   Issue "1" *-- "0..*" IssueAssignee
   Issue "1" *-- "0..*" IssueDefinitionOfDone
   Issue "1" *-- "0..*" IssueWorkLog
   Issue "1" *-- "0..*" IssueStatusEvent
   Issue "1" *-- "0..*" IssueRoleAssignment
+  Issue "1" *-- "0..*" IssueTemplateItemValue
+  IssueTemplateItem "1" *-- "0..*" IssueTemplateItemValue
   IssueRoleAssignment "1" *-- "1..*" IssueRoleAssignmentOwner
 }
 
 note right of Issue
 Domain Rules:
 - Issue belongs to exactly one Project.
-- Issue is scoped to exactly one Team inside the Project.
-- `teamId` must be one of the Project's assigned teams.
-- Assignee(s) must be TeamMember(s) of the Issue's Team.
+- Issue is scoped to one or multiple Teams inside the Project.
+- Every IssueTeam must belong to the same Project context.
+- Assignee(s) must be TeamMember(s) of at least one assigned IssueTeam.
 - Cannot assign inactive TeamMember.
 - Cannot transition to `done` without at least one Definition of Done.
 - Child issue (`parentIssueId`) must belong to the same Project.
 - `startedAt`/`closedAt` must be time-consistent with `createdAt`.
 - Workload contribution is tracked by `storyPoints` and work log minutes.
+- `storyPoints` must follow Fibonacci set (1,2,3,5,8,13).
+- `estimatedMinutes` must be non-negative.
 - GitHub integration can append work logs via `github_api` / `github_actions` sources.
+- Work log external ID uniqueness applies only when `externalLogId` is present.
 - Issue-level roles are managed by RoleDefinition catalog.
 - An issue role can have single or multiple owners.
-- Issue role owners must be active TeamMember(s) of the Issue's Team.
+- Issue role owners must be active TeamMember(s) of one of the Issue's Teams.
+- Template item values are type-validated by `valueType` in app/service layer.
 end note
 
 @enduml

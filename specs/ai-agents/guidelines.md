@@ -43,6 +43,7 @@ Guidelines for AI agents working on this project.
 - Write meaningful commit messages
 - Keep changes surgical and minimal
 - Always consider the "dogfooding" principle: would this feature help our own team?
+- **ID policy**: Generate UUIDv7 in the application layer for all entity IDs. Do not rely on DB-side UUID defaults.
 
 ### 5. Product Alignment
 
@@ -111,6 +112,7 @@ These diagrams are critical for understanding the problem domain before implemen
 - Update diagrams in `docs/diagrams/` when entity structures change
 - Follow Laravel conventions and best practices
 - Write migrations for database changes
+- Ensure migrations keep UUID primary keys app-generated (UUIDv7), not DB-generated
 - Add appropriate validation using FormRequest
 - Include test cases in specs (minimize mocking)
 
