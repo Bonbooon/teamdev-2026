@@ -9,10 +9,12 @@ object "招待: 鈴木 花子（保留）" as inv_pending <<TeamInvitation>> {
   id = "77777777-7777-7777-7777-777777777777"
   teamId = "33333333-3333-3333-3333-333333333333"
   inviterUserId = "11111111-1111-1111-1111-111111111111"
-  inviteeId = "22222222-2222-2222-2222-222222222222"
+  inviteeEmail = "hanako.suzuki@example.com"
   token = "tok_pending_hanako_20260304"
   status = "pending"
   expiresAt = "2026-03-10T23:59:59+09:00"
+  acceptedAt = null
+  revokedAt = null
   createdAt = "2026-03-04T10:00:00+09:00"
 }
 
@@ -20,10 +22,12 @@ object "招待: 田中 次郎（承認済み）" as inv_accepted <<TeamInvitatio
   id = "78888888-8888-8888-8888-888888888888"
   teamId = "33333333-3333-3333-3333-333333333333"
   inviterUserId = "11111111-1111-1111-1111-111111111111"
-  inviteeId = "23333333-3333-3333-3333-333333333333"
+  inviteeEmail = "jiro.tanaka@example.com"
   token = "tok_accepted_jiro_20260220"
   status = "accepted"
   expiresAt = "2026-02-25T23:59:59+09:00"
+  acceptedAt = "2026-02-21T09:12:00+09:00"
+  revokedAt = null
   createdAt = "2026-02-20T12:00:00+09:00"
 }
 
@@ -31,11 +35,26 @@ object "招待: 山田 美咲（期限切れ）" as inv_expired <<TeamInvitation
   id = "79999999-9999-9999-9999-999999999999"
   teamId = "33333333-3333-3333-3333-333333333333"
   inviterUserId = "11111111-1111-1111-1111-111111111111"
-  inviteeId = "24444444-4444-4444-4444-444444444444"
+  inviteeEmail = "misaki.yamada@example.com"
   token = "tok_expired_misaki_20260201"
   status = "expired"
   expiresAt = "2026-02-07T23:59:59+09:00"
+  acceptedAt = null
+  revokedAt = null
   createdAt = "2026-02-01T09:00:00+09:00"
+}
+
+object "招待: 伊藤 健（取り消し済み）" as inv_revoked <<TeamInvitation>> {
+  id = "7aaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+  teamId = "33333333-3333-3333-3333-333333333333"
+  inviterUserId = "11111111-1111-1111-1111-111111111111"
+  inviteeEmail = "ken.ito@example.com"
+  token = "tok_revoked_ken_20260301"
+  status = "revoked"
+  expiresAt = "2026-03-08T23:59:59+09:00"
+  acceptedAt = null
+  revokedAt = "2026-03-02T11:20:00+09:00"
+  createdAt = "2026-03-01T09:00:00+09:00"
 }
 
 object "チーム参照" as team_ref <<Team>> {
@@ -51,12 +70,14 @@ object "招待者参照" as inviter_ref <<User>> {
 inv_pending -- team_ref
 inv_accepted -- team_ref
 inv_expired -- team_ref
+inv_revoked -- team_ref
 inv_pending -- inviter_ref : inviterUserId
 inv_accepted -- inviter_ref : inviterUserId
 inv_expired -- inviter_ref : inviterUserId
+inv_revoked -- inviter_ref : inviterUserId
 
 note bottom
-pending / accepted / expired の3状態を同時に表現。
+pending / accepted / expired / revoked の4状態を同時に表現。
 期限判定の時刻基準は Asia/Tokyo。
 end note
 

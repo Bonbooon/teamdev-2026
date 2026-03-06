@@ -67,6 +67,30 @@ object "回答: Q1=5" as ans_q1 <<SurveyAnswer>> {
   answeredAt = "2026-03-02T09:15:00+09:00"
 }
 
+object "チーム要約: 14日" as condition_summary_14 <<TeamConditionSummary>> {
+  teamId = "33333333-3333-3333-3333-333333333333"
+  windowDays = 14
+  averageScore = 3.8
+  responseRate = 0.86
+}
+
+object "履歴: 鈴木 30日" as condition_history_hanako <<MemberConditionHistory>> {
+  teamMemberId = "44444444-4444-4444-4444-444444444444"
+  windowDays = 30
+}
+
+object "スコア点1" as score_point_1 <<ConditionScorePoint>> {
+  surveyId = "90000000-0000-0000-0000-000000000000"
+  answeredAt = "2026-03-01T09:10:00+09:00"
+  score = 2.4
+}
+
+object "スコア点2" as score_point_2 <<ConditionScorePoint>> {
+  surveyId = "90000000-0000-0000-0000-000000000002"
+  answeredAt = "2026-03-04T09:12:00+09:00"
+  score = 3.1
+}
+
 object "チーム参照" as team_ref <<Team>> {
   id = "33333333-3333-3333-3333-333333333333"
   timeZone = "Asia/Tokyo"
@@ -80,9 +104,13 @@ setting_team_a -- template_weekly
 setting_team_a -- team_ref
 survey_unanswered -- setting_team_a
 survey_answered -- setting_team_a
+team_ref -- condition_summary_14
+condition_history_hanako *-- score_point_1
+condition_history_hanako *-- score_point_2
 
 note bottom
 未回答/回答済みの2状態を同時に表現。
+7/14/30/90日ウィンドウのうち 14日要約と30日履歴の例を表現。
 配信時刻と回答時刻は Asia/Tokyo。
 end note
 

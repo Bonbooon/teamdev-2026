@@ -2,29 +2,44 @@
 left to right direction
 
 actor "マネージャー" as Manager
+actor "メンバー" as Member
 
 rectangle "Team Domain" {
 
   usecase "チーム作成"
   usecase "チーム概要更新"
-  usecase "チーム削除"
 
   usecase "チームにメンバーを追加"
-  usecase "チームメンバーを削除"
   usecase "メンバー状態更新"
 
   usecase "チーム内ロール付与"
   usecase "チーム内ロール変更"
+  usecase "ロール定義作成"
+  usecase "ロール定義更新"
+
+  usecase "チーム招待作成"
+  usecase "チーム招待受諾"
+  usecase "チーム招待取り消し"
+
+  usecase "チームコンディション要約参照\n(7/14/30/90日)"
+  usecase "メンバーコンディション履歴参照\n(スコア時系列)"
 
 }
 
 Manager --> "チーム作成"
 Manager --> "チーム概要更新"
-Manager --> "チーム削除"
 Manager --> "チームにメンバーを追加"
-Manager --> "チームメンバーを削除"
 Manager --> "メンバー状態更新"
 Manager --> "チーム内ロール付与"
 Manager --> "チーム内ロール変更"
+Manager --> "ロール定義作成"
+Manager --> "ロール定義更新"
+Manager --> "チーム招待作成"
+Manager --> "チーム招待取り消し"
+Manager --> "チームコンディション要約参照\n(7/14/30/90日)"
+Manager --> "メンバーコンディション履歴参照\n(スコア時系列)"
+
+Member --> "チーム招待受諾"
+Member --> "メンバーコンディション履歴参照\n(スコア時系列)"
 
 @enduml
