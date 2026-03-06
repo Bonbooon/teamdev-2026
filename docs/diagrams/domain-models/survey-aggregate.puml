@@ -31,11 +31,21 @@ package "Survey Aggregate" {
     +teamId: UUID
     +surveyTemplateId: UUID
     +setterId: UUID
-    +recurringRule: String
+    +recurringIntervalDays: SurveyRecurringIntervalDays
     +createdAt: DateTime
     --
     +addDeliveryTime(deliveryTime: Time)
     +changeTemplate(surveyTemplateId: UUID)
+  }
+
+  enum SurveyRecurringIntervalDays {
+    1
+    7
+    14
+    30
+    90
+    180
+    365
   }
 
   class SurveySettingTime <<Entity>> {
