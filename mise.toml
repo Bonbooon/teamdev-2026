@@ -163,6 +163,12 @@ pnpm run openapi
 pnpm run format
 """
 
+[tasks.gen-diagrams]
+description = "Render all PlantUML files under docs/diagrams into generated-diagrams as SVG"
+run = """
+bash scripts/generate-diagrams.sh
+"""
+
 # === アプリケーション初期化 ===
 [tasks.laravel-init]
 description = "Initialize Laravel application (env, key, migrate, seed)"
