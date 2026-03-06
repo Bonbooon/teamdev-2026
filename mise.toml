@@ -163,10 +163,10 @@ pnpm run openapi
 pnpm run format
 """
 
-[tasks.gen-diagrams]
-description = "Render all PlantUML files under docs/diagrams into generated-diagrams as SVG"
+[tasks.render-puml]
+description = "Render PlantUML SVGs locally (mirrors GitHub Actions workflow)"
 run = """
-bash scripts/generate-diagrams.sh
+bash scripts/render-puml.sh
 """
 
 # === アプリケーション初期化 ===
