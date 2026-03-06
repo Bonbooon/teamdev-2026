@@ -188,7 +188,7 @@ Link MCT issues to GitHub commits and CI/CD pipelines for:
 ```
 GITHUB_WEBHOOK_SECRET=your_webhook_secret
 GITHUB_APP_ID=your_github_app_id
-GITHUB_APP_PRIVATE_KEY=/path/to/private_key.pem
+GITHUB_APP_PRIVATE_KEY=path-to-private-key
 GITHUB_ORG_NAME=your_org_name
 GITHUB_REPO_NAME=your_repo_name
 ```
