@@ -1,0 +1,811 @@
+# Issue Management Specification
+
+**Version:** 1.0  
+**Last Updated:** 2026/03/06  
+**Human Documentation:** `docs/business-logic/workflows/issue-management.md`  
+**Domain Model:** `docs/diagrams/domain-models/issue-aggregate.puml`
+
+---
+
+## Purpose
+
+Define the complete issue (task) management system including:
+- Issue creation with SMART templates
+- Subtask management and progress tracking
+- Status lifecycle management
+- Assignee and role management
+- Work logging and CI/CD integration
+
+---
+
+## Scope
+
+**MUST Features (Phase 1):**
+- S-03-01: Issue Creation with Templates
+- S-03-02: Assignee Management
+- S-03-03: SMART Template Format
+- S-03-04: Acceptance Criteria (Definition of Done)
+- S-03-05: Status Updates
+- S-03-06: Subtask Management
+- S-03-08: Auto Progress Calculation
+
+**WANT Features (Phase 1):**
+- S-03-09: Unexpected Work Registration
+- S-03-10: CI/CD Integration
+
+---
+
+## Domain Entities
+
+### Issue (Aggregate Root)
+- `id: UUID`
+- `projectId: UUID` - Parent project
+- `parentIssueId: UUID?` - Null for top-level, set for subtasks
+- `issueTemplateId: UUID` - References template used
+- `title: String`
+- `storyPoints: StoryPoints` - Estimation unit
+- `estimatedMinutes: EstimatedMinutes` - Total work estimate
+- `deadline: DateTime?`
+- `startedAt: DateTime?`
+- `closedAt: DateTime?`
+- `status: IssueStatus` - not_in_progress, in_progress, in_review, done
+- `createdAt: DateTime`
+- `updatedAt: DateTime`
+
+### IssueStatus Enum
+```
+not_in_progress - Not yet started
+in_progress     - Work in progress
+in_review       - Complete, waiting review
+done            - Accepted, closed
+```
+
+### IssueAssignee (Entity)
+- `issueId: UUID`
+- `teamMemberId: UUID` - Can have multiple assignees
+
+### IssueDefinitionOfDone (Entity)
+- `id: UUID`
+- `issueId: UUID`
+- `description: String` - Acceptance criteria item
+- `isCompleted: Boolean`
+
+### IssueWorkLog (Entity)
+- `id: UUID`
+- `issueId: UUID`
+- `teamMemberId: UUID`
+- `source: WorkLogSource` - manual, github_api, github_actions
+- `externalLogId: String?` - GitHub commit ID, action ID, etc.
+- `startedAt: DateTime`
+- `endedAt: DateTime?`
+- `minutes: Int` - Work duration
+- `createdAt: DateTime`
+
+### IssueStatusEvent (Entity)
+- `id: BigInt`
+- `issueId: UUID`
+- `fromStatus: IssueStatus?` - Null if first event
+- `toStatus: IssueStatus`
+- `changedBy: UUID?` - User who triggered change
+- `createdAt: DateTime`
+
+---
+
+## Requirements
+
+### S-03-01: Issue Creation
+
+**Requirement ID:** S-03-01  
+**Type:** MUST (Phase 1)  
+**Actor:** Team Member, Project Manager  
+**Precondition:** User authenticated, project exists, template selected  
+
+**Main Flow:**
+1. User navigates to project → "Create Issue" button
+2. Select issue template (SMART template)
+3. Fill template-specific fields
+4. Select assignees (required: at least 1)
+5. Select team tag (required)
+6. Set deadline (required)
+7. Click "Create"
+8. Issue created, user redirected to issue detail
+
+**Template Selection:**
+Templates are pre-configured per project by PM. Examples:
+- "Backend Feature"
+- "Frontend Component"
+- "Bug Fix"
+- "Tech Debt"
+- "Documentation"
+
+**Required Fields (Global):**
+- Title (max 255 chars)
+- Deadline (future date)
+- Template selection
+- Team tag
+- Assignees (1+)
+- Story points (optional, default = 5)
+
+**Template-Specific Fields:**
+Each template defines additional required fields. See S-03-03.
+
+**Business Rules:**
+- Issue cannot be created without project
+- Assignees must be active team members of project's assigned teams
+- Deadline must be ≥ today
+- Story points: 1-13 (Fibonacci scale)
+- Estimated minutes auto-calculated from story points (or manual override)
+
+**Error Cases:**
+- Missing required field → 422 Unprocessable Entity
+- Invalid assignee (not in project team) → 422 error
+- Deadline in past → 422 error
+- Project not found → 404 Not Found
+
+**Acceptance Criteria:**
+- ✅ Issue created with all required fields
+- ✅ Assignees set correctly
+- ✅ Story points saved
+- ✅ Deadline set
+- ✅ Status defaults to "not_in_progress"
+- ✅ Created timestamp recorded
+
+**Test Cases:**
+- TC-03-01-01: Create issue with all required fields → issue created
+- TC-03-01-02: Create without assignees → validation error
+- TC-03-01-03: Deadline in past → validation error
+- TC-03-01-04: Invalid template → validation error
+
+**API Endpoint:**
+```
+POST /api/projects/{projectId}/issues
+Authorization: Bearer {token}
+Content-Type: application/json
+
+Request:
+{
+  "title": "string",
+  "issueTemplateId": "uuid",
+  "storyPoints": 5,
+  "estimatedMinutes": 480,
+  "deadline": "2026-03-15T17:00:00Z",
+  "teamMemberId": ["uuid", ...],
+  "teamTag": "backend",
+  "templateData": {
+    // Template-specific fields
+  }
+}
+
+Response (201 Created):
+{
+  "issue": { ...Issue object... }
+}
+```
+
+---
+
+### S-03-02: Assignee Management
+
+**Requirement ID:** S-03-02  
+**Type:** MUST (Phase 1)  
+**Actor:** Project Manager, Issue Assignee  
+**Precondition:** Issue exists, team member is active in project  
+
+**Main Flow - Add Assignee:**
+1. User opens issue detail
+2. Click "Add Assignee" or "+ Assign"
+3. Select team member from list (filtered to project members)
+4. Assignee added immediately
+5. Notification sent to new assignee (email)
+
+**Main Flow - Remove Assignee:**
+1. User clicks "X" next to assignee name
+2. Confirmation dialog
+3. Assignee removed
+4. Notification sent to removed assignee
+
+**Business Rules:**
+- Issue can have multiple assignees
+- Assignee must be active team member of a team assigned to project
+- Cannot remove last assignee if issue is in_progress
+- Changing assignee creates IssueStatusEvent (audit trail)
+
+**Validation Rules:**
+- Team member must have `status = active` in team_members table
+- Team member must be in team assigned to issue's project
+
+**Error Cases:**
+- Team member not found → 404 Not Found
+- Team member not in project → 422 Unprocessable Entity
+- Cannot remove last assignee → 422 error
+- Issue not found → 404 Not Found
+
+**Acceptance Criteria:**
+- ✅ Assignee added to issue
+- ✅ Assignee notified (email)
+- ✅ Multiple assignees supported
+- ✅ Cannot remove last assignee
+- ✅ Assignee change logged
+
+**Test Cases:**
+- TC-03-02-01: Add assignee to issue → assignee added
+- TC-03-02-02: Remove assignee → assignee removed
+- TC-03-02-03: Add invalid assignee → validation error
+- TC-03-02-04: Remove only assignee → validation error
+
+**API Endpoint:**
+```
+POST /api/issues/{issueId}/assignees
+Request:
+{
+  "teamMemberId": "uuid"
+}
+
+DELETE /api/issues/{issueId}/assignees/{teamMemberId}
+```
+
+---
+
+### S-03-03: SMART Template Format
+
+**Requirement ID:** S-03-03  
+**Type:** MUST (Phase 1)  
+**Actor:** PM (configures templates), Team Members (fills during issue creation)  
+**Precondition:** Project exists  
+
+**SMART Framework Application:**
+
+Each issue template enforces SMART criteria:
+
+**S - Specific:** Issue has clear, specific description
+- Field: "What needs to be done?" (required, max 500 chars)
+- Enforced at template level
+
+**M - Measurable:** Issue has Definition of Done items
+- Field: "How will we know it's complete?" (required, 1+ items)
+- See S-03-04 for details
+
+**A - Achievable:** Issue includes effort estimate
+- Field: "Estimated effort" (required, story points 1-13)
+- Auto-calculates expected time
+
+**R - Relevant:** Issue is aligned with project goals
+- Field: "Project component/area" (required, dropdown)
+- Links to business context
+
+**T - Time-bound:** Issue has clear deadline
+- Field: "Deadline" (required, future date)
+- Enforced at issue creation
+
+**Template Definition (Database Model):**
+
+```
+IssueTemplate {
+  id: UUID
+  projectId: UUID
+  name: String (e.g., "Backend Feature")
+  description: String
+  requiredFields: Json {
+    "specificDescription": { required: true, maxLen: 500 },
+    "successCriteria": { required: true, minItems: 1 },
+    "effortEstimate": { required: true, type: "integer", min: 1, max: 13 },
+    "component": { required: true, type: "enum", values: ["auth", "issue", "alert", ...] },
+    "deadline": { required: true, type: "date", validation: "futureDate" }
+  }
+  customFields: Json {
+    // Additional template-specific fields
+  }
+}
+```
+
+**Example Template: "Backend Feature"**
+```json
+{
+  "name": "Backend Feature",
+  "requiredFields": {
+    "specificDescription": "What API endpoint/service do you need to build?",
+    "successCriteria": "What acceptance tests pass?",
+    "effortEstimate": "Story points?",
+    "component": "Backend component?",
+    "deadline": "Target date?"
+  },
+  "customFields": {
+    "apiContract": "OpenAPI specification?",
+    "database": "New tables or migrations?",
+    "externalDependencies": "Third-party libraries?"
+  }
+}
+```
+
+**Template Validation:**
+- All required fields must be present before issue save
+- Custom field types validated (string, enum, date, etc.)
+- Effort estimate within 1-13 range
+
+**Acceptance Criteria:**
+- ✅ Issue form enforces all SMART criteria
+- ✅ Cannot create issue without all required fields
+- ✅ Template customizable per project (Phase 2)
+- ✅ Template validation on save
+
+**Test Cases:**
+- TC-03-03-01: Complete all SMART fields → issue created
+- TC-03-03-02: Missing specific description → validation error
+- TC-03-03-03: No success criteria → validation error
+- TC-03-03-04: Effort estimate > 13 → validation error
+
+---
+
+### S-03-04: Acceptance Criteria (Definition of Done)
+
+**Requirement ID:** S-03-04  
+**Type:** MUST (Phase 1)  
+**Actor:** Issue creator, assignee, reviewer  
+**Precondition:** Issue created  
+
+**Main Flow:**
+1. During issue creation: PM fills "How will we know it's complete?" field
+2. System parses input as acceptance criteria items
+3. Each item becomes an `IssueDefinitionOfDone` entry
+4. Assignee can check off items as complete
+5. Issue cannot be marked "done" until all items checked
+
+**Criteria Format:**
+PM enters criteria in natural language, one per line:
+```
+- API endpoint returns 200 for valid request
+- Invalid request returns 422 with error message
+- Response includes pagination metadata
+- Unit tests cover all success cases
+- Integration test with database passes
+```
+
+**Parsing:** System parses dash-separated list into individual items.
+
+**Completion Tracking:**
+```
+IssueDefinitionOfDone {
+  id: UUID
+  issueId: UUID
+  description: String (text from above)
+  isCompleted: Boolean (default: false)
+}
+```
+
+**Progress Calculation:**
+```
+completionPercentage = completedItems / totalItems * 100
+```
+
+Used in alert triggers (S-02-04, see alert-system-implementation.md).
+
+**Business Rules:**
+- Minimum 1 acceptance criterion required
+- Cannot mark issue "done" if any criterion unchecked
+- Criteria can be updated before issue started; after started, editing requires PM approval
+- Completing all criteria is necessary but not sufficient for "done" status (assignee must explicitly mark done)
+
+**Error Cases:**
+- No criteria provided → validation error
+- Attempt to mark done with incomplete criteria → 422 error
+
+**Acceptance Criteria:**
+- ✅ Definition of Done items required
+- ✅ Cannot mark done until all items completed
+- ✅ Progress tracked and visible
+- ✅ Completion prevents status transitions
+
+**Test Cases:**
+- TC-03-04-01: Create issue with 5 acceptance criteria → all tracked
+- TC-03-04-02: Complete 3/5 criteria → progress shows 60%
+- TC-03-04-03: Attempt to mark done with incomplete → 422 error
+- TC-03-04-04: Complete all criteria → can mark done
+
+**API Endpoint:**
+```
+GET /api/issues/{issueId}/definition-of-done
+
+PATCH /api/issues/{issueId}/definition-of-done/{doneItemId}
+Request:
+{
+  "isCompleted": true
+}
+
+POST /api/issues/{issueId}/definition-of-done
+Request:
+{
+  "description": "string"
+}
+```
+
+---
+
+### S-03-05: Status Updates
+
+**Requirement ID:** S-03-05  
+**Type:** MUST (Phase 1)  
+**Actor:** Issue assignee, Project Manager  
+**Precondition:** Issue exists, user is assignee or PM  
+
+**Main Flow:**
+1. Open issue detail
+2. Click status dropdown
+3. Select new status from available options
+4. System validates transition
+5. Update saved, IssueStatusEvent created
+6. Notifications sent to team
+
+**Status Transitions:**
+
+```
+not_in_progress
+    ↓
+    in_progress (start work)
+         ↓
+         in_review (mark for review)
+         ↓
+         done (accepted)
+         
+    OR back to in_progress (review rejected)
+```
+
+**Status Logic:**
+- `not_in_progress` → `in_progress`: Sets `startedAt = NOW()`
+- `in_progress` → `in_review`: Requires at least some work logged
+- `in_review` → `done`: Requires all Definition of Done items checked
+- `in_review` → `in_progress`: Reset if review rejected
+- Any → `not_in_progress`: Back to original state (revert)
+
+**Business Rules:**
+- Only assignees or PM can change status
+- `startedAt` immutable once set
+- `closedAt` set when moved to done
+- Invalid transitions blocked (e.g., `not_in_progress` → `in_review`)
+
+**Error Cases:**
+- Invalid transition → 422 Unprocessable Entity
+- Permission denied (not assignee/PM) → 403 Forbidden
+- Issue not found → 404 Not Found
+
+**Acceptance Criteria:**
+- ✅ Status updated correctly
+- ✅ Only valid transitions allowed
+- ✅ Timestamps recorded (startedAt, closedAt)
+- ✅ Status change logged in IssueStatusEvent
+- ✅ Team notified of status change
+
+**Test Cases:**
+- TC-03-05-01: Start issue → status = in_progress, startedAt set
+- TC-03-05-02: Mark in_review → status updated
+- TC-03-05-03: Mark done → closedAt set
+- TC-03-05-04: Invalid transition (not_in_progress → done) → 422 error
+- TC-03-05-05: Non-assignee changes status → 403 error
+
+**API Endpoint:**
+```
+PATCH /api/issues/{issueId}
+Authorization: Bearer {token}
+Request:
+{
+  "status": "in_progress" | "in_review" | "done"
+}
+
+Response:
+{
+  "issue": { ...updated issue... },
+  "event": { ...IssueStatusEvent... }
+}
+```
+
+---
+
+### S-03-06: Subtask Management
+
+**Requirement ID:** S-03-06  
+**Type:** MUST (Phase 1)  
+**Actor:** Issue assignee, Project Manager  
+**Precondition:** Parent issue exists  
+
+**Main Flow - Create Subtask:**
+1. Open parent issue detail
+2. Click "Add Subtask" button
+3. Enter subtask title, estimate, deadline
+4. Assign to team member
+5. Subtask created as child of parent
+
+**Main Flow - Update Subtask:**
+1. Subtask appears as row in subtask list
+2. Click row to open subtask detail
+3. Edit title, estimate, deadline, status
+4. Changes saved
+
+**Main Flow - Complete Subtask:**
+1. Mark subtask status as done
+2. Progress bar updates on parent issue
+3. Alert trigger recalculates project progress
+
+**Subtask Entity:**
+```
+Issue {
+  parentIssueId: UUID  // Set to parent issue ID
+  // All other fields same as regular issue
+}
+```
+
+**Business Rules:**
+- Subtask is still an Issue (same model, different parent_id)
+- Subtask deadline cannot exceed parent deadline
+- Subtask story points rolled up to parent (estimated minutes sum)
+- Cannot delete parent issue while subtasks exist (must delete subtasks first or move to backlog)
+- Subtask status changes cascade to parent progress calculation
+
+**Nesting Limit:** Subtasks cannot have sub-subtasks (max 1 level deep)
+
+**Error Cases:**
+- Subtask deadline > parent deadline → 422 error
+- Parent issue not found → 404 Not Found
+- Subtask deadline in past → 422 error
+
+**Acceptance Criteria:**
+- ✅ Create subtasks under parent issue
+- ✅ Edit subtask details
+- ✅ Subtask status tracked independently
+- ✅ Parent progress updated when subtasks complete
+- ✅ Cannot exceed parent deadline
+
+**Test Cases:**
+- TC-03-06-01: Create subtask → subtask appears under parent
+- TC-03-06-02: Subtask deadline > parent → validation error
+- TC-03-06-03: Complete 2/3 subtasks → parent progress 67%
+- TC-03-06-04: Complete all subtasks → parent eligible for done
+
+**API Endpoint:**
+```
+POST /api/issues/{parentIssueId}/subtasks
+Request:
+{
+  "title": "string",
+  "estimatedMinutes": 120,
+  "deadline": "2026-03-12T17:00:00Z",
+  "teamMemberId": "uuid"
+}
+
+GET /api/issues/{parentIssueId}/subtasks
+
+PATCH /api/issues/{subtaskId}
+// Update subtask (same as regular issue)
+```
+
+---
+
+### S-03-08: Auto Progress Calculation
+
+**Requirement ID:** S-03-08  
+**Type:** MUST (Phase 1)  
+**Actor:** System (automatic)  
+**Precondition:** Issue has subtasks or Definition of Done items  
+
+**Purpose:** Calculate real-time progress percentage for an issue.
+
+**Progress Calculation Logic:**
+
+**Priority 1: Subtask-Based (if subtasks exist)**
+```
+progressPercent = (completedSubtasks / totalSubtasks) * 100
+completedSubtasks = count(subtask.status == "done")
+```
+
+**Priority 2: Definition of Done (if no subtasks)**
+```
+progressPercent = (completedCriteria / totalCriteria) * 100
+completedCriteria = count(definition_of_done.isCompleted == true)
+```
+
+**Priority 3: Work Log Based (if neither)**
+```
+progressPercent = (actualMinutesLogged / estimatedMinutes) * 100
+actualMinutesLogged = sum(work_log.minutes)
+```
+
+**Fallback:** If no tracker, progress = 0% (issue not started)
+
+**Display:**
+- Progress bar on issue detail (visual 0-100%)
+- Numeric percentage displayed
+- Updated in real-time as subtasks/DoD completed
+
+**Accuracy Calculation (for alerts):**
+```
+predictedCompletionDate = startedAt + (estimatedMinutes / actualWorkRatePerDay)
+accuracyVariance = (predictedCompletionDate - deadline) / deadline * 100
+
+IF abs(accuracyVariance) > 20% THEN alert (see alert-system-implementation.md)
+```
+
+**Business Rules:**
+- Progress never goes backward (idempotent)
+- Progress calculated on-demand when displayed (not cached)
+- Can recalculate by calling `/issues/{id}/recalculate-progress` (admin only)
+
+**Acceptance Criteria:**
+- ✅ Subtask completion updates parent progress
+- ✅ Definition of Done completion updates progress
+- ✅ Work logged updates progress
+- ✅ Progress displayed on issue detail
+- ✅ Progress accurate to actual completion state
+
+**Test Cases:**
+- TC-03-08-01: 2/4 subtasks done → progress 50%
+- TC-03-08-02: 3/5 DoD items checked → progress 60%
+- TC-03-08-03: 100 minutes logged of 400 estimated → progress 25%
+- TC-03-08-04: Complete all subtasks → progress 100%, can mark done
+
+---
+
+### S-03-09: Unexpected Work Registration (WANT)
+
+**Requirement ID:** S-03-09  
+**Type:** WANT (Phase 1, lower priority)  
+**Actor:** Issue assignee, Project Manager  
+**Precondition:** Issue in progress  
+
+**Purpose:** Quickly log unexpected work that wasn't estimated initially.
+
+**Main Flow:**
+1. During issue work, find unexpected complexity
+2. Click "Log Additional Work" or "+ Add unexpected work"
+3. Enter minutes spent and brief description
+4. Work logged immediately
+5. Estimated minutes updated (adds to total)
+6. Progress recalculated
+
+**Work Entry:**
+```
+IssueWorkLog {
+  minutes: 60,
+  description: "Unexpected database optimization needed",
+  source: "manual",
+  startedAt: NOW(),
+  endedAt: NOW()
+}
+
+// Also update Issue.estimatedMinutes += 60
+```
+
+**Business Rules:**
+- Can add unexpected work at any time during issue progress
+- Updates total estimate (for delay prediction)
+- Logged as WorkLog entry (auditable)
+- Triggers alert if total estimate now exceeds deadline capacity
+
+**Acceptance Criteria:**
+- ✅ Log additional work minutes
+- ✅ Estimated minutes updated
+- ✅ Progress recalculated
+- ✅ Work entry auditable
+
+**Test Cases:**
+- TC-03-09-01: Log 60 minutes unexpected work → estimate updated
+- TC-03-09-02: Unexpected work pushes estimate past deadline → alert triggered
+
+---
+
+### S-03-10: CI/CD Integration (WANT)
+
+**Requirement ID:** S-03-10  
+**Type:** WANT (Phase 1, lower priority)  
+**Actor:** System (GitHub Actions webhook)  
+**Precondition:** Issue linked to GitHub branch  
+
+**Purpose:** Automatically update issue progress based on GitHub commits and CI/CD results.
+
+**Integration Points:**
+
+**1. Commit-Based Progress:**
+- Developer pushes commits to feature branch
+- GitHub webhook triggers
+- Commits linked to issue (via branch name or commit message)
+- WorkLog entry created (source: github_api)
+- Progress updated
+
+**2. CI/CD Status Update:**
+- GitHub Actions runs tests
+- On success: Issue marked in_review (or stays in_progress)
+- On failure: Issue stays in_progress, comment with error link
+
+**Branch Naming Convention:**
+```
+feature/S-03-01-issue-title
+fix/S-03-02-another-issue
+```
+
+Regex: `(feature|fix|refactor)/([A-Z]-\d{2}-\d{2})-.*`
+
+**Commit Message:**
+```
+git commit -m "Implement API endpoint
+
+Closes #S-03-01
+"
+```
+
+**GitHub Webhook Configuration:**
+- Endpoint: `https://app.motiv.cloud/webhooks/github/push`
+- Events: push, pull_request
+- Secret: `GITHUB_WEBHOOK_SECRET` (env var)
+
+**WorkLog Creation from Commits:**
+```
+IssueWorkLog {
+  issueId: UUID,
+  teamMemberId: UUID (from GitHub user match),
+  source: "github_api",
+  externalLogId: commit_sha,
+  startedAt: commit_timestamp - 30min (estimate),
+  endedAt: commit_timestamp,
+  minutes: 30 (default estimate; can refine later)
+}
+```
+
+**Acceptance Criteria:**
+- ✅ Commits linked to issue via branch name
+- ✅ WorkLog created for each commit
+- ✅ Progress updated from commits
+- ✅ CI/CD status reflected in issue
+- ✅ Webhook signature verified
+
+**Test Cases:**
+- TC-03-10-01: Push commit to feature branch → WorkLog created
+- TC-03-10-02: Pass CI/CD tests → issue marked in_review
+- TC-03-10-03: Fail CI/CD tests → issue comment with error link
+
+---
+
+## Data Retention & Cleanup
+
+- **Issues:** Keep indefinitely
+- **IssueStatusEvent:** Keep indefinitely (audit trail)
+- **IssueWorkLog:** Keep indefinitely (time tracking history)
+- **Closed Issues:** Archive after 365 days (optional, keep for reporting)
+
+---
+
+## API Endpoints Summary
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `POST /api/projects/{projectId}/issues` | POST | Create issue |
+| `GET /api/projects/{projectId}/issues` | GET | List project issues |
+| `GET /api/issues/{issueId}` | GET | Get issue detail |
+| `PATCH /api/issues/{issueId}` | PATCH | Update issue (status, deadline, etc.) |
+| `POST /api/issues/{issueId}/assignees` | POST | Add assignee |
+| `DELETE /api/issues/{issueId}/assignees/{teamMemberId}` | DELETE | Remove assignee |
+| `GET /api/issues/{issueId}/definition-of-done` | GET | List acceptance criteria |
+| `PATCH /api/issues/{issueId}/definition-of-done/{doneItemId}` | PATCH | Update criterion completion |
+| `POST /api/issues/{parentIssueId}/subtasks` | POST | Create subtask |
+| `GET /api/issues/{parentIssueId}/subtasks` | GET | List subtasks |
+| `POST /api/issues/{issueId}/work-logs` | POST | Log work (manual) |
+| `GET /api/issues/{issueId}/work-logs` | GET | List work logs |
+
+---
+
+## Dependencies & Ordering
+
+**Must complete before:**
+- Alert system (triggers depend on issue progress)
+- Project management (issues belong to projects)
+
+**Requires:**
+- S-01 (authentication)
+- S-04 (teams/members)
+- S-05 (projects)
+
+---
+
+## Notes
+
+- Issue IDs not user-facing in Phase 1; feature IDs (S-03-01) used for linking
+- Story points optional, defaults to 5 if not set
+- Subtasks inherit project/team from parent
+- All timestamps in UTC
+- Progress auto-updates on subtask/DoD completion
