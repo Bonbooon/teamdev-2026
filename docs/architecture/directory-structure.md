@@ -118,3 +118,18 @@ When adding new class/entity:
 2. Place write/read logic in CQRS-specific directories
 3. Add tests first (TDD)
 4. Keep docs and ADR updated when structure rules evolve
+
+## Transition status (2026-03-05)
+
+- Clean Architecture/CQRS target directories are scaffolded under [teamdev-2026-api/web/app](teamdev-2026-api/web/app):
+    - [teamdev-2026-api/web/app/Domain](teamdev-2026-api/web/app/Domain)
+    - [teamdev-2026-api/web/app/Application](teamdev-2026-api/web/app/Application)
+    - [teamdev-2026-api/web/app/Infrastructure](teamdev-2026-api/web/app/Infrastructure)
+    - [teamdev-2026-api/web/app/Interfaces](teamdev-2026-api/web/app/Interfaces)
+    - [teamdev-2026-api/web/app/Shared](teamdev-2026-api/web/app/Shared)
+- Test target directories are scaffolded under [teamdev-2026-api/web/tests](teamdev-2026-api/web/tests):
+    - [teamdev-2026-api/web/tests/Unit/Domain](teamdev-2026-api/web/tests/Unit/Domain)
+    - [teamdev-2026-api/web/tests/Unit/Application](teamdev-2026-api/web/tests/Unit/Application)
+    - [teamdev-2026-api/web/tests/Integration/Infrastructure](teamdev-2026-api/web/tests/Integration/Infrastructure)
+    - [teamdev-2026-api/web/tests/Feature/Interfaces/Http](teamdev-2026-api/web/tests/Feature/Interfaces/Http)
+- Existing Laravel default folders (e.g. `Http`, `Models`, `Services`) remain temporarily and should be migrated incrementally by feature to avoid broad breakage.
