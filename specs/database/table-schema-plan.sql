@@ -61,13 +61,52 @@ CREATE TYPE condition_window_days AS ENUM (
     '90'
 );
 
+CREATE TYPE survey_recurring_interval_days AS ENUM (
+    '1',
+    '7',
+    '14',
+    '30',
+    '90',
+    '180',
+    '365'
+);
+
+CREATE TYPE issue_template_item_value_type AS ENUM (
+    'string',
+    'integer',
+    'date',
+    'datetime',
+    'boolean',
+    'number',
+    'json'
+);
+
 CREATE TYPE work_log_source AS ENUM (
     'manual',
     'github_api',
     'github_actions'
 );
 
+CREATE TYPE trigger_condition_type AS ENUM (
+    'not_answered_within',
+    'progress_gap_exceeds',
+    'workload_below_required',
+    'document_stale_days',
+    'assignee_missing_duration',
+    'absence_impact_detected'
+);
+
+CREATE TYPE trigger_execution_status AS ENUM (
+    'queued',
+    'evaluated',
+    'triggered',
+    'skipped',
+    'failed'
+);
+
 -- Identity & Access
+-- UUID policy: IDs are generated as UUIDv7 in application layer.
+-- Database-side UUID defaults may remain temporarily during transition.
 
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
@@ -88,8 +127,7 @@ CREATE TABLE profiles (
     hobby TEXT,
     job_title TEXT,
     expertise TEXT,
-    joined_team_at DATE,
-    joined_project_at DATE,
+    joined_company_at DATE,
     work_history TEXT,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -98,7 +136,6 @@ CREATE TABLE profile_external_links (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     user_id UUID NOT NULL REFERENCES profiles (user_id) ON DELETE CASCADE,
     platform TEXT,
-    label TEXT,
     url TEXT NOT NULL,
     position INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -180,12 +217,19 @@ CREATE TABLE team_invitations (
 );
 
 CREATE UNIQUE INDEX uq_team_invitations_pending_email ON team_invitations (team_id, invitee_email)
-WHERE status = 'pending';
+WHERE
+    status = 'pending';
 
-ALTER TABLE team_invitations ADD CONSTRAINT chk_team_invitations_status_timestamps
-CHECK (
-    (status <> 'accepted' OR accepted_at IS NOT NULL)
-    AND (status <> 'revoked' OR revoked_at IS NOT NULL)
+ALTER TABLE team_invitations
+ADD CONSTRAINT chk_team_invitations_status_timestamps CHECK (
+    (
+        status <> 'accepted'
+        OR accepted_at IS NOT NULL
+    )
+    AND (
+        status <> 'revoked'
+        OR revoked_at IS NOT NULL
+    )
 );
 
 CREATE INDEX idx_team_invitations_team_id ON team_invitations (team_id);
@@ -226,7 +270,7 @@ CREATE TABLE survey_settings (
     team_id UUID NOT NULL REFERENCES teams (id),
     survey_template_id UUID NOT NULL REFERENCES survey_templates (id),
     setter_id UUID NOT NULL REFERENCES team_members (id),
-    recurring_rule TEXT NOT NULL,
+    recurring_interval_days survey_recurring_interval_days NOT NULL,
     UNIQUE (team_id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -267,7 +311,7 @@ CREATE TABLE projects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     title TEXT NOT NULL,
     description TEXT,
-    due_date DATE,
+    due_at TIMESTAMPTZ,
     status project_status NOT NULL DEFAULT 'not_in_progress',
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -288,13 +332,19 @@ CREATE TABLE project_role_assignments (
     role_definition_id UUID NOT NULL REFERENCES role_definitions (id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE (project_id, role_definition_id)
+    UNIQUE (
+        project_id,
+        role_definition_id
+    )
 );
 
 CREATE TABLE project_role_assignment_owners (
     project_role_assignment_id UUID NOT NULL REFERENCES project_role_assignments (id) ON DELETE CASCADE,
     team_member_id UUID NOT NULL REFERENCES team_members (id),
-    PRIMARY KEY (project_role_assignment_id, team_member_id)
+    PRIMARY KEY (
+        project_role_assignment_id,
+        team_member_id
+    )
 );
 
 CREATE TABLE issue_templates (
@@ -313,6 +363,7 @@ CREATE TABLE issue_template_items (
     label TEXT NOT NULL,
     position INTEGER NOT NULL,
     is_required BOOLEAN NOT NULL DEFAULT true,
+    value_type issue_template_item_value_type NOT NULL,
     UNIQUE (issue_template_id, item_key),
     UNIQUE (issue_template_id, position)
 );
@@ -322,38 +373,56 @@ CREATE INDEX idx_issue_template_items_template_id ON issue_template_items (issue
 CREATE TABLE issues (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     project_id UUID NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
-    team_id UUID NOT NULL,
     parent_issue_id UUID REFERENCES issues (id),
     issue_template_id UUID NOT NULL REFERENCES issue_templates (id),
     title TEXT NOT NULL,
-    story_points NUMERIC(6, 2) NOT NULL DEFAULT 0,
+    story_points INTEGER NOT NULL DEFAULT 0,
     estimated_minutes INTEGER NOT NULL DEFAULT 0,
     deadline TIMESTAMPTZ,
     started_at TIMESTAMPTZ,
     closed_at TIMESTAMPTZ,
     status issue_status NOT NULL DEFAULT 'not_in_progress',
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    FOREIGN KEY (project_id, team_id) REFERENCES project_teams (project_id, team_id)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-ALTER TABLE issues ADD CONSTRAINT chk_issues_non_negative_points_minutes
-CHECK (story_points >= 0 AND estimated_minutes >= 0);
+ALTER TABLE issues
+ADD CONSTRAINT chk_issues_non_negative_points_minutes CHECK (
+    story_points >= 0
+    AND estimated_minutes >= 0
+);
 
-ALTER TABLE issues ADD CONSTRAINT chk_issues_timestamps
-CHECK (
-    (started_at IS NULL OR started_at >= created_at)
-    AND (closed_at IS NULL OR closed_at >= created_at)
-    AND (started_at IS NULL OR closed_at IS NULL OR closed_at >= started_at)
+ALTER TABLE issues
+ADD CONSTRAINT chk_issues_timestamps CHECK (
+    (
+        started_at IS NULL
+        OR started_at >= created_at
+    )
+    AND (
+        closed_at IS NULL
+        OR closed_at >= created_at
+    )
+    AND (
+        started_at IS NULL
+        OR closed_at IS NULL
+        OR closed_at >= started_at
+    )
 );
 
 CREATE INDEX idx_issues_project_id ON issues (project_id);
 
 CREATE INDEX idx_issues_parent_id ON issues (parent_issue_id);
 
-CREATE INDEX idx_issues_team_id ON issues (team_id);
-
 CREATE INDEX idx_issues_template_id ON issues (issue_template_id);
+
+CREATE TABLE issue_teams (
+    issue_id UUID NOT NULL REFERENCES issues (id) ON DELETE CASCADE,
+    team_id UUID NOT NULL REFERENCES teams (id) ON DELETE CASCADE,
+    assigned_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (issue_id, team_id)
+);
+
+CREATE INDEX idx_issue_teams_team_id ON issue_teams (team_id);
 
 CREATE TABLE issue_template_item_values (
     issue_id UUID NOT NULL REFERENCES issues (id) ON DELETE CASCADE,
@@ -361,7 +430,10 @@ CREATE TABLE issue_template_item_values (
     value JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    PRIMARY KEY (issue_id, issue_template_item_id)
+    PRIMARY KEY (
+        issue_id,
+        issue_template_item_id
+    )
 );
 
 CREATE TABLE issue_assignees (
@@ -379,20 +451,27 @@ CREATE TABLE issue_work_logs (
     started_at TIMESTAMPTZ NOT NULL,
     ended_at TIMESTAMPTZ,
     minutes INTEGER NOT NULL,
-    payload JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE (source, external_log_id)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-ALTER TABLE issue_work_logs ADD CONSTRAINT chk_issue_work_logs_minutes
-CHECK (minutes >= 0);
+CREATE UNIQUE INDEX uq_issue_work_logs_source_external_non_null ON issue_work_logs (source, external_log_id)
+WHERE
+    external_log_id IS NOT NULL;
 
-ALTER TABLE issue_work_logs ADD CONSTRAINT chk_issue_work_logs_time_range
-CHECK (ended_at IS NULL OR ended_at >= started_at);
+ALTER TABLE issue_work_logs
+ADD CONSTRAINT chk_issue_work_logs_minutes CHECK (minutes >= 0);
+
+ALTER TABLE issue_work_logs
+ADD CONSTRAINT chk_issue_work_logs_time_range CHECK (
+    ended_at IS NULL
+    OR ended_at >= started_at
+);
 
 CREATE INDEX idx_issue_work_logs_issue_id ON issue_work_logs (issue_id);
+
 CREATE INDEX idx_issue_work_logs_member_id ON issue_work_logs (team_member_id);
+
 CREATE INDEX idx_issue_work_logs_started_at ON issue_work_logs (started_at);
 
 CREATE TABLE issue_status_events (
@@ -401,10 +480,12 @@ CREATE TABLE issue_status_events (
     from_status issue_status,
     to_status issue_status NOT NULL,
     changed_by_team_member_id UUID REFERENCES team_members (id),
+    is_initial BOOLEAN NOT NULL DEFAULT false,
     changed_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_issue_status_events_issue_id ON issue_status_events (issue_id);
+
 CREATE INDEX idx_issue_status_events_changed_at ON issue_status_events (changed_at);
 
 CREATE TABLE team_project_performance_daily (
@@ -413,13 +494,17 @@ CREATE TABLE team_project_performance_daily (
     team_id UUID NOT NULL REFERENCES teams (id) ON DELETE CASCADE,
     closed_issue_count INTEGER NOT NULL DEFAULT 0,
     overdue_open_issue_count INTEGER NOT NULL DEFAULT 0,
-    completed_story_points NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    completed_story_points INTEGER NOT NULL DEFAULT 0,
     estimated_minutes_closed INTEGER NOT NULL DEFAULT 0,
     actual_minutes_logged INTEGER NOT NULL DEFAULT 0,
     on_time_completion_rate NUMERIC(5, 4),
     avg_cycle_time_hours NUMERIC(10, 2),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    PRIMARY KEY (snapshot_date, project_id, team_id)
+    PRIMARY KEY (
+        snapshot_date,
+        project_id,
+        team_id
+    )
 );
 
 CREATE TABLE team_member_project_performance_daily (
@@ -428,13 +513,18 @@ CREATE TABLE team_member_project_performance_daily (
     team_id UUID NOT NULL REFERENCES teams (id) ON DELETE CASCADE,
     team_member_id UUID NOT NULL REFERENCES team_members (id) ON DELETE CASCADE,
     closed_issue_count INTEGER NOT NULL DEFAULT 0,
-    completed_story_points NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    completed_story_points INTEGER NOT NULL DEFAULT 0,
     estimated_minutes_closed INTEGER NOT NULL DEFAULT 0,
     actual_minutes_logged INTEGER NOT NULL DEFAULT 0,
     on_time_completion_rate NUMERIC(5, 4),
     avg_cycle_time_hours NUMERIC(10, 2),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    PRIMARY KEY (snapshot_date, project_id, team_id, team_member_id)
+    PRIMARY KEY (
+        snapshot_date,
+        project_id,
+        team_id,
+        team_member_id
+    )
 );
 
 CREATE TABLE issue_definition_of_dones (
@@ -457,7 +547,10 @@ CREATE TABLE issue_role_assignments (
 CREATE TABLE issue_role_assignment_owners (
     issue_role_assignment_id UUID NOT NULL REFERENCES issue_role_assignments (id) ON DELETE CASCADE,
     team_member_id UUID NOT NULL REFERENCES team_members (id),
-    PRIMARY KEY (issue_role_assignment_id, team_member_id)
+    PRIMARY KEY (
+        issue_role_assignment_id,
+        team_member_id
+    )
 );
 
 -- Alert
@@ -515,7 +608,7 @@ CREATE TABLE trigger_definitions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     name TEXT NOT NULL,
     target_type trigger_target_type NOT NULL,
-    condition_type TEXT NOT NULL, -- e.g. "not_answered_within"
+    condition_type trigger_condition_type NOT NULL,
     condition_value INTEGER, -- optional numeric threshold
     condition_params JSONB NOT NULL DEFAULT '{}'::jsonb, -- extensible params (hybrid)
     alert_level alert_level NOT NULL,
@@ -528,7 +621,7 @@ CREATE TABLE trigger_execution_logs (
     trigger_definition_id UUID NOT NULL REFERENCES trigger_definitions (id) ON DELETE CASCADE,
     target_entity_id UUID NOT NULL,
     triggered_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    status TEXT NOT NULL,
+    status trigger_execution_status NOT NULL,
     metadata JSONB
 );
 
