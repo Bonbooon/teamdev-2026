@@ -3,7 +3,7 @@ name: Generate PlantUML SVGs
 on:
   push:
     paths:
-      - 'diagrams/**/*.puml'
+      - 'docs/diagrams/**/*.puml'
 
 jobs:
   render:
@@ -24,29 +24,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Graphviz
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y graphviz
-
-      - name: Download PlantUML
-        run: |
-          curl -L -o plantuml.jar \
-            https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar
-
       - name: Generate SVG files
         run: |
-          mkdir -p generated-diagrams
-          java -jar plantuml.jar \
-            -tsvg diagrams/*.puml \
-            -o ../generated-diagrams
+          bash scripts/render-puml.sh
 
       - name: Commit generated SVGs (if changed)
         run: |
           git config --local user.name "teamdev-bot"
           git config --local user.email "ci@teamdev-2026.local"
 
-          git add generated-diagrams/*.svg
+          git add docs/generated-diagrams/**/*.svg
 
           if git diff --cached --quiet; then
             echo "No diagram updates."
