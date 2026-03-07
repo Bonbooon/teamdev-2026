@@ -11,6 +11,8 @@ services:
     
   app:
     build: ./docker/php
+    environment:
+      TZ: UTC
     volumes:
       - ./teamdev-2026-api/web:/work/web
       - ./scripts:/usr/local/bin/scripts
