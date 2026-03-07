@@ -15,6 +15,22 @@ PLANTUML_JAR="$CACHE_DIR/plantuml.jar"
 SRC_DIR="$ROOT_DIR/docs/diagrams"
 OUT_DIR="$ROOT_DIR/docs/generated-diagrams"
 
+if ! command -v java &>/dev/null; then
+  echo "☕ Java not found. Installing via Homebrew..."
+  if ! command -v brew &>/dev/null; then
+    echo "❌ Homebrew is required to install Java. Please install Homebrew first."
+    exit 1
+  fi
+  brew install --cask temurin
+  if ! command -v java &>/dev/null; then
+    echo "❌ Java installation failed."
+    exit 1
+  fi
+  echo "✅ Java installed: $(java -version 2>&1 | head -1)"
+else
+  echo "☕ Java already installed: $(java -version 2>&1 | head -1)"
+fi
+
 if [[ ! -d "$CACHE_DIR" ]]; then
   mkdir -p "$CACHE_DIR"
 fi
