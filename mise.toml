@@ -178,6 +178,12 @@ run = """
 bash scripts/render-puml.sh
 """
 
+[tasks.fs]
+run = """
+cd teamdev-2026-front
+pnpm run dev
+"""
+
 # === アプリケーション初期化 ===
 [tasks.laravel-init]
 description = "Initialize Laravel application (env, key, migrate, seed)"
