@@ -40,10 +40,10 @@ Define visualization features that give managers and team members visibility int
    - Story points (in progress)
    - Story points (not started)
    - Workload indicator (visual bar)
-3. Color-coded:
-   - 🟢 Green: Under capacity
-   - 🟡 Yellow: At capacity
-   - 🔴 Red: Over capacity
+3. WorkloadLevel color-coded:
+   - 🟢 Green: Under capacity (workloadLevel = green)
+   - 🟡 Yellow: At capacity (workloadLevel = yellow)
+   - 🔴 Red: Over capacity (workloadLevel = red)
 4. Click member row to see assigned issues
 
 **Workload Calculation:**
@@ -55,11 +55,11 @@ capacityPoints = estimatedCapacityPerWeek (configurable, default: 40)
 workloadPercent = assignedPoints / capacityPoints * 100
 
 IF workloadPercent <= 100%:
-  status = green
+  workloadLevel = green
 ELSE IF workloadPercent <= 150%:
-  status = yellow
+  workloadLevel = yellow
 ELSE:
-  status = red
+  workloadLevel = red
 ```
 
 **Table Display:**
@@ -83,7 +83,7 @@ ELSE:
 
 **Acceptance Criteria:**
 - ✅ Member workload displayed
-- ✅ Color coding reflects capacity
+- ✅ WorkloadLevel coding reflects capacity
 - ✅ Points rolled up correctly
 - ✅ Click member shows issues
 - ✅ Filtering works
@@ -111,7 +111,7 @@ Response (200 OK):
       "inProgressPoints": 5,
       "notStartedPoints": 0,
       "workloadPercent": 80,
-      "status": "green"
+      "workloadLevel": "green"
     }
   ]
 }
@@ -160,11 +160,13 @@ Response (200 OK):
 └────────────────────────────────────────────────────┘
 ```
 
-**Status Indicators:**
-- 🟢 Green: On track
-- 🟡 Yellow: At risk
-- 🔴 Red: Behind (see S-02-04 for trigger logic)
-- ⏱️ Time warning: < 2 days to deadline
+**AlertLevel Indicators:**
+- 🟢 Green: On track (alertLevel = null)
+- 🟡 Yellow: At risk (alertLevel = yellow)
+- 🔴 Red: Behind (alertLevel = red)
+- ⏱️ Time warning: < 2 days to deadline (alertLevel とは独立)
+
+AlertLevel logic: see `docs/diagrams/domain-models/visualization-read-models.puml`
 
 **Drag & Drop:**
 - Drag card between columns to update status
@@ -190,7 +192,7 @@ Users can toggle to Gantt view (S-05-02) or list view from same page.
 - ✅ Kanban board renders correctly
 - ✅ Drag-and-drop updates status
 - ✅ Progress bar accurate
-- ✅ Color coding reflects status
+- ✅ AlertLevel coding reflects status
 - ✅ Overall progress calculated
 
 **Test Cases:**
@@ -215,7 +217,7 @@ Response (200 OK):
         "title": "string",
         "deadline": "2026-03-10",
         "progress": 60,
-        "status": "yellow",
+        "alertLevel": "yellow",
         "assignees": [{ "id": "uuid", "name": "..." }]
       }
     ],

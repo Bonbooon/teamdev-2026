@@ -181,10 +181,10 @@ Response (201 Created):
 2. "Progress" tab shows Gantt-style chart
 3. Y-axis: Issues (or team members)
 4. X-axis: Timeline (today to project deadline)
-5. Each issue shown as bar with color-coded progress:
-   - 🟢 Green: On track (progress ≥ expected)
-   - 🟡 Yellow: At risk (progress < expected)
-   - 🔴 Red: Behind (progress << expected)
+5. Each issue shown as bar with alert-level-coded progress:
+   - 🟢 Green: On track (alertLevel = null)
+   - 🟡 Yellow: At risk (alertLevel = yellow)
+   - 🔴 Red: Behind (alertLevel = red)
 6. Bar width represents task duration
 7. Click bar to open issue detail
 
@@ -193,17 +193,18 @@ Response (201 Created):
 - **View by Status:** X-axis tasks grouped by TODO/WIP/DONE
 - **View by Member:** Horizontal bars per team member
 
-**Color Logic:**
+**AlertLevel Logic:**
 ```
 expectedProgress = (daysElapsed / daysDue) * 100
 
 IF actualProgress >= expectedProgress:
-  color = green
+  alertLevel = null        (UI: green)
 ELSE IF actualProgress >= (expectedProgress * 0.8):
-  color = yellow
+  alertLevel = yellow
 ELSE:
-  color = red
+  alertLevel = red
 ```
+See: `docs/diagrams/domain-models/visualization-read-models.puml`
 
 **Progress Calculation:**
 - See S-03-08 (issue auto-progress calculation)
@@ -228,15 +229,15 @@ ELSE:
 
 **Acceptance Criteria:**
 - ✅ Gantt chart renders correctly
-- ✅ Color coding reflects progress
+- ✅ AlertLevel reflects progress
 - ✅ Click bar opens issue
 - ✅ Timeline accurate
 - ✅ Filtering works
 
 **Test Cases:**
 - TC-05-02-01: View project progress → Gantt chart displays
-- TC-05-02-02: On-time task → green bar
-- TC-05-02-03: Behind task → red bar
+- TC-05-02-02: On-time task → alertLevel null, green bar
+- TC-05-02-03: Behind task → alertLevel red, red bar
 - TC-05-02-04: Click bar → issue detail opens
 - TC-05-02-05: Filter by team → only that team's issues shown
 
@@ -255,7 +256,7 @@ Response (200 OK):
       "dueDate": "2026-03-15",
       "progress": 45,
       "status": "in_progress",
-      "color": "yellow",
+      "alertLevel": "yellow",
       "teamId": "uuid",
       "assigneeIds": ["uuid", ...]
     }
