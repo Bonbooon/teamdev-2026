@@ -30,6 +30,65 @@ Define the complete authentication and authorization flows for all user types (P
 - Account recovery/password reset
 - Two-factor authentication
 - Team-based access control (handled in team-management.md)
+- Custom avatar upload/delete (see Avatar Strategy section below)
+
+---
+
+## Avatar Strategy
+
+### Phase 1: Google Avatar Only
+
+**Scope:** Persist the Google `picture` OIDC claim on the `users` table and display it as the user's avatar everywhere. No custom upload.
+
+**Data model:**
+- `users.google_avatar_url: String?` — persisted from Google `picture` claim on every login
+- `profiles.avatar_url: String?` — exists in schema but **unused in Phase 1** (reserved for Phase 2 custom upload)
+
+**Behavior:**
+- On every Google login, `google_avatar_url` is saved/updated on the user record
+- If Google returns a different picture URL than what is stored, it is overwritten
+- If Google returns no picture (null), `google_avatar_url` is set to null
+- `/auth/me` returns `user.google_avatar_url` alongside other user fields
+- Frontend avatar display chain: `user.google_avatar_url` → `/user-default.svg`
+- Profile setup page shows the Google avatar as a read-only preview (no editing UI)
+- `avatarUrl` is no longer sent in the profile upsert POST body
+
+**Phase 1 Test Plan:**
+
+| ID | Layer | Scenario | Expected |
+|----|-------|----------|----------|
+| B1 | Backend | First login saves `google_avatar_url` on user record | `users.google_avatar_url` matches Google `picture` claim |
+| B2 | Backend | Returning login refreshes `google_avatar_url` when Google returns a different picture | Column is updated to new URL |
+| B3 | Backend | Returning login does NOT write when avatar is unchanged | No unnecessary DB update |
+| B4 | Backend | Google account has no picture (null) | `google_avatar_url` stored as null, no error |
+| B5 | Backend | `/auth/me` response includes `user.google_avatar_url` | Field present in JSON response |
+| F1 | Frontend | `google_avatar_url` is set | Avatar image displays it |
+| F2 | Frontend | `google_avatar_url` is null | Falls back to `/user-default.svg` |
+
+### Phase 2: Custom Avatar Upload (Deferred)
+
+**Scope:** Allow users to upload their own profile picture. The custom avatar takes priority over the Google avatar.
+
+**Planned data flow:**
+- `profiles.avatar_url` stores the user-uploaded image URL (S3/local storage)
+- Avatar display chain becomes: `profile.avatar_url` → `user.google_avatar_url` → `/user-default.svg`
+- Profile page gains upload/remove UI
+- Removing custom avatar falls back to Google avatar (not directly to default)
+
+**Phase 2 Test Plan:**
+
+| ID | Layer | Scenario | Expected |
+|----|-------|----------|----------|
+| B6 | Backend | Profile upsert with `avatarUrl` saves to `profiles.avatar_url` | URL persisted in DB |
+| B7 | Backend | Profile upsert with null `avatarUrl` does NOT clear existing | Existing custom avatar preserved |
+| B8 | Backend | Profile upsert with explicit empty string clears avatar | `profiles.avatar_url` set to null |
+| F3 | Frontend | Both custom and Google avatars present | Shows custom avatar |
+| F4 | Frontend | Custom avatar present, no Google avatar | Shows custom avatar |
+| F5 | Frontend | Profile page "remove picture" clicked | Preview switches to Google avatar fallback |
+| F6 | Frontend | Avatar URL is broken/stale (returns 404) | `onError` fallback to next in chain |
+| E1 | E2E | User uploads custom avatar → saves → sidebar updates | Custom image shown everywhere |
+| E2 | E2E | User removes custom avatar → saves → falls back to Google | Google avatar shown, not default SVG |
+| E3 | E2E | No Google picture, no custom picture | Shows `/user-default.svg` |
 
 ---
 
@@ -39,6 +98,7 @@ Define the complete authentication and authorization flows for all user types (P
 - `id: UUID` - Unique identifier
 - `email: String` - Unique, normalized email
 - `emailVerifiedAt: DateTime?` - Null until verified via Google
+- `googleAvatarUrl: String?` - Persisted from Google `picture` claim on every login (Phase 1)
 - `createdAt: DateTime`
 - `updatedAt: DateTime`
 
@@ -53,7 +113,7 @@ Define the complete authentication and authorization flows for all user types (P
 - `lastName: String`
 - `firstNameKana: String?`
 - `lastNameKana: String?`
-- `avatarUrl: String?` (from Google)
+- `avatarUrl: String?` (Phase 2: custom upload; unused in Phase 1)
 - `aboutMe: String?`
 - `hobby: String?`
 - `jobTitle: String?`
@@ -94,7 +154,7 @@ Define the complete authentication and authorization flows for all user types (P
 - `email` → User.email
 - `given_name` (first name) → temporary storage for Profile registration
 - `family_name` (last name) → temporary storage
-- `picture` (avatar URL) → Profile.avatarUrl
+- `picture` (avatar URL) → User.googleAvatarUrl (Phase 1), Profile.avatarUrl (Phase 2 custom upload)
 - `sub` (Google user ID) → OAuthAccount.providerUserId
 
 **Business Rules:**
