@@ -1,0 +1,5214 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Motivation Cloud Teamwork API",
+    "version": "1.1.0",
+    "description": "Phase 1 endpoint map based on feature plan, domain models, and schema plan."
+  },
+  "servers": [
+    {
+      "url": "http://localhost/api"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Users"
+    },
+    {
+      "name": "Teams"
+    },
+    {
+      "name": "Projects"
+    },
+    {
+      "name": "Issues"
+    },
+    {
+      "name": "IssueTemplates"
+    },
+    {
+      "name": "Alerts"
+    },
+    {
+      "name": "Surveys"
+    },
+    {
+      "name": "TriggerRules"
+    },
+    {
+      "name": "Integrations"
+    }
+  ],
+  "paths": {
+    "/auth/google/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "AuthGoogleLogin",
+        "description": "Google SAML/OIDC ログイン",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoogleLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "201": {
+            "description": "ログイン成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email exists but not linked to Google OAuth"
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/logout": {
+      "/teams/{teamId}/condition-settings": {
+        "get": {
+          "tags": [
+            "Surveys"
+          ],
+          "operationId": "GetTeamConditionSettings",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/TeamId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "取得成功",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/TeamConditionSettingResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "Surveys"
+          ],
+          "operationId": "UpsertTeamConditionSettings",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/TeamId"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamConditionSettingUpsertRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "保存成功",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/TeamConditionSettingResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "AuthLogout",
+        "description": "ログアウト",
+        "responses": {
+          "200": {
+            "description": "ログアウト成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "AuthMe",
+        "description": "現在ログイン中ユーザーの取得",
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "/issues/{issueId}/work-logs": {
+                  "get": {
+                    "tags": [
+                      "Issues"
+                    ],
+                    "operationId": "GetIssueWorkLogs",
+                    "parameters": [
+                      {
+                        "$ref": "#/components/parameters/IssueId"
+                      }
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "取得成功",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "$ref": "#/components/schemas/IssueWorkLogListResponse"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "post": {
+                    "tags": [
+                      "Issues"
+                    ],
+                    "operationId": "CreateIssueWorkLog",
+                    "parameters": [
+                      {
+                        "$ref": "#/components/parameters/IssueId"
+                      }
+                    ],
+                    "requestBody": {
+                      "required": true,
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "$ref": "#/components/schemas/IssueWorkLogCreateRequest"
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "201": {
+                        "description": "作成成功",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "$ref": "#/components/schemas/IssueWorkLogResponse"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUserResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/users/me/profile": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "CreateMyProfile",
+        "description": "初回プロフィール登録",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "/projects/{projectId}/performance/daily": {
+                  "get": {
+                    "tags": [
+                      "Projects"
+                    ],
+                    "operationId": "GetProjectTeamPerformanceDaily",
+                    "parameters": [
+                      {
+                        "$ref": "#/components/parameters/ProjectId"
+                      },
+                      {
+                        "$ref": "#/components/parameters/FromDate"
+                      },
+                      {
+                        "$ref": "#/components/parameters/ToDate"
+                      }
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "取得成功",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "$ref": "#/components/schemas/TeamProjectPerformanceDailyListResponse"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "/projects/{projectId}/members/{teamMemberId}/performance/daily": {
+                  "get": {
+                    "tags": [
+                      "Projects"
+                    ],
+                    "operationId": "GetTeamMemberProjectPerformanceDaily",
+                    "parameters": [
+                      {
+                        "$ref": "#/components/parameters/ProjectId"
+                      },
+                      {
+                        "$ref": "#/components/parameters/TeamMemberId"
+                      },
+                      {
+                        "$ref": "#/components/parameters/FromDate"
+                      },
+                      {
+                        "$ref": "#/components/parameters/ToDate"
+                      }
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "取得成功",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "$ref": "#/components/schemas/TeamMemberProjectPerformanceDailyListResponse"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "$ref": "#/components/schemas/ProfileUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "作成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "409": {
+            "description": "Profile already exists for this user"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "UpdateMyProfile",
+        "description": "自分のプロフィール更新",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/users/{userId}/profile": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "GetUserProfile",
+        "description": "ユーザープロフィール参照",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "UpdateUserProfile",
+        "description": "管理者によるプロフィール更新",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/users/{userId}/external-links": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "GetProfileExternalLinks",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileExternalLinkListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "CreateProfileExternalLink",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileExternalLinkUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "作成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileExternalLinkResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}/external-links/{linkId}": {
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "UpdateProfileExternalLink",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/LinkId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileExternalLinkUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileExternalLinkResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "DeleteProfileExternalLink",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/LinkId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "削除成功"
+          }
+        }
+      }
+    },
+    "/teams": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "GetTeams",
+        "description": "ユーザーに紐づくチーム一覧",
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "CreateTeam",
+        "description": "チーム作成",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "作成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/{teamId}": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "GetTeam",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "UpdateTeam",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/{teamId}/members": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "GetTeamMembers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamMemberListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/{teamId}/members/{teamMemberId}": {
+      "patch": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "UpdateTeamMember",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          },
+          {
+            "$ref": "#/components/parameters/TeamMemberId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamMemberUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamMemberResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/{teamId}/invitations": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "GetTeamInvitations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamInvitationListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "CreateTeamInvitation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamInvitationCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "招待作成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamInvitationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/team-invitations/{token}/accept": {
+      "post": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "AcceptTeamInvitation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/InvitationToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "受諾成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/teams/{teamId}/invitations/{invitationId}/revoke": {
+      "post": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "RevokeTeamInvitation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          },
+          {
+            "$ref": "#/components/parameters/InvitationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取り消し成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamInvitationResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/teams/{teamId}/member-workloads": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "GetTeamMemberWorkloads",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberWorkloadListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/{teamId}/condition-summary": {
+      "get": {
+        "tags": [
+          "Surveys"
+        ],
+        "operationId": "GetTeamConditionSummary",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          },
+          {
+            "$ref": "#/components/parameters/WindowDays"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamConditionSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/{teamId}/members/{teamMemberId}/condition-history": {
+      "get": {
+        "tags": [
+          "Surveys"
+        ],
+        "operationId": "GetMemberConditionHistory",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          },
+          {
+            "$ref": "#/components/parameters/TeamMemberId"
+          },
+          {
+            "$ref": "#/components/parameters/WindowDays"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberConditionHistoryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/{teamId}/condition-alerts": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "GetConditionAlerts",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConditionAlertListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/{teamId}/role-definitions": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "GetRoleDefinitions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleDefinitionListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "CreateRoleDefinition",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleDefinitionCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "作成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleDefinitionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/{teamId}/role-definitions/{roleDefinitionId}": {
+      "patch": {
+        "tags": [
+          "Teams"
+        ],
+        "operationId": "UpdateRoleDefinition",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          },
+          {
+            "$ref": "#/components/parameters/RoleDefinitionId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleDefinitionUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleDefinitionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "GetProjects",
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "CreateProject",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "作成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "GetProject",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "UpdateProject",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/status": {
+      "patch": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "UpdateProjectStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectStatusUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/teams": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "AssignTeamToProject",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignTeamRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "アサイン成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/teams/{teamId}": {
+      "delete": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "UnassignTeamFromProject",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          },
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "解除成功"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/role-assignments": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "GetProjectRoleAssignments",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectRoleAssignmentListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "CreateProjectRoleAssignment",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectRoleAssignmentCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "作成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectRoleAssignmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/project-role-assignments/{projectRoleAssignmentId}": {
+      "patch": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "UpdateProjectRoleAssignmentOwners",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectRoleAssignmentId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleAssignmentOwnersUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectRoleAssignmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/role-ownership-board": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "GetProjectRoleOwnershipBoard",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectRoleOwnershipBoardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/progress-board": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "GetProjectProgressBoard",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectProgressBoardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/gantt": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "operationId": "GetProjectGantt",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GanttResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/alerts": {
+      "get": {
+        "tags": [
+          "Alerts"
+        ],
+        "operationId": "GetProjectAlerts",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/issues": {
+      "get": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "GetProjectIssues",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "CreateIssue",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "作成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/issues/{issueId}": {
+      "get": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "GetIssue",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "UpdateIssue",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/issues/{issueId}/status": {
+      "patch": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "UpdateIssueStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueStatusUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/issues/{issueId}/assignees": {
+      "post": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "AddIssueAssignees",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueAssigneesAddRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "追加成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/issues/{issueId}/assignees/{teamMemberId}": {
+      "delete": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "RemoveIssueAssignee",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          },
+          {
+            "$ref": "#/components/parameters/TeamMemberId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "削除成功"
+          }
+        }
+      }
+    },
+    "/issues/{issueId}/role-assignments": {
+      "get": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "GetIssueRoleAssignments",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueRoleAssignmentListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "CreateIssueRoleAssignment",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueRoleAssignmentCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "作成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueRoleAssignmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/issue-role-assignments/{issueRoleAssignmentId}": {
+      "patch": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "UpdateIssueRoleAssignmentOwners",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueRoleAssignmentId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleAssignmentOwnersUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueRoleAssignmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/issues/{issueId}/definition-of-dones": {
+      "get": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "GetIssueDefinitionsOfDone",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueDefinitionOfDoneListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "CreateIssueDefinitionOfDone",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueDefinitionOfDoneCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "作成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueDefinitionOfDoneResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/issues/{issueId}/definition-of-dones/{dodId}": {
+      "patch": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "UpdateIssueDefinitionOfDone",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          },
+          {
+            "$ref": "#/components/parameters/DefinitionOfDoneId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueDefinitionOfDoneCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueDefinitionOfDoneResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "DeleteIssueDefinitionOfDone",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          },
+          {
+            "$ref": "#/components/parameters/DefinitionOfDoneId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "削除成功"
+          }
+        }
+      }
+    },
+    "/issues/{issueId}/sub-issues": {
+      "post": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "CreateSubIssue",
+        "description": "サブタスク/予期せぬ作業の追加",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubIssueCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "作成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/issues/{issueId}/progress": {
+      "get": {
+        "tags": [
+          "Issues"
+        ],
+        "operationId": "GetIssueProgress",
+        "description": "予実差分を含む進捗率自動算出結果",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueProgressResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/issue-templates": {
+      "get": {
+        "tags": [
+          "IssueTemplates"
+        ],
+        "operationId": "GetIssueTemplates",
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueTemplateListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/issue-templates/{issueTemplateId}": {
+      "get": {
+        "tags": [
+          "IssueTemplates"
+        ],
+        "operationId": "GetIssueTemplate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IssueTemplateId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueTemplateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts": {
+      "get": {
+        "tags": [
+          "Alerts"
+        ],
+        "operationId": "GetAlertsBoard",
+        "description": "複数PJ横断アラート一覧ボード",
+        "parameters": [
+          {
+            "name": "isResolved",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/AlertLevel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts/{alertId}": {
+      "get": {
+        "tags": [
+          "Alerts"
+        ],
+        "operationId": "GetAlert",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AlertId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts/{alertId}/resolve": {
+      "patch": {
+        "tags": [
+          "Alerts"
+        ],
+        "operationId": "ResolveAlert",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AlertId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "解決成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts/{alertId}/reopen": {
+      "post": {
+        "tags": [
+          "Alerts"
+        ],
+        "operationId": "ReopenAlert",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AlertId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "再オープン成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts/{alertId}/action-plans": {
+      "get": {
+        "tags": [
+          "Alerts"
+        ],
+        "operationId": "GetAlertActionPlans",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AlertId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertActionPlanSuggestionListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/action-plans": {
+      "get": {
+        "tags": [
+          "Alerts"
+        ],
+        "operationId": "GetActionPlans",
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionPlanListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/{teamId}/survey-settings": {
+      "get": {
+        "tags": [
+          "Surveys"
+        ],
+        "operationId": "GetSurveySetting",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SurveySettingResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Surveys"
+        ],
+        "operationId": "UpsertSurveySetting",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SurveySettingUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "保存成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SurveySettingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/{teamId}/surveys": {
+      "get": {
+        "tags": [
+          "Surveys"
+        ],
+        "operationId": "GetTeamSurveys",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TeamId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SurveyListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/surveys/my/pending": {
+      "get": {
+        "tags": [
+          "Surveys"
+        ],
+        "operationId": "GetMyPendingSurveys",
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SurveyListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/surveys/{surveyId}/answers": {
+      "post": {
+        "tags": [
+          "Surveys"
+        ],
+        "operationId": "SubmitSurveyAnswers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SurveyId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SurveyAnswerSubmitRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "回答保存成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trigger-definitions": {
+      "get": {
+        "tags": [
+          "TriggerRules"
+        ],
+        "operationId": "GetTriggerDefinitions",
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TriggerDefinitionListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "TriggerRules"
+        ],
+        "operationId": "CreateTriggerDefinition",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriggerDefinitionCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "作成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TriggerDefinitionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trigger-definitions/{triggerDefinitionId}": {
+      "patch": {
+        "tags": [
+          "TriggerRules"
+        ],
+        "operationId": "UpdateTriggerDefinition",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TriggerDefinitionId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriggerDefinitionUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TriggerDefinitionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trigger-execution-logs": {
+      "get": {
+        "tags": [
+          "TriggerRules"
+        ],
+        "operationId": "GetTriggerExecutionLogs",
+        "parameters": [
+          {
+            "name": "triggerDefinitionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TriggerExecutionLogListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/integrations/github/events": {
+      "post": {
+        "tags": [
+          "Integrations"
+        ],
+        "operationId": "ReceiveGitHubEvent",
+        "description": "GitHub Actions / Webhook 連携イベント受信",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GitHubEventRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "受理成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "parameters": {
+      "UserId": {
+        "name": "userId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "TeamId": {
+        "name": "teamId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "ProjectId": {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "IssueId": {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "IssueTemplateId": {
+        "name": "issueTemplateId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "TeamMemberId": {
+        "name": "teamMemberId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "DefinitionOfDoneId": {
+        "name": "dodId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "AlertId": {
+        "name": "alertId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "SurveyId": {
+        "name": "surveyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "TriggerDefinitionId": {
+        "name": "triggerDefinitionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "InvitationToken": {
+        "name": "token",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "InvitationId": {
+        "name": "invitationId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "RoleDefinitionId": {
+        "name": "roleDefinitionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "ProjectRoleAssignmentId": {
+        "name": "projectRoleAssignmentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "IssueRoleAssignmentId": {
+        "name": "issueRoleAssignmentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      },
+      "WindowDays": {
+        "name": "windowDays",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "$ref": "#/components/schemas/ConditionWindowDays"
+        },
+        "description": "集計/履歴の対象期間。未指定時は14日。"
+      },
+      "FromDate": {
+        "name": "fromDate",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "ToDate": {
+        "name": "toDate",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "LinkId": {
+        "name": "linkId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Uuid"
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "認証エラー",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Validation Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ValidationErrorResponse"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Conflict",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Uuid": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "perPage": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page",
+          "perPage",
+          "total"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "errors": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "required": [
+              "errors"
+            ]
+          }
+        ]
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "required": [
+          "id",
+          "email"
+        ]
+      },
+      "GoogleLoginRequest": {
+        "type": "object",
+        "properties": {
+          "authorizationCode": {
+            "type": "string",
+            "description": "Google OAuth authorization code"
+          },
+          "redirectUri": {
+            "type": "string",
+            "description": "Redirect URI or \"postmessage\" for popup flow"
+          }
+        },
+        "required": [
+          "authorizationCode",
+          "redirectUri"
+        ]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "profile": {
+                "type": "object",
+                "nullable": true
+              }
+            },
+            "required": [
+              "id",
+              "email"
+            ]
+          },
+          "token": {
+            "type": "string",
+            "description": "Sanctum bearer token"
+          },
+          "requiresProfileCompletion": {
+            "type": "boolean",
+            "description": "Whether the user needs to complete their profile"
+          }
+        },
+        "required": [
+          "user",
+          "token",
+          "requiresProfileCompletion"
+        ]
+      },
+      "CurrentUserResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "emailVerifiedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "profile": {
+                "type": "object",
+                "nullable": true
+              }
+            },
+            "required": [
+              "id",
+              "email"
+            ]
+          }
+        },
+        "required": [
+          "user"
+        ]
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "firstNameKana": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastNameKana": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "aboutMe": {
+            "type": "string",
+            "nullable": true
+          },
+          "hobby": {
+            "type": "string",
+            "nullable": true
+          },
+          "jobTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "expertise": {
+            "type": "string",
+            "nullable": true
+          },
+          "joinedTeamAt": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "joinedProjectAt": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "workHistory": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "userId",
+          "firstName",
+          "lastName"
+        ]
+      },
+      "ProfileUpsertRequest": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "lastName": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "firstNameKana": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "lastNameKana": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "hobby": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "jobTitle": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "expertise": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "aboutMe": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "workHistory": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "joinedCompanyAt": {
+            "type": "string",
+            "format": "date",
+            "description": "YYYY-MM-DD, must be ≤ today"
+          },
+          "externalLinks": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "object",
+              "properties": {
+                "platform": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "url": {
+                  "type": "string",
+                  "format": "url"
+                }
+              },
+              "required": [
+                "url"
+              ]
+            }
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "hobby",
+          "jobTitle",
+          "expertise",
+          "joinedCompanyAt"
+        ]
+      },
+      "ProfileResponse": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "type": "object",
+            "description": "The created profile object"
+          }
+        },
+        "required": [
+          "profile"
+        ]
+      },
+      "ProfileExternalLink": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "platform": {
+            "type": "string",
+            "nullable": true
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "url",
+          "position"
+        ]
+      },
+      "ProfileExternalLinkUpsertRequest": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "ProfileExternalLinkResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ProfileExternalLink"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ProfileExternalLinkListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfileExternalLink"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TeamStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "archived"
+        ]
+      },
+      "MembershipStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "inactive"
+        ]
+      },
+      "TeamMemberPermissionRole": {
+        "type": "string",
+        "enum": [
+          "manager",
+          "member"
+        ]
+      },
+      "InvitationStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "accepted",
+          "expired",
+          "revoked"
+        ]
+      },
+      "ConditionWindowDays": {
+        "type": "integer",
+        "enum": [
+          7,
+          14,
+          30,
+          90
+        ],
+        "default": 14
+      },
+      "Team": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "startOfBusinessHour": {
+            "type": "string",
+            "nullable": true
+          },
+          "endOfBusinessHour": {
+            "type": "string",
+            "nullable": true
+          },
+          "timeZone": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TeamStatus"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "timeZone",
+          "status"
+        ]
+      },
+      "TeamCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "timeZone": {
+            "type": "string"
+          },
+          "memberUserIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          "projectIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "timeZone"
+        ]
+      },
+      "TeamUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "startOfBusinessHour": {
+            "type": "string"
+          },
+          "endOfBusinessHour": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TeamStatus"
+          }
+        }
+      },
+      "TeamResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Team"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TeamListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Team"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TeamMember": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "permissionRole": {
+            "$ref": "#/components/schemas/TeamMemberPermissionRole"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MembershipStatus"
+          }
+        },
+        "required": [
+          "id",
+          "teamId",
+          "userId",
+          "permissionRole",
+          "status"
+        ]
+      },
+      "TeamMemberUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "permissionRole": {
+            "$ref": "#/components/schemas/TeamMemberPermissionRole"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MembershipStatus"
+          }
+        }
+      },
+      "TeamMemberResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TeamMember"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TeamMemberListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamMember"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TeamInvitation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "inviterUserId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "inviteeEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "token": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InvitationStatus"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "revokedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "teamId",
+          "inviterUserId",
+          "inviteeEmail",
+          "token",
+          "status",
+          "expiresAt"
+        ]
+      },
+      "TeamInvitationCreateRequest": {
+        "type": "object",
+        "properties": {
+          "inviteeEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "inviteeEmail",
+          "expiresAt"
+        ]
+      },
+      "TeamInvitationResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TeamInvitation"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TeamInvitationListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamInvitation"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "RoleDefinition": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "difficultyLevel": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 5
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "teamId",
+          "name",
+          "isActive"
+        ]
+      },
+      "RoleDefinitionCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "difficultyLevel": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "RoleDefinitionUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "difficultyLevel": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RoleDefinitionResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RoleDefinition"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "RoleDefinitionListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleDefinition"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "RoleAssignmentOwnersUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "ownerTeamMemberIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "ownerTeamMemberIds"
+        ]
+      },
+      "ProjectRoleAssignment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "roleDefinition": {
+            "$ref": "#/components/schemas/RoleDefinition"
+          },
+          "ownerTeamMemberIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "roleDefinition",
+          "ownerTeamMemberIds"
+        ]
+      },
+      "ProjectRoleAssignmentCreateRequest": {
+        "type": "object",
+        "properties": {
+          "roleDefinitionId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "ownerTeamMemberIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "roleDefinitionId",
+          "ownerTeamMemberIds"
+        ]
+      },
+      "ProjectRoleAssignmentResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ProjectRoleAssignment"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ProjectRoleAssignmentListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectRoleAssignment"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ProjectRoleOwnershipBoardRow": {
+        "type": "object",
+        "properties": {
+          "roleDefinitionId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "roleName": {
+            "type": "string"
+          },
+          "ownerTeamMemberIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          "issueCount": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "roleDefinitionId",
+          "roleName",
+          "ownerTeamMemberIds",
+          "issueCount"
+        ]
+      },
+      "ProjectRoleOwnershipBoardResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "$ref": "#/components/schemas/Uuid"
+              },
+              "rows": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ProjectRoleOwnershipBoardRow"
+                }
+              }
+            },
+            "required": [
+              "projectId",
+              "rows"
+            ]
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "IssueRoleAssignment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "issueId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "roleDefinition": {
+            "$ref": "#/components/schemas/RoleDefinition"
+          },
+          "ownerTeamMemberIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "issueId",
+          "roleDefinition",
+          "ownerTeamMemberIds"
+        ]
+      },
+      "IssueRoleAssignmentCreateRequest": {
+        "type": "object",
+        "properties": {
+          "roleDefinitionId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "ownerTeamMemberIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "roleDefinitionId",
+          "ownerTeamMemberIds"
+        ]
+      },
+      "IssueRoleAssignmentResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/IssueRoleAssignment"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "IssueRoleAssignmentListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IssueRoleAssignment"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "MemberWorkload": {
+        "type": "object",
+        "properties": {
+          "teamMemberId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "inProgressIssueCount": {
+            "type": "integer"
+          },
+          "todoIssueCount": {
+            "type": "integer"
+          },
+          "doneIssueCount": {
+            "type": "integer"
+          },
+          "totalEstimatedHours": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "teamMemberId",
+          "inProgressIssueCount",
+          "todoIssueCount",
+          "doneIssueCount",
+          "totalEstimatedHours"
+        ]
+      },
+      "MemberWorkloadListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberWorkload"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ConditionAlert": {
+        "type": "object",
+        "properties": {
+          "teamMemberId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/AlertLevel"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "teamMemberId",
+          "severity",
+          "reason"
+        ]
+      },
+      "ConditionAlertListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConditionAlert"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TeamConditionSummary": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "windowDays": {
+            "$ref": "#/components/schemas/ConditionWindowDays"
+          },
+          "averageScore": {
+            "type": "number"
+          },
+          "responseRate": {
+            "type": "number"
+          },
+          "memberCount": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "teamId",
+          "windowDays",
+          "averageScore",
+          "responseRate",
+          "memberCount"
+        ]
+      },
+      "TeamConditionSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TeamConditionSummary"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TeamConditionSetting": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "defaultWindowDays": {
+            "$ref": "#/components/schemas/ConditionWindowDays"
+          }
+        },
+        "required": [
+          "teamId",
+          "defaultWindowDays"
+        ]
+      },
+      "TeamConditionSettingUpsertRequest": {
+        "type": "object",
+        "properties": {
+          "defaultWindowDays": {
+            "$ref": "#/components/schemas/ConditionWindowDays"
+          }
+        },
+        "required": [
+          "defaultWindowDays"
+        ]
+      },
+      "TeamConditionSettingResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TeamConditionSetting"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ConditionScorePoint": {
+        "type": "object",
+        "properties": {
+          "surveyId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "answeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "score": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "surveyId",
+          "answeredAt",
+          "score"
+        ]
+      },
+      "MemberConditionHistory": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "teamMemberId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "windowDays": {
+            "$ref": "#/components/schemas/ConditionWindowDays"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConditionScorePoint"
+            }
+          }
+        },
+        "required": [
+          "teamId",
+          "teamMemberId",
+          "windowDays",
+          "points"
+        ]
+      },
+      "MemberConditionHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MemberConditionHistory"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ProjectStatus": {
+        "type": "string",
+        "enum": [
+          "not_in_progress",
+          "in_progress",
+          "completed",
+          "idle"
+        ]
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProjectStatus"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status"
+        ]
+      },
+      "ProjectCreateRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "ProjectUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "ProjectStatusUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ProjectStatus"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "AssignTeamRequest": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        },
+        "required": [
+          "teamId"
+        ]
+      },
+      "ProjectResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Project"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ProjectListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Project"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ProjectProgressBoardResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "$ref": "#/components/schemas/Uuid"
+              },
+              "issues": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Issue"
+                }
+              }
+            },
+            "required": [
+              "projectId",
+              "issues"
+            ]
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TeamProjectPerformanceDaily": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "snapshotDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "closedIssueCount": {
+            "type": "integer"
+          },
+          "overdueOpenIssueCount": {
+            "type": "integer"
+          },
+          "completedStoryPoints": {
+            "type": "number"
+          },
+          "estimatedMinutesClosed": {
+            "type": "integer"
+          },
+          "actualMinutesLogged": {
+            "type": "integer"
+          },
+          "onTimeCompletionRate": {
+            "type": "number",
+            "nullable": true
+          },
+          "avgCycleTimeHours": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "projectId",
+          "teamId",
+          "snapshotDate",
+          "closedIssueCount",
+          "overdueOpenIssueCount",
+          "completedStoryPoints",
+          "estimatedMinutesClosed",
+          "actualMinutesLogged"
+        ]
+      },
+      "TeamProjectPerformanceDailyListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamProjectPerformanceDaily"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TeamMemberProjectPerformanceDaily": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "teamMemberId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "snapshotDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "closedIssueCount": {
+            "type": "integer"
+          },
+          "completedStoryPoints": {
+            "type": "number"
+          },
+          "estimatedMinutesClosed": {
+            "type": "integer"
+          },
+          "actualMinutesLogged": {
+            "type": "integer"
+          },
+          "onTimeCompletionRate": {
+            "type": "number",
+            "nullable": true
+          },
+          "avgCycleTimeHours": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "projectId",
+          "teamId",
+          "teamMemberId",
+          "snapshotDate",
+          "closedIssueCount",
+          "completedStoryPoints",
+          "estimatedMinutesClosed",
+          "actualMinutesLogged"
+        ]
+      },
+      "TeamMemberProjectPerformanceDailyListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamMemberProjectPerformanceDaily"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "GanttTask": {
+        "type": "object",
+        "properties": {
+          "issueId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "progressPercent": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "issueId",
+          "teamId",
+          "startAt",
+          "endAt",
+          "progressPercent"
+        ]
+      },
+      "GanttResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GanttTask"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "IssueStatus": {
+        "type": "string",
+        "enum": [
+          "not_in_progress",
+          "in_progress",
+          "in_review",
+          "done"
+        ]
+      },
+      "Issue": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "parentIssueId": {
+            "$ref": "#/components/schemas/Uuid",
+            "nullable": true
+          },
+          "issueTemplateId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "storyPoints": {
+            "type": "number",
+            "nullable": true
+          },
+          "estimatedMinutes": {
+            "type": "integer",
+            "nullable": true
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "closedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/IssueStatus"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "teamId",
+          "issueTemplateId",
+          "title",
+          "status"
+        ]
+      },
+      "IssueCreateRequest": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "issueTemplateId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "description": {
+            "type": "string"
+          },
+          "acceptanceCriteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "storyPoints": {
+            "type": "number"
+          },
+          "estimatedMinutes": {
+            "type": "integer"
+          },
+          "templateItemValues": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "assigneeTeamMemberIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          }
+        },
+        "required": [
+          "teamId",
+          "issueTemplateId",
+          "title",
+          "deadline",
+          "acceptanceCriteria"
+        ]
+      },
+      "IssueUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "storyPoints": {
+            "type": "number"
+          },
+          "estimatedMinutes": {
+            "type": "integer"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "issueTemplateId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "templateItemValues": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "IssueStatusUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/IssueStatus"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "IssueAssigneesAddRequest": {
+        "type": "object",
+        "properties": {
+          "teamMemberIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Uuid"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "teamMemberIds"
+        ]
+      },
+      "IssueResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Issue"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "IssueListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Issue"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "IssueDefinitionOfDone": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "issueId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "issueId",
+          "description"
+        ]
+      },
+      "IssueDefinitionOfDoneCreateRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "description"
+        ]
+      },
+      "IssueDefinitionOfDoneResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/IssueDefinitionOfDone"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "IssueDefinitionOfDoneListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IssueDefinitionOfDone"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "SubIssueCreateRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isUnexpectedWork": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "IssueProgressResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "issueId": {
+                "$ref": "#/components/schemas/Uuid"
+              },
+              "plannedProgressPercent": {
+                "type": "number"
+              },
+              "actualProgressPercent": {
+                "type": "number"
+              },
+              "variancePercent": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "issueId",
+              "plannedProgressPercent",
+              "actualProgressPercent",
+              "variancePercent"
+            ]
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "IssueWorkLogSource": {
+        "type": "string",
+        "enum": [
+          "manual",
+          "github_api",
+          "github_actions"
+        ]
+      },
+      "IssueWorkLog": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "issueId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "teamMemberId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "source": {
+            "$ref": "#/components/schemas/IssueWorkLogSource"
+          },
+          "minutes": {
+            "type": "integer"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "externalLogId": {
+            "type": "string",
+            "nullable": true
+          },
+          "payload": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "issueId",
+          "teamMemberId",
+          "source",
+          "minutes",
+          "startedAt"
+        ]
+      },
+      "IssueWorkLogCreateRequest": {
+        "type": "object",
+        "properties": {
+          "teamMemberId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "minutes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "teamMemberId",
+          "minutes"
+        ]
+      },
+      "IssueWorkLogResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/IssueWorkLog"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "IssueWorkLogListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IssueWorkLog"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "IssueTemplateItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "itemKey": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "isRequired": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "itemKey",
+          "label",
+          "position",
+          "isRequired"
+        ]
+      },
+      "IssueTemplate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IssueTemplateItem"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isActive",
+          "items"
+        ]
+      },
+      "IssueTemplateResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/IssueTemplate"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "IssueTemplateListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IssueTemplate"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "AlertLevel": {
+        "type": "string",
+        "enum": [
+          "yellow",
+          "red"
+        ]
+      },
+      "AlertCategory": {
+        "type": "string",
+        "enum": [
+          "project_progress_delay",
+          "issue_progress_delay",
+          "workload_overload",
+          "communication_gap",
+          "key_person_absence",
+          "task_dependency_blocking",
+          "decision_paralysis",
+          "buffer_depletion"
+        ]
+      },
+      "ActionPlan": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "title",
+          "description"
+        ]
+      },
+      "AlertActionPlanSuggestion": {
+        "type": "object",
+        "properties": {
+          "actionPlan": {
+            "$ref": "#/components/schemas/ActionPlan"
+          },
+          "priority": {
+            "type": "integer"
+          },
+          "rationale": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "suggestedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "actionPlan",
+          "priority",
+          "suggestedAt"
+        ]
+      },
+      "Alert": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/AlertCategory"
+          },
+          "level": {
+            "$ref": "#/components/schemas/AlertLevel"
+          },
+          "isResolved": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "suggestedActionPlans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertActionPlanSuggestion"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "description",
+          "category",
+          "level",
+          "isResolved",
+          "createdAt",
+          "suggestedActionPlans"
+        ]
+      },
+      "AlertResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Alert"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "AlertListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Alert"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "AlertActionPlanSuggestionListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertActionPlanSuggestion"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ActionPlanListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionPlan"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "SurveyQuestionOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "label": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "score": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "position",
+          "score"
+        ]
+      },
+      "SurveyQuestion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "question": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string",
+            "nullable": true
+          },
+          "position": {
+            "type": "integer"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SurveyQuestionOption"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "question",
+          "position",
+          "options"
+        ]
+      },
+      "SurveyTemplate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SurveyQuestion"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "questions"
+        ]
+      },
+      "SurveySetting": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "teamId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "surveyTemplateId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "setterId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "recurringRule": {
+            "type": "string"
+          },
+          "deliveryTimes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "teamId",
+          "surveyTemplateId",
+          "setterId",
+          "recurringRule",
+          "deliveryTimes"
+        ]
+      },
+      "SurveySettingUpsertRequest": {
+        "type": "object",
+        "properties": {
+          "surveyTemplateId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "setterId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "recurringRule": {
+            "type": "string"
+          },
+          "deliveryTimes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "surveyTemplateId",
+          "setterId",
+          "recurringRule",
+          "deliveryTimes"
+        ]
+      },
+      "SurveySettingResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SurveySetting"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "Survey": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "surveySettingId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "recipientId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "deliveredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastAnsweredAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "template": {
+            "$ref": "#/components/schemas/SurveyTemplate"
+          }
+        },
+        "required": [
+          "id",
+          "surveySettingId",
+          "recipientId",
+          "deliveredAt",
+          "template"
+        ]
+      },
+      "SurveyListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Survey"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "SurveyAnswerSubmitRequest": {
+        "type": "object",
+        "properties": {
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "surveyQuestionId": {
+                  "$ref": "#/components/schemas/Uuid"
+                },
+                "selectedOptionId": {
+                  "$ref": "#/components/schemas/Uuid"
+                }
+              },
+              "required": [
+                "surveyQuestionId",
+                "selectedOptionId"
+              ]
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "answers"
+        ]
+      },
+      "TriggerTargetType": {
+        "type": "string",
+        "enum": [
+          "survey",
+          "issue",
+          "project",
+          "team_member"
+        ]
+      },
+      "TriggerDefinition": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "targetType": {
+            "$ref": "#/components/schemas/TriggerTargetType"
+          },
+          "conditionType": {
+            "type": "string"
+          },
+          "conditionValue": {
+            "type": "integer",
+            "nullable": true
+          },
+          "conditionParams": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "alertLevel": {
+            "$ref": "#/components/schemas/AlertLevel"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "targetType",
+          "conditionType",
+          "alertLevel",
+          "isActive"
+        ]
+      },
+      "TriggerDefinitionCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "targetType": {
+            "$ref": "#/components/schemas/TriggerTargetType"
+          },
+          "conditionType": {
+            "type": "string"
+          },
+          "conditionValue": {
+            "type": "integer"
+          },
+          "conditionParams": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "alertLevel": {
+            "$ref": "#/components/schemas/AlertLevel"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "targetType",
+          "conditionType",
+          "alertLevel"
+        ]
+      },
+      "TriggerDefinitionUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "conditionType": {
+            "type": "string"
+          },
+          "conditionValue": {
+            "type": "integer"
+          },
+          "conditionParams": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "alertLevel": {
+            "$ref": "#/components/schemas/AlertLevel"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TriggerDefinitionResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TriggerDefinition"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TriggerDefinitionListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TriggerDefinition"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "TriggerExecutionLog": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "triggerDefinitionId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "targetEntityId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "triggeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "triggerDefinitionId",
+          "targetEntityId",
+          "triggeredAt",
+          "status",
+          "metadata"
+        ]
+      },
+      "TriggerExecutionLogListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TriggerExecutionLog"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "GitHubEventRequest": {
+        "type": "object",
+        "description": "GitHub webhook payload",
+        "additionalProperties": true
+      }
+    }
+  }
+}

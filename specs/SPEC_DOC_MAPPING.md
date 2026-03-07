@@ -26,8 +26,9 @@ Every spec should have corresponding human documentation that explains it.
 | `specs/api/openapi.json`                                                           | `docs/api/guide.md`                                                        | API usage guide                               | After API changes                             |
 | `specs/business/rules.yaml`                                                        | `docs/business-logic/validation-rules.md`                                  | Business validation                           | When rules change                             |
 | `specs/business/workflows.yaml`                                                    | `docs/business-logic/workflows/*.md`                                       | Business workflows                            | When workflows change                         |
-| `specs/database/schema.md`                                                         | `docs/architecture/data-model.md`                                          | Database structure                            | After schema changes                          |
-
+| `specs/database/schema.md`                                                         | `docs/architecture/data-model.md`                                          | Database structure                            | After schema changes                          || `specs/business/authentication.md`                                                 | `docs/business-logic/workflows/authentication.md`                              | Authentication & authorization flows          | When auth flows or API endpoints change       |
+| `specs/business/authentication.md`                                                 | `docs/architecture/adr/0005-google-oauth-guzzle-jwt.md`                        | Google OAuth implementation decision          | When OAuth approach changes                   |
+| `specs/business/authentication.md`                                                 | `docs/architecture/adr/0007-token-only-api-auth-no-csrf.md`                    | Token-only API auth decision (no CSRF)        | When auth middleware approach changes          |
 ---
 
 ## 🔄 Sync Workflow
@@ -277,11 +278,12 @@ make validate-cross-refs
 | -------------- | ------------- | ------------ | ------ |
 | AI Agents      | ✅            | ⏳ Partial   | ⏳     |
 | API            | ⏳            | ⏳           | ⏳     |
+| Authentication | ✅            | ✅           | ✅     |
 | Business Logic | ⏳            | ⏳           | ⏳     |
-| Database       | ⏳            | ⏳           | ⏳     |
+| Database       | ✅            | ⏳           | ⏳     |
 
 Legend: ✅ Complete | ⏳ In Progress | ❌ Not Started
 
 ---
 
-Last updated: 2025-11-14
+Last updated: 2026-03-07

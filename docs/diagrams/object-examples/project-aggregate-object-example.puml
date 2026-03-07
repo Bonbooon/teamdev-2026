@@ -34,6 +34,39 @@ object "配属: 開発チームB" as project_team_b <<ProjectTeam>> {
   assignedAt = "2026-02-15T09:00:00+09:00"
 }
 
+object "PJロール割当: TechLead" as project_role_techlead <<ProjectRoleAssignment>> {
+  id = "5a000001-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+  projectId = "55555555-5555-5555-5555-555555555555"
+  roleDefinitionId = "3a000001-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+}
+
+object "PJロール担当: 佐藤" as project_role_owner_taro <<ProjectRoleAssignmentOwner>> {
+  projectRoleAssignmentId = "5a000001-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+  teamMemberId = "43333333-3333-3333-3333-333333333333"
+}
+
+object "日次実績: チームA" as perf_team_daily <<TeamProjectPerformanceDaily>> {
+  snapshotDate = "2026-03-05"
+  projectId = "55555555-5555-5555-5555-555555555555"
+  teamId = "33333333-3333-3333-3333-333333333333"
+  closedIssueCount = 3
+  overdueOpenIssueCount = 1
+  completedStoryPoints = 10
+  estimatedMinutesClosed = 1260
+  actualMinutesLogged = 1320
+}
+
+object "日次実績: 佐藤" as perf_member_daily <<TeamMemberProjectPerformanceDaily>> {
+  snapshotDate = "2026-03-05"
+  projectId = "55555555-5555-5555-5555-555555555555"
+  teamId = "33333333-3333-3333-3333-333333333333"
+  teamMemberId = "43333333-3333-3333-3333-333333333333"
+  closedIssueCount = 2
+  completedStoryPoints = 7
+  estimatedMinutesClosed = 840
+  actualMinutesLogged = 900
+}
+
 object "チーム参照A" as team_a <<Team>> {
   id = "33333333-3333-3333-3333-333333333333"
   name = "開発チームA"
@@ -47,12 +80,18 @@ object "課題参照" as issue_ref <<Issue>> {
 
 project_in_progress *-- project_team_a
 project_in_progress *-- project_team_b
+project_in_progress *-- project_role_techlead
+project_in_progress *-- perf_team_daily
+perf_team_daily *-- perf_member_daily
+project_role_techlead *-- project_role_owner_taro
 project_team_a -- team_a
 project_in_progress -- issue_ref : Issue.projectId
 
 note bottom
 Project の in_progress/completed 状態を表現。
 ProjectTeam により複数チーム配属を表現。
+ProjectRoleAssignment により PJ レベルの役割と担当者を表現。
+日次スナップショットでチーム/メンバー貢献指標を表現。
 全日時は Asia/Tokyo（+09:00）。
 end note
 

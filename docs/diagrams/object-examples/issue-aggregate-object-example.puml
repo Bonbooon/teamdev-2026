@@ -12,7 +12,11 @@ object "課題: API契約の最終化（進行中）" as issue_in_progress <<Iss
   parentIssueId = null
   issueTemplateId = "76666666-6666-6666-6666-666666666666"
   title = "API契約の最終化"
+  storyPoints = 5
+  estimatedMinutes = 720
   deadline = "2026-03-15T18:00:00+09:00"
+  startedAt = "2026-03-05T10:00:00+09:00"
+  closedAt = null
   status = "in_progress"
 }
 
@@ -23,7 +27,11 @@ object "課題: OpenAPI生成（レビュー中）" as issue_in_review <<Issue>>
   parentIssueId = "66666666-6666-6666-6666-666666666666"
   issueTemplateId = "76666666-6666-6666-6666-666666666666"
   title = "OpenAPI生成"
+  storyPoints = 3
+  estimatedMinutes = 300
   deadline = "2026-03-10T17:00:00+09:00"
+  startedAt = "2026-03-06T09:30:00+09:00"
+  closedAt = null
   status = "in_review"
 }
 
@@ -34,13 +42,63 @@ object "課題: 認証機能実装（完了）" as issue_done <<Issue>> {
   parentIssueId = null
   issueTemplateId = "76666666-6666-6666-6666-666666666666"
   title = "認証機能実装"
+  storyPoints = 8
+  estimatedMinutes = 960
   deadline = "2026-03-01T18:00:00+09:00"
+  startedAt = "2026-02-26T10:00:00+09:00"
+  closedAt = "2026-03-01T16:40:00+09:00"
   status = "done"
 }
 
 object "担当: 佐藤" as assignee_taro <<IssueAssignee>> {
   issueId = "66666666-6666-6666-6666-666666666666"
   teamMemberId = "43333333-3333-3333-3333-333333333333"
+}
+
+object "Issueロール割当: Reviewer" as issue_role_reviewer <<IssueRoleAssignment>> {
+  id = "6a000001-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+  issueId = "66666666-6666-6666-6666-666666666666"
+  roleDefinitionId = "3a000002-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+}
+
+object "Issueロール担当: 佐藤" as issue_role_owner_taro <<IssueRoleAssignmentOwner>> {
+  issueRoleAssignmentId = "6a000001-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+  teamMemberId = "43333333-3333-3333-3333-333333333333"
+}
+
+object "Issueロール担当: 鈴木" as issue_role_owner_hanako <<IssueRoleAssignmentOwner>> {
+  issueRoleAssignmentId = "6a000001-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+  teamMemberId = "44444444-4444-4444-4444-444444444444"
+}
+
+object "作業ログ: 手動入力" as worklog_manual <<IssueWorkLog>> {
+  id = "6b000001-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+  issueId = "66666666-6666-6666-6666-666666666666"
+  teamMemberId = "43333333-3333-3333-3333-333333333333"
+  source = "manual"
+  startedAt = "2026-03-05T10:00:00+09:00"
+  endedAt = "2026-03-05T12:00:00+09:00"
+  minutes = 120
+}
+
+object "作業ログ: GitHub連携" as worklog_github <<IssueWorkLog>> {
+  id = "6b000002-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+  issueId = "66666666-6666-6666-6666-666666666666"
+  teamMemberId = "43333333-3333-3333-3333-333333333333"
+  source = "github_api"
+  externalLogId = "gh-run-20260305-001"
+  startedAt = "2026-03-05T13:00:00+09:00"
+  endedAt = "2026-03-05T14:30:00+09:00"
+  minutes = 90
+}
+
+object "状態遷移: 未着手→進行中" as status_event_1 <<IssueStatusEvent>> {
+  id = 1001
+  issueId = "66666666-6666-6666-6666-666666666666"
+  fromStatus = "not_in_progress"
+  toStatus = "in_progress"
+  changedByTeamMemberId = "43333333-3333-3333-3333-333333333333"
+  changedAt = "2026-03-05T10:00:00+09:00"
 }
 
 object "DoD: レビュー完了" as dod_review <<IssueDefinitionOfDone>> {
@@ -61,6 +119,12 @@ object "プロジェクト参照" as project_ref <<Project>> {
 }
 
 issue_in_progress *-- assignee_taro
+issue_in_progress *-- issue_role_reviewer
+issue_role_reviewer *-- issue_role_owner_taro
+issue_role_reviewer *-- issue_role_owner_hanako
+issue_in_progress *-- worklog_manual
+issue_in_progress *-- worklog_github
+issue_in_progress *-- status_event_1
 issue_done *-- dod_review
 issue_done *-- dod_e2e
 issue_in_progress -- issue_in_review : parent-child
@@ -71,6 +135,8 @@ issue_done -- project_ref
 note bottom
 in_progress / in_review / done の状態を同時に表現。
 done には Definition of Done が存在する例を示す。
+IssueRoleAssignment によりタスク単位の役割担当（複数担当可）を表現。
+IssueWorkLog と IssueStatusEvent により実績記録の例を表現。
 時刻は Asia/Tokyo。
 end note
 

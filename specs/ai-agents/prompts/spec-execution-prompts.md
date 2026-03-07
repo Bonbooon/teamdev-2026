@@ -4,6 +4,26 @@
 
 ---
 
+## Mandatory Pre-Execution Workflow (Applies to All Prompts)
+
+Before implementing any spec, the AI agent must follow this sequence:
+
+1. **Ask clarifying questions first**
+	- Ask the user any required questions about scope, assumptions, priorities, or ambiguities before making changes.
+2. **Create an implementation plan**
+	- Provide a clear step-by-step plan that maps directly to the target spec and listed source-of-truth files.
+3. **Get explicit user confirmation**
+	- Wait for user approval of the plan.
+	- Do not start implementation until the user confirms.
+4. **Then execute**
+	- After confirmation, implement the spec exactly as instructed.
+
+Use this control phrase at the top of each execution session:
+
+"Before I execute, I will ask clarifying questions, propose an implementation plan, and wait for your explicit confirmation before commencing."
+
+---
+
 ## 1. Authentication Spec Prompt
 
 **Target Spec:** `specs/business/authentication.md`

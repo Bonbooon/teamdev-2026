@@ -1,7 +1,7 @@
 # Database Schema Documentation
 
-**Version:** 1.0  
-**Last Updated:** 2026/03/06  
+**Version:** 1.1  
+**Last Updated:** 2026/03/07  
 **Source Spec:** Migrations in `teamdev-2026-api/web/database/migrations/`  
 **Domain Models:** `docs/diagrams/domain-models/`
 
@@ -51,6 +51,22 @@ See migration files directly for exact column definitions, defaults, and constra
 - `provider_user_id: String` - Google's user ID
 - `created_at: Timestamp`
 - Unique constraint: `(provider, provider_user_id)`
+
+**PersonalAccessTokens Table** (Infrastructure — Laravel Sanctum)
+- `id: BigInt AUTO_INCREMENT` - Primary key
+- `tokenable_type: String` - Polymorphic type (e.g., `App\Models\User`)
+- `tokenable_id: VARCHAR(36)` - **UUID** of the owning User (changed from default bigint via migration `2026_03_07_000001`)
+- `name: String` - Token label (e.g., "auth_token")
+- `token: String(64) UNIQUE` - SHA-256 hash of the plain-text token
+- `abilities: Text?` - JSON array of token abilities
+- `last_used_at: DateTime?`
+- `expires_at: DateTime?`
+- `created_at, updated_at: Timestamps`
+- Index: `(tokenable_type, tokenable_id)`
+
+> **Note:** This table is managed by Laravel Sanctum's built-in migration.
+> A custom migration (`2026_03_07_000001_fix_personal_access_tokens_tokenable_id_to_uuid.php`)
+> changes `tokenable_id` from `bigint` to `varchar(36)` to support UUID primary keys on the `users` table.
 
 ---
 

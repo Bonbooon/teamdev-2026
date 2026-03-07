@@ -156,6 +156,24 @@ CREATE TABLE oauth_accounts (
 
 CREATE INDEX idx_oauth_accounts_user_id ON oauth_accounts (user_id);
 
+-- Sanctum Token Storage (managed by Laravel Sanctum + custom UUID fix)
+-- Default Sanctum migration creates this with bigint tokenable_id.
+-- Migration 2026_03_07_000001 changes tokenable_id to varchar(36) for UUID support.
+CREATE TABLE personal_access_tokens (
+    id BIGSERIAL PRIMARY KEY,
+    tokenable_type TEXT NOT NULL,
+    tokenable_id VARCHAR(36) NOT NULL, -- UUID (changed from bigint)
+    name TEXT NOT NULL,
+    token VARCHAR(64) NOT NULL UNIQUE,
+    abilities TEXT,
+    last_used_at TIMESTAMPTZ,
+    expires_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ
+);
+
+CREATE INDEX idx_personal_access_tokens_tokenable ON personal_access_tokens (tokenable_type, tokenable_id);
+
 -- Team
 CREATE TABLE teams (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
