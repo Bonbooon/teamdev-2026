@@ -1,7 +1,7 @@
 # Authentication & Authorization Specification
 
-**Version:** 1.0  
-**Last Updated:** 2026/03/06  
+**Version:** 1.1  
+**Last Updated:** 2026/03/07  
 **Human Documentation:** `docs/business-logic/workflows/authentication.md`  
 **Domain Model:** `docs/diagrams/domain-models/user-aggregate.puml`
 
@@ -127,13 +127,13 @@ Define the complete authentication and authorization flows for all user types (P
 
 **API Endpoint:**
 ```
-POST /api/login
+POST /api/auth/google/login
 Content-Type: application/json
 
 Request:
 {
   "authorizationCode": "string", // Google OAuth authorization code
-  "redirectUri": "string" // Must match configured callback URI
+  "redirectUri": "string" // "postmessage" for popup flow, or callback URI
 }
 
 Response (201 Created):
@@ -213,7 +213,7 @@ Response (201 Created):
 
 **API Endpoint:**
 ```
-POST /api/users/{userId}/profile
+POST /api/users/me/profile
 Content-Type: application/json
 Authorization: Bearer {sanctum_token}
 
@@ -330,7 +330,7 @@ Response (201 Created):
 
 **API Endpoint:**
 ```
-POST /api/logout
+POST /api/auth/logout
 Authorization: Bearer {sanctum_token}
 
 Response (200 OK):
@@ -345,10 +345,10 @@ Response (200 OK):
 
 | Endpoint | Method | Auth | Purpose |
 |----------|--------|------|---------|
-| `/api/login` | POST | None | Google OAuth login |
-| `/api/users/{userId}/profile` | POST | Sanctum | Create profile (post-login) |
-| `/api/logout` | POST | Sanctum | Revoke session token |
-| `/api/current-user` | GET | Sanctum | Get authenticated user (existing) |
+| `/api/auth/google/login` | POST | None | Google OAuth login |
+| `/api/users/me/profile` | POST | Sanctum | Create profile (post-login) |
+| `/api/auth/logout` | POST | Sanctum | Revoke session token |
+| `/api/auth/me` | GET | Sanctum | Get authenticated user |
 
 ---
 
@@ -373,13 +373,14 @@ See `specs/api/openapi-contracts.md` for detailed schema definitions.
 - `SANCTUM_EXPIRATION_HOURS` - Token lifetime (default: 720 = 30 days)
 
 **External Dependencies:**
-- Laravel Sanctum (token authentication)
-- Laravel Socialite or equivalent OAuth/OIDC client library
+- Laravel Sanctum (token-based API authentication — Bearer tokens, **no CSRF/session**; see ADR 0007)
+- Guzzle HTTP Client + firebase/php-jwt (Google OAuth code exchange & ID token validation; see ADR 0005)
 
 **Database:**
 - Migration `2026_03_05_000001_create_users_table.php` - Users table
 - Migration `2026_03_05_000002_create_profiles_table.php` - Profiles table
 - Migration `2026_03_05_000004_create_oauth_accounts_table.php` - OAuth accounts
+- Migration `2026_03_07_000001_fix_personal_access_tokens_tokenable_id_to_uuid.php` - Fix Sanctum `tokenable_id` from bigint to varchar(36) for UUID support
 
 ---
 
@@ -397,5 +398,7 @@ See `specs/api/openapi-contracts.md` for detailed schema definitions.
 
 - Google OAuth/OIDC is the sole authentication method for Phase 1
 - No email/password login
+- **Token-only API auth**: `EnsureFrontendRequestsAreStateful` removed from API middleware — no CSRF cookies or sessions for API routes (see ADR 0007)
+- Frontend uses popup-based OAuth flow (`flow: "auth-code"`) with `redirectUri: "postmessage"`
 - Profile registration is required but not enforced during login (users can skip and complete later)
-- Sanctum tokens stored in `personal_access_tokens` table
+- Sanctum tokens stored in `personal_access_tokens` table (`tokenable_id` is `varchar(36)` for UUID support)
