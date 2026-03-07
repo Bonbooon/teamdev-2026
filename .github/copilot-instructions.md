@@ -26,21 +26,22 @@ Welcome! This directory contains context and guidelines for GitHub Copilot to as
 
 ## Quick Navigation to Skills
 
-| Skill | When to Reference | Key Topics |
-|-------|-------------------|-----------|
-| [product-context](skills/product-context/SKILL.md) | Understanding what we're building | 4 pillars, dogfooding, Phase 1 vs Phase 2 |
-| [architecture](skills/architecture/SKILL.md) | System design questions | Tech stack, API flow, directories, model sync |
-| [code-style](skills/code-style/SKILL.md) | Writing code | Conventions, patterns, quality standards |
-| [workflow](skills/workflow/SKILL.md) | Process questions | Spec-first, git conventions, code generation |
-| [testing](skills/testing/SKILL.md) | Writing tests | Test strategy, mocking policy, coverage |
-| [quick-start-guide](skills/quick-start-guide/SKILL.md) | Common tasks | Adding endpoints, components, migrations |
+| Skill                                                                | When to Reference                 | Key Topics                                                             |
+| -------------------------------------------------------------------- | --------------------------------- | ---------------------------------------------------------------------- |
+| [product-context](skills/product-context/SKILL.md)                   | Understanding what we're building | 4 pillars, dogfooding, Phase 1 vs Phase 2                              |
+| [architecture](skills/architecture/SKILL.md)                         | System design questions           | Tech stack, API flow, directories, model sync                          |
+| [code-style](skills/code-style/SKILL.md)                             | Writing code                      | Conventions, patterns, quality standards                               |
+| [workflow](skills/workflow/SKILL.md)                                 | Process questions                 | Spec-first, git conventions, code generation                           |
+| [git-commit-quality-gates](skills/git-commit-quality-gates/SKILL.md) | Preparing commits / CI hygiene    | Logical commit grouping, conventional commits, mise+pnpm quality gates |
+| [testing](skills/testing/SKILL.md)                                   | Writing tests                     | Test strategy, mocking policy, coverage                                |
+| [quick-start-guide](skills/quick-start-guide/SKILL.md)               | Common tasks                      | Adding endpoints, components, migrations                               |
 
 ---
 
 ## Feature Specifications (For Implementation)
 
-| Spec | When to Reference |
-|------|-------------------|
+| Spec                                                    | When to Reference                       |
+| ------------------------------------------------------- | --------------------------------------- |
 | [alert-system.md](../../specs/business/alert-system.md) | Implementing alert triggers and actions |
 
 ---
@@ -57,6 +58,7 @@ Welcome! This directory contains context and guidelines for GitHub Copilot to as
 ## Before You Ask Copilot
 
 Check if the answer exists in:
+
 1. The relevant skill file (see table above)
 2. The essential context files (see above)
 3. The actual code or test examples in the repo
@@ -91,6 +93,7 @@ Check if the answer exists in:
 ## Common Tasks
 
 See [quick-start-guide.md](skills/quick-start-guide.md) for step-by-step guidance on:
+
 - Adding a new API endpoint
 - Creating a React component
 - Setting up a database migration
