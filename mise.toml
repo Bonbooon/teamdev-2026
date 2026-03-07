@@ -178,10 +178,24 @@ run = """
 bash scripts/render-puml.sh
 """
 
-[tasks.fs]
+[tasks.prd]
+description = "Generate PR review digest markdown from GitHub reviews/comments"
+run = """
+bash scripts/pr-review-digest.sh
+"""
+
+[tasks.prdf]
+description = "Generate PR review digest markdown from GitHub reviews/comments"
 run = """
 cd teamdev-2026-front
-pnpm run dev
+bash ../scripts/pr-review-digest.sh
+"""
+
+[tasks.prda]
+description = "Generate PR review digest markdown from GitHub reviews/comments"
+run = """
+cd teamdev-2026-api
+bash ../scripts/pr-review-digest.sh
 """
 
 # === アプリケーション初期化 ===
