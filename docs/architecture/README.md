@@ -44,3 +44,10 @@ Frontend mapping for the same feature:
 - Keep write and read models separated in CQRS.
 - Keep framework concerns in interface/infrastructure layers.
 - Run TDD by writing tests at the target layer first.
+
+## Recent Alignment Notes
+
+- User profile registration and edit currently share `POST /api/users/me/profile` as an upsert endpoint.
+- The rationale for the upsert response shape is documented in [ADR 0008](./adr/0008-profile-upsert-for-aspida-response-constraints.md).
+- Google avatar is currently persisted on `users.google_avatar_url` and returned from `GET /api/auth/me`.
+- Custom user-selected avatars and broader profile visibility flows remain planned, but they are not part of the current implementation.

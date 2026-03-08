@@ -13,16 +13,15 @@ package "Identity & Access Context" {
       +id: UUID
       +email: String
       +emailVerifiedAt: DateTime?
+      +googleAvatarUrl: String?
       +createdAt: DateTime
       +updatedAt: DateTime
       --
-      +changeEmail(newEmail: String)
       +verifyEmail(at: DateTime)
-      +updateProfile(data)
-      +addExternalLink(platform: String?, url: String)
-      +removeExternalLink(externalLinkId: UUID)
+      +createOrUpdateProfile(data)
+      +replaceExternalLinks(links)
       +linkOAuthAccount(provider: String, providerUserId: String)
-      +unlinkOAuthAccount(oauthAccountId: UUID)
+      +refreshGoogleAvatar(url: String?)
     }
 
     class Profile <<Entity>> {
@@ -74,6 +73,8 @@ package "Identity & Access Context" {
   5. Deleting User removes Profile/OAuthAccounts by cascade.
   6. A User can have multiple external links (Instagram, Wantedly, etc.).
   7. External link URL must be unique per User.
+  8. Google avatar is stored on User and refreshed on each Google login.
+  9. Profile.avatarUrl is reserved for future custom avatar support.
   end note
 
 }

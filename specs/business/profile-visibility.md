@@ -1,7 +1,7 @@
 # Profile & Visibility Specification
 
-**Version:** 1.0  
-**Last Updated:** 2026/03/06  
+**Version:** 1.1  
+**Last Updated:** 2026/03/08  
 **Human Documentation:** `docs/business-logic/workflows/profile-visibility.md`  
 **Domain Model:** `docs/diagrams/domain-models/user-aggregate.puml`
 
@@ -10,6 +10,16 @@
 ## Purpose
 
 Define profile viewing and visibility features that help team members understand each other's skills and experience.
+
+## Implementation Status (2026/03/08)
+
+- This document remains the planned visibility scope for the user aggregate.
+- The current implementation does **not** yet provide dedicated profile visibility endpoints such as `GET /api/users/{userId}/profile`, `PUT /api/users/{userId}/profile`, or avatar upload.
+- The current codebase supports:
+  - `GET /api/auth/me` for the authenticated user's profile payload
+  - `POST /api/users/me/profile` for the authenticated user's profile registration and edit
+  - Google avatar display with default fallback
+- Expertise tag extraction, colleague profile viewing, and avatar upload remain planned and should be treated as not-yet-implemented scope.
 
 ---
 
@@ -258,6 +268,7 @@ Request:
 
 - Profiles are foundational for "Mutual Understanding" pillar
 - Expertise parsing simple in Phase 1; can evolve to skill taxonomy in Phase 2
+- Custom avatar upload remains future scope; the current implementation uses Google avatar first and falls back to `/user-default.svg`
 - Work history not verified; helps PM understand background
 - External links help with remote collaboration (LinkedIn for work context, GitHub for code)
 - All timestamps in UTC
