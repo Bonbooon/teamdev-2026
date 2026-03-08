@@ -386,6 +386,10 @@ cd "$WORKTREE_PATH" 2>/dev/null && git submodule foreach --recursive 'echo "  $d
 mise run wt-setup
 mise run worktree-info
 cd - >/dev/null 2>&1
+
+cd $WORKTREE_PATH
+mise setup
+mise run worktree-info
 """
 
 [tasks.wt-list]
@@ -395,7 +399,7 @@ git worktree list
 """
 
 [tasks.wt-r]
-description = "Remove a worktree (including submodules)"
+description = "Remove a worktree and its Docker resources"
 run = """
 WORKTREE_NAME="{{ arg(pos=1) }}"
 
