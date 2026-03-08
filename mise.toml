@@ -204,6 +204,18 @@ cd teamdev-2026-api
 bash ../scripts/pr-review-digest.sh
 """
 
+[tasks.pull-all]
+run = """
+git switch master
+git pull
+cd teamdev-2026-api
+git switch main
+git pull
+cd ../teamdev-2026-front
+git switch main
+git pull
+"""
+
 # === アプリケーション初期化 ===
 [tasks.laravel-init]
 description = "Initialize Laravel application (env, key, migrate, seed)"
