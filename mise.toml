@@ -72,39 +72,6 @@ echo "  mise run stop     - Stop all services"
 echo "  mise run restart  - Restart all services"
 """
 
-[tasks.wt-setup]
-description = "Setup worktree environment (reuses existing Docker images)"
-run = """
-echo "🌿 Setting up worktree environment..."
-echo "Using shared Docker images (no rebuild needed)"
-echo ""
-
-echo "1️⃣ Configuring submodules..."
-mise run submodule-checkout
-mise run submodule-update
-
-echo ""
-echo "2️⃣ Starting services (using existing images)..."
-mise run start
-
-echo ""
-echo "3️⃣ Installing dependencies..."
-mise run install-deps
-
-echo ""
-echo "4️⃣ Initializing application..."
-mise run laravel-init
-
-echo ""
-echo "5️⃣ Installing frontend dependencies locally..."
-mise run front-init
-
-echo ""
-echo "✅ Worktree setup completed!"
-echo ""
-mise run worktree-info
-"""
-
 [tasks.start]
 description = "Start the development environment"
 run = """
@@ -237,27 +204,6 @@ cd teamdev-2026-api
 bash ../scripts/pr-review-digest.sh
 """
 
-[tasks.pull-all]
-run = """
-git switch master
-git pull
-cd teamdev-2026-api
-git switch main
-git pull
-cd ../teamdev-2026-front
-git switch main
-git pull
-"""
-
-[tasks.cleanb]
-run = """
-git fetch --prune && git branch -vv | awk '/: gone]/{print $1}' | xargs -n 1 git branch -D
-cd teamdev-2026-api
-git fetch --prune && git branch -vv | awk '/: gone]/{print $1}' | xargs -n 1 git branch -D
-cd ../teamdev-2026-front
-git fetch --prune && git branch -vv | awk '/: gone]/{print $1}' | xargs -n 1 git branch -D
-"""
-
 # === アプリケーション初期化 ===
 [tasks.laravel-init]
 description = "Initialize Laravel application (env, key, migrate, seed)"
@@ -321,7 +267,7 @@ echo "----------------------------------------"
 """
 
 [tasks.wt-c]
-description = "Create a new worktree with branch-matched submodules"
+description = "Create a new worktree"
 run = """
 BRANCH_NAME="{{ arg(pos=1) }}"
 WORKTREE_PATH="worktrees/$BRANCH_NAME"
@@ -343,90 +289,15 @@ echo ""
 git worktree add "$WORKTREE_PATH" "$BRANCH_NAME"
 
 echo ""
-echo "Initializing submodules and checking out matching branches..."
+echo "Worktree created successfully!"
 echo ""
-
-# Initialize and checkout submodules
-cd "$WORKTREE_PATH"
-git submodule update --init --recursive
-
-# For each submodule, try to checkout to the matching branch
-git config --file .gitmodules --get-regexp path | awk '{print $2}' | while read SUBMODULE_PATH; do
-  SUBMODULE_NAME=$(basename "$SUBMODULE_PATH")
-  echo "Processing submodule: $SUBMODULE_NAME"
-  
-  cd "$SUBMODULE_PATH"
-  
-  # Try to checkout the branch
-  if git rev-parse --verify "origin/$BRANCH_NAME" >/dev/null 2>&1; then
-    # Branch exists on remote, create tracking branch and checkout
-    git switch --create "$BRANCH_NAME" "origin/$BRANCH_NAME"
-    echo "  ✓ Checked out existing branch: $BRANCH_NAME"
-  elif git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
-    # Branch exists locally
-    git switch "$BRANCH_NAME"
-    echo "  ✓ Switched to existing local branch: $BRANCH_NAME"
-  else
-    # Branch doesn't exist, create it from main
-    echo "  • Branch does not exist, creating from main..."
-    git switch --create "$BRANCH_NAME" origin/main
-    echo "  ✓ Created new branch: $BRANCH_NAME (from main)"
-  fi
-  
-  cd ..
-done
-
-cd ../..
-
+echo "Next steps:"
+echo "  1. cd $WORKTREE_PATH"
+echo "  2. mise run worktree-info"
+echo "  3. mise run start"
 echo ""
-echo "✓ Worktree created successfully!"
-echo ""
-echo "Submodule status:"
-cd "$WORKTREE_PATH" 2>/dev/null && git submodule foreach --recursive 'echo "  $displaypath: $(git branch --show-current)"' || true
-cd - >/dev/null 2>&1
-
-echo ""
-
-# Initialize and checkout submodules
-cd "$WORKTREE_PATH"
-git submodule update --init --recursive
-
-# For each submodule, try to checkout to the matching branch
-git config --file .gitmodules --get-regexp path | awk '{print $2}' | while read SUBMODULE_PATH; do
-  SUBMODULE_NAME=$(basename "$SUBMODULE_PATH")
-  echo "Processing submodule: $SUBMODULE_NAME"
-  
-  cd "$SUBMODULE_PATH"
-  
-  # Try to checkout the branch
-  if git rev-parse --verify "origin/$BRANCH_NAME" >/dev/null 2>&1; then
-    # Branch exists on remote, create tracking branch and checkout
-    git switch --create "$BRANCH_NAME" "origin/$BRANCH_NAME"
-    echo "  ✓ Checked out existing branch: $BRANCH_NAME"
-  elif git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
-    # Branch exists locally
-    git switch "$BRANCH_NAME"
-    echo "  ✓ Switched to existing local branch: $BRANCH_NAME"
-  else
-    # Branch doesn't exist, create it from main
-    echo "  • Branch does not exist, creating from main..."
-    git switch --create "$BRANCH_NAME" origin/main
-    echo "  ✓ Created new branch: $BRANCH_NAME (from main)"
-  fi
-  
-  cd ..
-done
-
-cd ../..
-
-echo ""
-echo "✓ Worktree created successfully!"
-echo ""
-echo "Submodule status:"
-cd "$WORKTREE_PATH" 2>/dev/null && git submodule foreach --recursive 'echo "  $displaypath: $(git branch --show-current)"' || true
-mise run wt-setup
-mise run worktree-info
-cd - >/dev/null 2>&1
+echo "Each worktree gets isolated Docker containers via COMPOSE_PROJECT_NAME"
+echo "Worktrees are stored in ./worktrees/ and are gitignored"
 """
 
 [tasks.wt-list]
@@ -436,7 +307,7 @@ git worktree list
 """
 
 [tasks.wt-r]
-description = "Remove a worktree and its Docker resources"
+description = "Remove a worktree (including submodules)"
 run = """
 WORKTREE_NAME="{{ arg(pos=1) }}"
 
@@ -450,9 +321,6 @@ if [ -z "$WORKTREE_NAME" ]; then
 fi
 
 WORKTREE_PATH="worktrees/$WORKTREE_NAME"
-WORKTREE_BASENAME=$(basename "$WORKTREE_PATH")
-COMPOSE_PROJECT_NAME="teamdev-2026-$WORKTREE_BASENAME"
-COMPOSE_PROJECT_NAME=$(echo "$COMPOSE_PROJECT_NAME" | tr '/' '-' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
 
 if [ ! -d "$WORKTREE_PATH" ]; then
   echo "Error: worktree not found: $WORKTREE_PATH"
@@ -460,37 +328,8 @@ if [ ! -d "$WORKTREE_PATH" ]; then
 fi
 
 echo "Removing worktree: $WORKTREE_PATH"
-echo "Stopping/removing Docker resources for: $COMPOSE_PROJECT_NAME"
-
-# Stop containers and remove compose-managed local images for this worktree.
-docker compose -p "$COMPOSE_PROJECT_NAME" -f "$WORKTREE_PATH/compose.yml" down --rmi local --volumes --remove-orphans || true
-
-# Give Docker Desktop a brief moment to release host path handles.
-sleep 1
-
-# Normalize permissions before deletion (worktree files can be created by containers).
-chmod -R u+rwX "$WORKTREE_PATH" 2>/dev/null || true
-chmod -RN "$WORKTREE_PATH" 2>/dev/null || true
-xattr -rc "$WORKTREE_PATH" 2>/dev/null || true
-
-# Best-effort ownership fix using a throwaway container when host permissions are restrictive.
-if command -v docker >/dev/null 2>&1; then
-  docker run --rm \
-    -v "$PWD/$WORKTREE_PATH:/worktree" \
-    alpine:3.20 \
-    sh -c "chown -R $(id -u):$(id -g) /worktree 2>/dev/null || true" || true
-fi
-
 git worktree remove --force "$WORKTREE_PATH" || true
 rm -rf "$WORKTREE_PATH"
-
-if [ -e "$WORKTREE_PATH" ]; then
-  echo "⚠️  Could not fully delete $WORKTREE_PATH"
-  echo "Open handles (if any):"
-  lsof +D "$WORKTREE_PATH" 2>/dev/null | head -20 || true
-  exit 1
-fi
-
 echo "✓ Worktree removed"
 """
 
