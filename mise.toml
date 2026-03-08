@@ -249,6 +249,15 @@ git switch main
 git pull
 """
 
+[tasks.cleanb]
+run = """
+git fetch --prune && git branch -vv | awk '/: gone]/{print $1}' | xargs -n 1 git branch -D
+cd teamdev-2026-api
+git fetch --prune && git branch -vv | awk '/: gone]/{print $1}' | xargs -n 1 git branch -D
+cd ../teamdev-2026-front
+git fetch --prune && git branch -vv | awk '/: gone]/{print $1}' | xargs -n 1 git branch -D
+"""
+
 # === アプリケーション初期化 ===
 [tasks.laravel-init]
 description = "Initialize Laravel application (env, key, migrate, seed)"
