@@ -37,6 +37,7 @@ UNRESOLVED_THREADS_JSON="$(gh api graphql -f query='query($owner: String!, $name
       reviewThreads(first: 100) {
         nodes {
           isResolved
+          isOutdated
           path
           comments(first: 100) {
             nodes {
@@ -58,7 +59,42 @@ UNRESOLVED_THREADS_JSON="$(gh api graphql -f query='query($owner: String!, $name
       }
     }
   }
-}' -F owner="$OWNER" -F name="$NAME" -F number="$PR" | jq '.data.repository.pullRequest.reviewThreads.nodes | map(select(.isResolved == false))')"
+}' -F owner="$OWNER" -F name="$NAME" -F number="$PR" | jq '.data.repository.pullRequest.reviewThreads.nodes | map(select(.isResolved == false and .isOutdated == false))')"
+
+# Fetch top-level PR review bodies (includes Copilot's summary review comment)
+REVIEWS_JSON="$(gh api graphql -f query='query($owner: String!, $name: String!, $number: Int!) {
+  repository(owner: $owner, name: $name) {
+    pullRequest(number: $number) {
+      reviews(first: 50) {
+        nodes {
+          author { login }
+          body
+          state
+          submittedAt
+          url
+        }
+      }
+    }
+  }
+}' -F owner="$OWNER" -F name="$NAME" -F number="$PR" | jq '.data.repository.pullRequest.reviews.nodes')"
+
+# Filter for Copilot summary reviews (top-level review body, non-empty)
+COPILOT_SUMMARY_REVIEWS_JSON="$(echo "$REVIEWS_JSON" | jq '
+  [ .[]?
+    | select(
+        (.author.login // "" | ascii_downcase | test("copilot"))
+        and ((.body // "") | length > 0)
+      )
+    | {
+        author: (.author.login // "unknown"),
+        body: (.body // ""),
+        state,
+        submittedAt,
+        url: (.url // "")
+      }
+  ]
+  | sort_by(.submittedAt)
+')"
 
 FETCHED_COMMENTS_JSON="$(jq -n --argjson threads "$UNRESOLVED_THREADS_JSON" '
   [
@@ -105,6 +141,19 @@ OUTFILE="$OUTDIR/${REPO_NAME}-${PR}.md"
 
   echo "## PR Summary"
   echo "$PR_JSON" | jq -r '"- PR: " + .url + "\n- Title: " + .title + "\n- Author: @" + .author.login + "\n- Branch: " + .headRefName + " → " + .baseRefName + "\n- Review decision: " + (.reviewDecision // "N/A") + "\n- Diff stats: +" + (.additions|tostring) + " / -" + (.deletions|tostring) + " across " + (.changedFiles|tostring) + " files\n- Commits: " + ((.commits|length)|tostring)'
+  echo ""
+
+  echo "## Copilot PR Summary Review"
+  echo "$COPILOT_SUMMARY_REVIEWS_JSON" | jq -r '
+    if length == 0 then
+      "No Copilot summary review found."
+    else
+      .[] |
+      "### Review by @" + .author + " (" + .state + ", " + .submittedAt + ")\n" +
+      .body + "\n" +
+      "> " + .url + "\n"
+    end
+  '
   echo ""
 
   echo "## Fetched Review Comments (Unresolved, Non-Copilot)"
