@@ -386,10 +386,6 @@ cd "$WORKTREE_PATH" 2>/dev/null && git submodule foreach --recursive 'echo "  $d
 mise run wt-setup
 mise run worktree-info
 cd - >/dev/null 2>&1
-
-cd $WORKTREE_PATH
-mise setup
-mise run worktree-info
 """
 
 [tasks.wt-list]
