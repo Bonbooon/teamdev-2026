@@ -9,6 +9,7 @@ object "ユーザー: 佐藤 太郎" as user_verified <<User>> {
   id = "11111111-1111-1111-1111-111111111111"
   email = "taro.sato@example.com"
   emailVerifiedAt = "2026-03-01T09:30:00+09:00"
+  googleAvatarUrl = "https://lh3.googleusercontent.com/a/taro-photo"
   createdAt = "2026-02-01T10:00:00+09:00"
   updatedAt = "2026-03-01T09:30:00+09:00"
 }
@@ -20,7 +21,10 @@ object "プロフィール: 佐藤 太郎" as profile_taro <<Profile>> {
   firstNameKana = "タロウ"
   lastNameKana = "サトウ"
   jobTitle = "PM"
-  joinedTeamAt = "2026-02-03"
+  hobby = "読書"
+  expertise = "プロジェクト推進, ファシリテーション"
+  joinedCompanyAt = "2024-04-01"
+  avatarUrl = null
   updatedAt = "2026-03-01T09:30:00+09:00"
 }
 
@@ -28,42 +32,25 @@ object "外部リンク: Wantedly" as ext_wantedly <<ProfileExternalLink>> {
   id = "91111111-1111-1111-1111-111111111111"
   userId = "11111111-1111-1111-1111-111111111111"
   platform = "Wantedly"
-  label = "プロフィール"
   url = "https://www.wantedly.com/id/taro_sato"
   position = 1
 }
 
-object "OAuth: GitHub" as oauth_github <<OAuthAccount>> {
+object "OAuth: Google" as oauth_google <<OAuthAccount>> {
   id = "81111111-1111-1111-1111-111111111111"
   userId = "11111111-1111-1111-1111-111111111111"
-  provider = "github"
-  providerUserId = "taro-sato"
-}
-
-object "ユーザー: 鈴木 花子（未認証）" as user_unverified <<User>> {
-  id = "22222222-2222-2222-2222-222222222222"
-  email = "hanako.suzuki@example.com"
-  emailVerifiedAt = null
-  createdAt = "2026-02-10T11:00:00+09:00"
-  updatedAt = "2026-02-10T11:00:00+09:00"
-}
-
-object "チーム参照" as team_ref <<Team>> {
-  id = "33333333-3333-3333-3333-333333333333"
-  name = "開発チームA"
-  timeZone = "Asia/Tokyo"
+  provider = "google"
+  providerUserId = "google-oauth-sub-1234567890"
 }
 
 user_verified *-- profile_taro
 user_verified *-- ext_wantedly
-user_verified *-- oauth_github
-
-user_verified -- team_ref : TeamMember.userId
-user_unverified -- team_ref : 招待先候補
+user_verified *-- oauth_google
 
 note bottom
 時刻はすべて Asia/Tokyo（ISO-8601 +09:00）。
-検証済み/未検証の2状態を同時に表現。
+現在の実装に合わせて、Google OAuth とプロフィール更新の状態を例示。
+チーム所属や他ユーザープロフィール参照は別ドメインで管理。
 end note
 
 @enduml

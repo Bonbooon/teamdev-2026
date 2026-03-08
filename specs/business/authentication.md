@@ -1,9 +1,9 @@
 # Authentication & Authorization Specification
 
-**Version:** 1.1  
-**Last Updated:** 2026/03/07  
-**Human Documentation:** `docs/business-logic/workflows/authentication.md`  
-**Domain Model:** `docs/diagrams/domain-models/user-aggregate.puml`
+**Version:** 1.2  
+**Last Updated:** 2026/03/08  
+**Domain Model:** `docs/diagrams/domain-models/user-aggregate.puml`  
+**Related ADR:** `docs/architecture/adr/0008-profile-upsert-for-aspida-response-constraints.md`
 
 ---
 
@@ -13,7 +13,21 @@ Define the complete authentication and authorization flows for all user types (P
 - Google OAuth login (OIDC)
 - Profile registration and completion
 - Session management (login/logout)
-- OAuth account linking
+
+## Implementation Status (2026/03/08)
+
+- Implemented in the current codebase:
+  - Google OAuth login/logout
+  - `GET /api/auth/me`
+  - Google avatar persistence on `users.google_avatar_url`
+  - Profile registration and edit through `POST /api/users/me/profile`
+  - Login response `googleProfile` hints used to prefill the profile setup form
+- Planned but not implemented yet:
+  - OAuth account linking and unlinking beyond the current Google login flow
+  - Role-specific dashboard routing
+  - Custom avatar upload and selection
+- Architectural note:
+  - Profile creation and edit currently share one upsert endpoint. This was chosen to keep the generated client contract simple; see the related ADR.
 
 ---
 
@@ -48,7 +62,7 @@ Define the complete authentication and authorization flows for all user types (P
 - On every Google login, `google_avatar_url` is saved/updated on the user record
 - If Google returns a different picture URL than what is stored, it is overwritten
 - If Google returns no picture (null), `google_avatar_url` is set to null
-- `/auth/me` returns `user.google_avatar_url` alongside other user fields
+- `/auth/me` returns `user.googleAvatarUrl` alongside other user fields
 - Frontend avatar display chain: `user.google_avatar_url` → `/user-default.svg`
 - Profile setup page shows the Google avatar as a read-only preview (no editing UI)
 - `avatarUrl` is no longer sent in the profile upsert POST body
@@ -219,7 +233,7 @@ Response (201 Created):
 
 **Main Flow:**
 1. User sees profile registration form (post-Google login)
-2. Required fields are pre-filled from Google (firstName, lastName, avatarUrl)
+2. Required fields are pre-filled from Google where available (firstName, lastName)
 3. User fills required fields:
    - hobby (required)
    - jobTitle (required)
@@ -239,7 +253,8 @@ Response (201 Created):
 - `hobby`, `jobTitle`, `expertise` are free-form text (no dropdown)
 - `joinedCompanyAt` must be a valid date in past
 - External links are optional, but if provided, must have valid URL
-- Profile is updated (not recreated) if user edits later
+- Profile is updated in place if the user edits later
+- Current API behavior is upsert: if a profile already exists, the same endpoint updates it instead of returning `409`
 
 **Validation Rules:**
 - `firstName`, `lastName`: max 100 chars, non-empty
@@ -254,7 +269,10 @@ Response (201 Created):
 **Error Cases:**
 - Missing required field → 422 Unprocessable Entity with field-level errors
 - Invalid date format → 422 with specific field error
-- User already has Profile → 409 Conflict (profile already exists)
+
+**Implementation Note:**
+- The current API returns `200 OK` for both first-time completion and subsequent edits through the same upsert endpoint
+- The original create-only `409 Conflict` behavior was replaced for client-generation simplicity; see ADR 0008
 
 **Acceptance Criteria:**
 - ✅ Form prefills with Google data
@@ -269,7 +287,7 @@ Response (201 Created):
 - TC-01-02-02: Missing `hobby` → validation error
 - TC-01-02-03: Invalid `joinedCompanyAt` date → validation error
 - TC-01-02-04: Add LinkedIn link → external link saved
-- TC-01-02-05: User already has Profile → 409 error
+- TC-01-02-05: User already has Profile → existing profile is updated
 
 **API Endpoint:**
 ```
@@ -295,7 +313,7 @@ Request:
   ]
 }
 
-Response (201 Created):
+Response (200 OK):
 {
   "profile": { ...Profile object... }
 }
@@ -338,7 +356,7 @@ Response (201 Created):
 **Acceptance Criteria:**
 - ✅ Sanctum token issued to valid user
 - ✅ Token valid for subsequent API calls (Authorization: Bearer {token})
-- ✅ User redirected to correct dashboard (manager vs. member)
+- ✅ User redirected to the next application route after login
 - ✅ Invalid token rejected with 401
 
 **Test Cases:**
@@ -406,7 +424,7 @@ Response (200 OK):
 | Endpoint | Method | Auth | Purpose |
 |----------|--------|------|---------|
 | `/api/auth/google/login` | POST | None | Google OAuth login |
-| `/api/users/me/profile` | POST | Sanctum | Create profile (post-login) |
+| `/api/users/me/profile` | POST | Sanctum | Create or update profile (post-login upsert) |
 | `/api/auth/logout` | POST | Sanctum | Revoke session token |
 | `/api/auth/me` | GET | Sanctum | Get authenticated user |
 
@@ -460,5 +478,7 @@ See `specs/api/openapi-contracts.md` for detailed schema definitions.
 - No email/password login
 - **Token-only API auth**: `EnsureFrontendRequestsAreStateful` removed from API middleware — no CSRF cookies or sessions for API routes (see ADR 0007)
 - Frontend uses popup-based OAuth flow (`flow: "auth-code"`) with `redirectUri: "postmessage"`
+- Login responses include a `googleProfile` object for profile form prefill hints
 - Profile registration is required but not enforced during login (users can skip and complete later)
+- Future custom avatar support is still planned, but Phase 1 persists and displays the Google avatar only
 - Sanctum tokens stored in `personal_access_tokens` table (`tokenable_id` is `varchar(36)` for UUID support)

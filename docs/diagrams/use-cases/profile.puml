@@ -6,18 +6,21 @@ actor "マネージャー" as Manager
 
 rectangle "Profile Domain" {
 
-  usecase "プロフィール作成"
-  usecase "プロフィール参照"
-  usecase "プロフィール更新"
+  usecase "プロフィール登録 / 更新（本人）" as SelfUpsert
 
 }
 
-Member --> "プロフィール作成"
-Member --> "プロフィール参照"
-Member --> "プロフィール更新"
+Member --> SelfUpsert
+Manager --> SelfUpsert
 
-Manager --> "プロフィール作成"
-Manager --> "プロフィール参照"
-Manager --> "プロフィール更新"
+note right of SelfUpsert
+現在の実装:
+- POST /api/users/me/profile で本人プロフィールを登録 / 更新
+
+将来予定:
+- 他ユーザーのプロフィール参照
+- 専門タグ表示
+- アバターアップロード
+end note
 
 @enduml
