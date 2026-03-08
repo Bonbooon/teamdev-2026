@@ -2,6 +2,10 @@
 node = "22.17.1"
 pnpm = "10.14.0"
 
+# === Worktree Detection ===
+[env]
+_.source = "scripts/detect-worktree.sh"
+
 # === サブモジュール管理 ===
 [tasks.submodule-checkout]
 description = "Checkout all submodules to their configured branches"
@@ -110,10 +114,10 @@ echo "✅ All dependencies installed"
 
 # === 開発支援 ===
 [tasks.front-format]
-description = "Run code formatting"
+description = "Run code formatting (auto-detects Docker/local)"
 run = """
-cd front
-pnpm biome check .
+cd teamdev-2026-front
+pnpm biome check --write .
 """
 
 [tasks.app-format]
@@ -143,7 +147,9 @@ docker compose exec app php artisan test
 
 [tasks.t]
 description = "Runs a specific unit test"
-run = "docker compose exec app php artisan test --filter={{ arg(name='filter') }}"
+run = """
+docker compose exec app php artisan test --filter={{ arg(name='filter') }}
+"""
 
 [tasks.rs]
 description = "Restarts docker containers"
@@ -222,7 +228,7 @@ echo "✅ Laravel initialization completed"
 [tasks.front-init]
 description = "Install frontend deps locally (requires local Node.js/pnpm)"
 run = """
-cd front
+cd teamdev-2026-front
 pnpm install
 """
 
@@ -238,3 +244,150 @@ run = "docker compose exec front bash"
 [tasks.db-shell]
 description = "Open PostgreSQL shell"
 run = "docker compose exec postgresql bash"
+
+# === Worktree Management ===
+[tasks.worktree-info]
+description = "Show current worktree Docker Compose isolation info"
+run = """
+echo "----------------------------------------"
+echo "  Worktree Information"
+echo "----------------------------------------"
+echo "Name: $WORKTREE_NAME"
+if [ "$IS_MAIN_WORKTREE" = "true" ]; then
+  echo "Type: Main worktree"
+else
+  echo "Type: Linked worktree"
+fi
+echo "Compose project: $COMPOSE_PROJECT_NAME"
+echo "Ports: web=$WEB_PORT db=$DB_PORT swagger=$SWAGGER_PORT"
+echo ""
+echo "Active containers:"
+docker compose ps
+echo "----------------------------------------"
+"""
+
+[tasks.wt-c]
+description = "Create a new worktree with branch-matched submodules"
+run = """
+BRANCH_NAME="{{ arg(pos=1) }}"
+WORKTREE_PATH="worktrees/$BRANCH_NAME"
+
+if [ -z "$BRANCH_NAME" ]; then
+  echo "Error: branch name is required"
+  echo "Usage: mise run wt-c feature/my-feature"
+  exit 1
+fi
+
+mkdir -p ./worktrees
+
+echo "Creating worktree..."
+echo "  Branch: $BRANCH_NAME"
+echo "  Path: $WORKTREE_PATH"
+echo ""
+
+# Create the worktree
+git worktree add "$WORKTREE_PATH" "$BRANCH_NAME"
+
+echo ""
+echo "Initializing submodules and checking out matching branches..."
+echo ""
+
+# Initialize and checkout submodules
+cd "$WORKTREE_PATH"
+git submodule update --init --recursive
+
+# For each submodule, try to checkout to the matching branch
+git config --file .gitmodules --get-regexp path | awk '{print $2}' | while read SUBMODULE_PATH; do
+  SUBMODULE_NAME=$(basename "$SUBMODULE_PATH")
+  echo "Processing submodule: $SUBMODULE_NAME"
+  
+  cd "$SUBMODULE_PATH"
+  
+  # Try to checkout the branch
+  if git rev-parse --verify "origin/$BRANCH_NAME" >/dev/null 2>&1; then
+    # Branch exists on remote, create tracking branch and checkout
+    git switch --create "$BRANCH_NAME" "origin/$BRANCH_NAME"
+    echo "  ✓ Checked out existing branch: $BRANCH_NAME"
+  elif git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
+    # Branch exists locally
+    git switch "$BRANCH_NAME"
+    echo "  ✓ Switched to existing local branch: $BRANCH_NAME"
+  else
+    # Branch doesn't exist, create it from main
+    echo "  • Branch does not exist, creating from main..."
+    git switch --create "$BRANCH_NAME" origin/main
+    echo "  ✓ Created new branch: $BRANCH_NAME (from main)"
+  fi
+  
+  cd ..
+done
+
+cd ../..
+
+echo ""
+echo "✓ Worktree created successfully!"
+echo ""
+echo "Submodule status:"
+cd "$WORKTREE_PATH" 2>/dev/null && git submodule foreach --recursive 'echo "  $displaypath: $(git branch --show-current)"' || true
+cd - >/dev/null 2>&1
+
+echo ""
+echo "Next steps:"
+echo "  1. cd $WORKTREE_PATH"
+echo "  2. mise run worktree-info"
+echo "  3. mise run start"
+echo ""
+echo "Each worktree gets isolated Docker containers via COMPOSE_PROJECT_NAME"
+echo "Worktrees are stored in ./worktrees/ and are gitignored"
+"""
+
+[tasks.wt-list]
+description = "List all worktrees"
+run = """
+git worktree list
+"""
+
+[tasks.wt-r]
+description = "Remove a worktree (including submodules)"
+run = """
+WORKTREE_NAME="{{ arg(pos=1) }}"
+
+if [ -z "$WORKTREE_NAME" ]; then
+  echo "Error: worktree name is required"
+  echo "Usage: mise run wt-r feature-my-feature"
+  echo ""
+  echo "Available worktrees:"
+  git worktree list
+  exit 1
+fi
+
+WORKTREE_PATH="worktrees/$WORKTREE_NAME"
+
+if [ ! -d "$WORKTREE_PATH" ]; then
+  echo "Error: worktree not found: $WORKTREE_PATH"
+  exit 1
+fi
+
+echo "Removing worktree: $WORKTREE_PATH"
+git worktree remove --force "$WORKTREE_PATH" || true
+rm -rf "$WORKTREE_PATH"
+echo "✓ Worktree removed"
+"""
+
+[tasks.install-deps-local]
+description = "Install frontend dependencies locally (optional)"
+run = """
+echo "Installing frontend dependencies..."
+
+if ! command -v pnpm &> /dev/null; then
+  echo "pnpm not found. Install with: mise install"
+  exit 1
+fi
+
+cd teamdev-2026-front
+pnpm install
+
+echo ""
+echo "Frontend dependencies installed."
+echo "Backend formatter/linter/tests run in Docker containers via mise tasks."
+"""
