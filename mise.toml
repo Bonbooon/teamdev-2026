@@ -331,14 +331,9 @@ echo "Submodule status:"
 cd "$WORKTREE_PATH" 2>/dev/null && git submodule foreach --recursive 'echo "  $displaypath: $(git branch --show-current)"' || true
 cd - >/dev/null 2>&1
 
-echo ""
-echo "Next steps:"
-echo "  1. cd $WORKTREE_PATH"
-echo "  2. mise run worktree-info"
-echo "  3. mise run start"
-echo ""
-echo "Each worktree gets isolated Docker containers via COMPOSE_PROJECT_NAME"
-echo "Worktrees are stored in ./worktrees/ and are gitignored"
+cd $WORKTREE_PATH
+mise setup
+mise run worktree-info
 """
 
 [tasks.wt-list]
@@ -348,7 +343,7 @@ git worktree list
 """
 
 [tasks.wt-r]
-description = "Remove a worktree (including submodules)"
+description = "Remove a worktree and its Docker resources"
 run = """
 WORKTREE_NAME="{{ arg(pos=1) }}"
 
@@ -362,6 +357,9 @@ if [ -z "$WORKTREE_NAME" ]; then
 fi
 
 WORKTREE_PATH="worktrees/$WORKTREE_NAME"
+WORKTREE_BASENAME=$(basename "$WORKTREE_PATH")
+COMPOSE_PROJECT_NAME="teamdev-2026-$WORKTREE_BASENAME"
+COMPOSE_PROJECT_NAME=$(echo "$COMPOSE_PROJECT_NAME" | tr '/' '-' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
 
 if [ ! -d "$WORKTREE_PATH" ]; then
   echo "Error: worktree not found: $WORKTREE_PATH"
@@ -369,8 +367,37 @@ if [ ! -d "$WORKTREE_PATH" ]; then
 fi
 
 echo "Removing worktree: $WORKTREE_PATH"
+echo "Stopping/removing Docker resources for: $COMPOSE_PROJECT_NAME"
+
+# Stop containers and remove compose-managed local images for this worktree.
+docker compose -p "$COMPOSE_PROJECT_NAME" -f "$WORKTREE_PATH/compose.yml" down --rmi local --volumes --remove-orphans || true
+
+# Give Docker Desktop a brief moment to release host path handles.
+sleep 1
+
+# Normalize permissions before deletion (worktree files can be created by containers).
+chmod -R u+rwX "$WORKTREE_PATH" 2>/dev/null || true
+chmod -RN "$WORKTREE_PATH" 2>/dev/null || true
+xattr -rc "$WORKTREE_PATH" 2>/dev/null || true
+
+# Best-effort ownership fix using a throwaway container when host permissions are restrictive.
+if command -v docker >/dev/null 2>&1; then
+  docker run --rm \
+    -v "$PWD/$WORKTREE_PATH:/worktree" \
+    alpine:3.20 \
+    sh -c "chown -R $(id -u):$(id -g) /worktree 2>/dev/null || true" || true
+fi
+
 git worktree remove --force "$WORKTREE_PATH" || true
 rm -rf "$WORKTREE_PATH"
+
+if [ -e "$WORKTREE_PATH" ]; then
+  echo "⚠️  Could not fully delete $WORKTREE_PATH"
+  echo "Open handles (if any):"
+  lsof +D "$WORKTREE_PATH" 2>/dev/null | head -20 || true
+  exit 1
+fi
+
 echo "✓ Worktree removed"
 """
 
