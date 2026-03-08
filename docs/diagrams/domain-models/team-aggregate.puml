@@ -87,4 +87,11 @@ Domain Rules:
 - Cannot remove last active manager if policy requires.
 end note
 
+note as N1
+Inter-Aggregate Communication:
+TeamInvitation (separate aggregate) creates TeamMember
+when accepted. This preserves distinct lifecycles and
+transaction boundaries per DDD.
+end note
+
 @enduml
