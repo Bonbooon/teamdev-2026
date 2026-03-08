@@ -72,6 +72,39 @@ echo "  mise run stop     - Stop all services"
 echo "  mise run restart  - Restart all services"
 """
 
+[tasks.wt-setup]
+description = "Setup worktree environment (reuses existing Docker images)"
+run = """
+echo "🌿 Setting up worktree environment..."
+echo "Using shared Docker images (no rebuild needed)"
+echo ""
+
+echo "1️⃣ Configuring submodules..."
+mise run submodule-checkout
+mise run submodule-update
+
+echo ""
+echo "2️⃣ Starting services (using existing images)..."
+mise run start
+
+echo ""
+echo "3️⃣ Installing dependencies..."
+mise run install-deps
+
+echo ""
+echo "4️⃣ Initializing application..."
+mise run laravel-init
+
+echo ""
+echo "5️⃣ Installing frontend dependencies locally..."
+mise run front-init
+
+echo ""
+echo "✅ Worktree setup completed!"
+echo ""
+mise run worktree-info
+"""
+
 [tasks.start]
 description = "Start the development environment"
 run = """
@@ -341,11 +374,9 @@ echo "✓ Worktree created successfully!"
 echo ""
 echo "Submodule status:"
 cd "$WORKTREE_PATH" 2>/dev/null && git submodule foreach --recursive 'echo "  $displaypath: $(git branch --show-current)"' || true
-cd - >/dev/null 2>&1
-
-cd $WORKTREE_PATH
-mise setup
+mise run wt-setup
 mise run worktree-info
+cd - >/dev/null 2>&1
 """
 
 [tasks.wt-list]

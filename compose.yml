@@ -3,6 +3,7 @@ services:
     build: 
       context: ./
       dockerfile: ./docker/front/Dockerfile
+    image: teamdev-2026-front:latest
     tty: true
     volumes:
       - ./teamdev-2026-front:/app
@@ -11,6 +12,7 @@ services:
     
   app:
     build: ./docker/php
+    image: teamdev-2026-app:latest
     environment:
       TZ: UTC
     volumes:
