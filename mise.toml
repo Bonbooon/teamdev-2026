@@ -267,7 +267,7 @@ echo "----------------------------------------"
 """
 
 [tasks.wt-c]
-description = "Create a new worktree"
+description = "Create a new worktree with branch-matched submodules"
 run = """
 BRANCH_NAME="{{ arg(pos=1) }}"
 WORKTREE_PATH="worktrees/$BRANCH_NAME"
@@ -289,7 +289,46 @@ echo ""
 git worktree add "$WORKTREE_PATH" "$BRANCH_NAME"
 
 echo ""
-echo "Worktree created successfully!"
+echo "Initializing submodules and checking out matching branches..."
+echo ""
+
+# Initialize and checkout submodules
+cd "$WORKTREE_PATH"
+git submodule update --init --recursive
+
+# For each submodule, try to checkout to the matching branch
+git config --file .gitmodules --get-regexp path | awk '{print $2}' | while read SUBMODULE_PATH; do
+  SUBMODULE_NAME=$(basename "$SUBMODULE_PATH")
+  echo "Processing submodule: $SUBMODULE_NAME"
+  
+  cd "$SUBMODULE_PATH"
+  
+  # Try to checkout the branch
+  if git rev-parse --verify "origin/$BRANCH_NAME" >/dev/null 2>&1; then
+    # Branch exists on remote, create tracking branch and checkout
+    git switch --create "$BRANCH_NAME" "origin/$BRANCH_NAME"
+    echo "  ✓ Checked out existing branch: $BRANCH_NAME"
+  elif git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
+    # Branch exists locally
+    git switch "$BRANCH_NAME"
+    echo "  ✓ Switched to existing local branch: $BRANCH_NAME"
+  else
+    # Branch doesn't exist, create it from main
+    echo "  • Branch does not exist, creating from main..."
+    git switch --create "$BRANCH_NAME" origin/main
+    echo "  ✓ Created new branch: $BRANCH_NAME (from main)"
+  fi
+  
+  cd ..
+done
+
+cd ../..
+
+echo ""
+echo "✓ Worktree created successfully!"
+echo ""
+echo "Submodule status:"
+git -C "$WORKTREE_PATH" submodule foreach --recursive 'echo "  $displaypath: $(git branch --show-current)"'
 echo ""
 echo "Next steps:"
 echo "  1. cd $WORKTREE_PATH"
