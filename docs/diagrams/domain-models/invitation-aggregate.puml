@@ -6,6 +6,7 @@ package "Invitation Aggregate" {
     +teamId: UUID
     +inviterUserId: UUID
     +inviteeEmail: String
+    +permissionRole: TeamMemberPermissionRole
     +token: String
     +status: InvitationStatus
     +expiresAt: DateTime
