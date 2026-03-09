@@ -81,6 +81,7 @@ See migration files directly for exact column definitions, defaults, and constra
 - `time_zone: String`
 - `status: Enum(active, archived)`
 - `created_at, updated_at: Timestamps`
+- Unique constraint: `name`
 
 **TeamMembers Table** (Entity)
 - `id: UUID`
@@ -109,14 +110,14 @@ See migration files directly for exact column definitions, defaults, and constra
 **TeamInvitations Table** (Entity)
 - `id: UUID`
 - `team_id: UUID FK`
-- `invited_user_id: UUID FK`
+- `invitee_email: String`
 - `invited_by_user_id: UUID FK`
 - `permission_role: Enum(manager, member)`
 - `status: Enum(pending, accepted, declined)`
 - `token: String` - Unique token for acceptance link
 - `expires_at: DateTime`
 - `created_at: Timestamp`
-- Unique constraint: `(team_id, invited_user_id)`
+- Unique constraint: `(team_id, invitee_email)`
 
 ---
 
@@ -266,10 +267,11 @@ See migration files directly for exact column definitions, defaults, and constra
 **Alerts Table** (Aggregate Root)
 - `id: UUID`
 - `project_id: UUID FK`
+- `category: String` - Alert type (project_progress_delay, issue_progress_delay, workload_overload, etc.)
 - `description: String`
 - `level: Enum(yellow, red)`
 - `is_resolved: Boolean`
-- `created_at, updated_at: Timestamps`
+- `created_at: Timestamp`
 
 **AlertLogs Table** (Entity)
 - `id: BigInt` - Auto-increment for sequence
@@ -355,11 +357,13 @@ See migration files directly for exact column definitions, defaults, and constra
 **TriggerDefinitions Table** (Entity)
 - `id: UUID`
 - `name: String` - "project_progress_yellow", etc.
-- `category: String` - Alert category
-- `condition_logic: JSON` - Trigger condition rules
-- `action_plan_ids: JSON` - Associated ActionPlan IDs
+- `target_type: String` - Target entity type (survey, issue, project, team_member)
+- `condition_type: String` - Condition type identifier
+- `condition_value: Int?` - Threshold value (nullable for complex conditions)
+- `condition_params: JSON` - Additional condition parameters
+- `alert_level: String` - Alert severity (yellow, red)
 - `is_active: Boolean`
-- `created_at, updated_at: Timestamps`
+- `created_at: Timestamp`
 
 **TriggerExecutionLogs Table** (Entity)
 - `id: BigInt`

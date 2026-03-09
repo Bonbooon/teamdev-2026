@@ -4,6 +4,7 @@ package "Alert Aggregate" {
   class Alert <<Aggregate Root>> {
     +id: UUID
     +projectId: UUID
+    +category: String
     +description: String
     +level: AlertLevel
     +isResolved: Boolean
