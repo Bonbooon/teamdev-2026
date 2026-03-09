@@ -395,7 +395,7 @@ git worktree list
 """
 
 [tasks.wt-r]
-description = "Remove a worktree and its Docker resources"
+description = "Remove a worktree (including submodules)"
 run = """
 WORKTREE_NAME="{{ arg(pos=1) }}"
 
