@@ -4,10 +4,11 @@ package "TriggerRule Aggregate" {
   class TriggerDefinition <<Aggregate Root>> {
     +id: UUID
     +name: String
-    +targetType: TriggerTargetType
-    +conditionType: TriggerConditionType
-    +conditionValue: Int
-    +alertLevel: AlertLevel
+    +targetType: String
+    +conditionType: String
+    +conditionValue: Int?
+    +conditionParams: Json
+    +alertLevel: String
     +isActive: Boolean
     +createdAt: DateTime
     --
