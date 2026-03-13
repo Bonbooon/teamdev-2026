@@ -1,7 +1,7 @@
-# Alert System Architecture (Time-Based Triggers)
+# Alert System Architecture
 
-This document describes how the alert/automation system should be implemented for the application.  
-The goal is to support multiple time-based alerts (e.g., overdue tasks, unanswered surveys) in a scalable and maintainable way.
+This document describes the alert architecture that is currently implemented in the API worktree.  
+It focuses on the Phase 1 alert pipeline for project progress delay detection.
 
 ---
 
@@ -17,44 +17,57 @@ Example of what **not** to do:
 
 This approach tightly couples alert logic to the schema and becomes difficult to maintain as the number of alert types grows.
 
-Instead, alert triggers should be managed **centrally**.
+Instead, alert triggers are managed **centrally** through trigger definitions and execution logs.
 
 ---
 
-# 2. Central Trigger Log Table
+# 2. Persisted Structures
 
-Create a centralized table that records when alerts have been triggered.
+The current implementation uses the following tables:
 
-### `trigger_logs`
+### `trigger_definitions`
+
+Stores dev-configured trigger metadata.
+
+| column | description |
+|------|-------------|
+| id | UUID primary key |
+| name | human-readable trigger name |
+| trigger_class | evaluator class name |
+| target_type | `project`, `issue`, `team_member` |
+| condition_type | trigger rule type |
+| condition_value | optional scalar threshold |
+| condition_params | JSON thresholds/metadata |
+| alert_level | default alert level |
+| is_active | whether the definition is active |
+
+### `trigger_execution_logs`
+
+Records each evaluation/trigger outcome.
 
 | column | description |
 |------|-------------|
 | id | primary key |
-| trigger_type | type of alert (e.g. `task_overdue`, `survey_reminder`) |
-| entity_type | domain entity (`task`, `survey`, `user`, etc.) |
-| entity_id | id of the entity |
-| triggered_at | timestamp when the alert fired |
+| trigger_definition_id | FK to `trigger_definitions` |
+| target_entity_id | evaluated project/issue/member id |
+| status | `evaluated` or `triggered` |
+| metadata | optional JSON payload (alert level, description) |
+| triggered_at | timestamp of evaluation |
 
-Example:
+### Alert aggregate tables
 
-```text
-trigger_logs
-- id
-- trigger_type
-- entity_type
-- entity_id
-- triggered_at
-```
-
-This table prevents duplicate alerts and keeps alert state separate from domain data.
+- `alerts`: active/resolved alert records per project/category
+- `alert_logs`: repeated trigger history for an alert
+- `alert_action_plan_suggestions`: pivot rows connecting alerts to seeded action plans
+- `email_delivery_logs`: email send success/failure audit for the queued SendGrid job
 
 ---
 
-# 3. Scheduler Strategy (Highly Scalable)
+# 3. Scheduler Strategy
 
-Use a time-window scheduler instead of per-item delayed jobs.
+Phase 1 uses a coarse-grained scheduled command.
 
-Run a scheduler every minute:
+Laravel scheduler entrypoint:
 
 ```bash
 php artisan schedule:run
@@ -63,90 +76,65 @@ php artisan schedule:run
 Laravel scheduler configuration:
 
 ```php
-$schedule->command('alerts:process')->everyMinute();
+$schedule->command('alerts:process')->hourly()->withoutOverlapping();
 ```
 
-The scheduler should check entities whose trigger conditions are met within a time window.
+Current command behavior:
 
-Example: tasks that just became overdue.
+1. `alerts:process` loads all `in_progress` projects
+2. The command iterates the collection in chunks of 100
+3. `AlertTriggerService` filters registered evaluators to `project` target type only
+4. Each evaluator calculates metrics and returns either `null` or a `TriggerResult`
+5. The service always writes a `trigger_execution_logs` row
+6. Triggered results create or reuse an alert and append `alert_logs` subject to cooldown
 
-```php
-Task::whereBetween('due_date', [
-    now()->startOfMinute(),
-    now()->endOfMinute()
-])
-->where('completed', false)
-->get();
-```
-
-This approach is scalable because:
-
-- The scheduler runs at a constant frequency.
-- Queries are bounded by a time window.
-- With an index on time fields (e.g. `due_date`), the database performs an efficient range scan instead of scanning the entire table.
+This is simpler than the original time-window design, but it means processing cost grows with the number of active projects.
 
 ---
 
-# 4. Preventing Duplicate Alerts
+# 4. Duplicate Prevention and Cooldown
 
-Before sending an alert, check if the trigger already exists in `trigger_logs`.
+The current implementation prevents noisy duplicates in two layers:
 
-Example logic:
+1. Active alert reuse
+    Existing unresolved alerts are looked up by project and category. A new `alerts` row is created only when no active alert exists.
 
-```php
-$alreadyTriggered = TriggerLog::where([
-    'trigger_type' => 'survey_reminder',
-    'entity_type'  => 'survey',
-    'entity_id'    => $survey->id,
-])->exists();
-```
+2. Alert log cooldown
+    Additional `alert_logs` rows are rate-limited:
+    - yellow: 24 hours
+    - red: 6 hours
 
-If it does not exist:
-
-1. Send the alert (email, notification, etc.)
-2. Insert a record into `trigger_logs`
+`trigger_execution_logs` remain append-only and are used as an audit trail, not as the primary duplicate-prevention mechanism.
 
 ---
 
-# 5. Example Trigger Implementations
+# 5. Trigger Coverage in Phase 1
 
-## Overdue Task Alert
+Implemented evaluators in code:
 
-Condition:
+- `ProjectProgressDelayTrigger`
+- `IssueProgressDelayTrigger`
+- `WorkloadOverloadTrigger`
 
-```
-task.due_date < now()
-task.completed = false
-```
+Active in scheduled processing:
 
-If no existing `task_overdue` record exists in `trigger_logs`, send an email.
+- `ProjectProgressDelayTrigger` only
 
----
+Deferred to Phase 2:
 
-## Survey Reminder
-
-Condition:
-
-```
-survey.last_answered_at < now() - 7 days
-```
-
-If no `survey_reminder` entry exists in `trigger_logs`, send reminder email.
+- issue-level evaluation
+- team-member workload evaluation
+- the iteration contexts needed to invoke those evaluators from `alerts:process`
 
 ---
 
-# 6. Job Processing
+# 6. Email Job Processing
 
-The scheduler should not send emails directly.
+SendGrid delivery has been prepared as queue-backed infrastructure:
 
-Instead it should dispatch jobs to a queue.
-
-Example flow:
-
-1. Scheduler runs every minute
-2. Matching entities are identified
-3. Jobs are dispatched to queue
-4. Queue workers send emails
+1. `AlertEmailService` builds a payload and dispatches `SendAlertEmail`
+2. `SendAlertEmail` runs on the `emails` queue
+3. `EmailDeliveryLog` records success or final failure
 
 Queue worker command:
 
@@ -154,41 +142,53 @@ Queue worker command:
 php artisan queue:work
 ```
 
+Important current limitation:
+
+- `AlertTriggerService` does not currently call `AlertEmailService`
+- As a result, `alerts:process` creates alerts/logs/suggestions but does not send emails yet
+
 ---
 
 # 7. Infrastructure Requirements
 
-The following background processes must run continuously:
+The following background processes are relevant:
 
 - Laravel scheduler (`schedule:run`)
-- Queue workers (`queue:work`)
+- Queue workers (`queue:work`) once alert email dispatch is wired into the trigger flow
 
 These can run as container services (e.g., on AWS ECS).
 
 ---
 
-# 8. Benefits of This Architecture
+# 8. Benefits of Current Architecture
 
 This design provides:
 
-- High scalability (bounded queries with indexed timestamps)
-- Centralized alert state
+- Centralized trigger metadata via `trigger_definitions`
+- Auditable evaluation history via `trigger_execution_logs`
+- Separation between alert state, trigger execution, and email delivery logs
 - No schema pollution
-- Extensibility for future alert types
-- Idempotent alert processing
-- Operational simplicity
+- Reviewable path toward future trigger types
+- Basic idempotent alert processing for project-level alerts
 
-New alert types can be added without modifying existing database schemas.
+The main tradeoff is scalability: the current implementation scans all in-progress projects hourly rather than using a bounded time-window query model.
 
 ---
 
-# 9. Example Future Alerts
+# 9. Recommended Follow-up
 
-The system should support additional rules such as:
+The main gaps between architecture and product intent are:
 
-- User inactive for 30 days
-- Project idle for 14 days
-- Upcoming deadline reminders
-- Daily summary notifications
+- wire `AlertEmailService` into the trigger flow
+- implement alert resolution/reopen lifecycle
+- add alert read/resolve HTTP endpoints
+- enable issue/team-member trigger iteration in Phase 2
+- revisit `alerts:process` scalability if the number of active projects grows significantly
 
-All of these can reuse the same scheduler + trigger log mechanism.
+In addition, future phases must complete and enable all planned alert categories, not only the currently active project-level category.
+
+If docs should match product intent (not only current code), prioritize these implementation gaps first:
+
+- wire `AlertEmailService` into `alerts:process`
+- add alert read/resolve endpoints
+- implement actual resolution/reopen lifecycle
