@@ -146,7 +146,6 @@ Important current limitation:
 
 - `AlertTriggerService` does not currently call `AlertEmailService`
 - As a result, `alerts:process` creates alerts/logs/suggestions but does not send emails yet
-
 ---
 
 # 7. Infrastructure Requirements
