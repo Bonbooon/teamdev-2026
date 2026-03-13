@@ -25,10 +25,16 @@ This spec is the **operational definition** of alerts described in `specs/busine
 
 **MUST Features (Phase 1):**
 - S-02-01: Alert List Board (display)
-- S-02-03: Project Progress Delay Alert (yellow/red triggers)
-- S-02-04: Issue Progress Delay Alert (yellow/red triggers)
-- S-02-05: Workload Overload Alert (yellow/red triggers)
+- S-02-03: Project Progress Delay Alert (yellow/red triggers) ✅ **Implemented in Phase 1**
+- S-02-04: Issue Progress Delay Alert (yellow/red triggers) ⏳ **Deferred to Phase 2**
+- S-02-05: Workload Overload Alert (yellow/red triggers) ⏳ **Deferred to Phase 2**
 - S-02-10: Action Suggest (display suggested actions with alerts)
+
+> **Phase 1 Implementation Note**: The first release focuses on **project-level triggers only** (S-02-03).
+> Issue-level (S-02-04) and team-member-level (S-02-05) triggers are fully coded and tested but
+> disabled in the service provider until Phase 2, when the evaluation context for iterating
+> project issues and team members is implemented. This allows us to validate the core alert
+> infrastructure with a simpler scope first.
 
 **WANT Features (Phase 1, lower priority):**
 - S-02-02: Detailed Alert List
