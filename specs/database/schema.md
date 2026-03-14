@@ -194,7 +194,7 @@ See migration files directly for exact column definitions, defaults, and constra
 - `id: UUID`
 - `project_id: UUID FK`
 - `parent_issue_id: UUID FK?` - Null for top-level, set for subtasks
-- `issue_template_id: UUID FK`
+- `issue_template_id: UUID? FK`
 - `title: String`
 - `story_points: Int` - 1-13
 - `estimated_minutes: Int`
@@ -227,7 +227,6 @@ See migration files directly for exact column definitions, defaults, and constra
 - `issue_id: UUID FK`
 - `description: String`
 - `is_completed: Boolean`
-- `completed_at: DateTime?`
 - `created_at, updated_at: Timestamps`
 
 **IssueWorkLogs Table** (Entity)
@@ -239,6 +238,7 @@ See migration files directly for exact column definitions, defaults, and constra
 - `started_at: DateTime`
 - `ended_at: DateTime?`
 - `minutes: Int`
+- `description: Text?`
 - `created_at, updated_at: Timestamps`
 
 **IssueStatusEvents Table** (Entity)
