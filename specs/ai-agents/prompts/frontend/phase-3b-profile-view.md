@@ -89,7 +89,7 @@ const isSelf = me?.id === userId;
 | TeamManagementTab | FlaggedMembersのAvatar+Name | `features/dashboard/components/TeamManagementTab.tsx` |
 | Sidebar/UserSection | 自分のアバター | `layouts/Sidebar/UserSection.tsx` |
 
-各箇所で `<Link href={/users/${userId}}>` でラップする。
+各箇所で `<Link href={`/users/${userId}`}>` でラップする。
 
 ### API エンドポイント
 

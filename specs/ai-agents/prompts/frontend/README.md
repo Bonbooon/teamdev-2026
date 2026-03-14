@@ -95,8 +95,8 @@ Step 5: Phase 3A
 
 ## 関連ドキュメント
 
-- [UI仕様書](../../../docs/ui-specification.md)
-- [ページ仕様書](../../../docs/ui-pages/README.md)
-- [ライブラリ比較](../../../docs/ui-references/library-comparison.md)
-- [AIエージェントガイドライン](../guidelines.md)
-- [既存バックエンドプロンプト](../spec-execution-prompts.md)
+- [UI仕様書](../../../../docs/ui-specification.md)
+- [ページ仕様書](../../../../docs/ui-pages/README.md)
+- [ライブラリ比較](../../../../docs/ui-references/library-comparison.md)
+- [AIエージェントガイドライン](../../guidelines.md)
+- [既存バックエンドプロンプト](../../spec-execution-prompts.md)

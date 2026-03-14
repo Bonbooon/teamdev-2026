@@ -83,7 +83,7 @@ export function cn(...inputs: ClassValue[]) {
 
 ### 4. UIコンポーネント作成 (`src/components/ui/`)
 
-以下の18コンポーネントを作成する。各コンポーネントのprops定義・variant・スタイルは `docs/ui-specification.md` Section 4 に厳密に従うこと。
+以下の19コンポーネントを作成する。各コンポーネントのprops定義・variant・スタイルは `docs/ui-specification.md` Section 4 に厳密に従うこと。
 
 | ファイル | Section | 要点 |
 |---------|---------|------|
@@ -132,7 +132,7 @@ export function cn(...inputs: ClassValue[]) {
 - [ ] `tailwind.config.ts` にデザイントークンが反映されている
 - [ ] `globals.css` にフォント定義が追加されている
 - [ ] `src/utils/cn.ts` が作成されている
-- [ ] 18 + 1 (ConditionBadge) の UIコンポーネントが `src/components/ui/` に作成されている
+- [ ] 19 + 1 (ConditionBadge) = 20 の UIコンポーネントが `src/components/ui/` に作成されている
 - [ ] 各コンポーネントのprops型がui-specification.md Section 4 と一致している
 - [ ] 既存コンポーネントが `src/components/common/` に移動され、importパスが更新されている
 - [ ] `pnpm typecheck` がエラーなく通る
