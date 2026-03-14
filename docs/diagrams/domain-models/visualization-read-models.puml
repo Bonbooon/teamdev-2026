@@ -1,0 +1,90 @@
+@startuml
+package "Visualization Read Models" {
+
+  note as DesignNote
+    可視化における色表示の設計方針:
+    - ガントチャート・カンバンボードでは AlertLevel (yellow / red) を再利用
+    - alertLevel が null の場合は「正常 (on track)」→ UI で緑色表示
+    - ワークロード表示は独自の WorkloadLevel を使用
+  end note
+
+  enum AlertLevel <<shared>> {
+    yellow
+    red
+  }
+
+  class IssueProgressView <<Read Model>> {
+    +issueId: UUID
+    +title: String
+    +startDate: Date
+    +dueDate: Date
+    +progress: Int
+    +status: IssueStatus
+    +alertLevel: AlertLevel?
+    +teamId: UUID
+    +assigneeIds: UUID[]
+  }
+
+  enum WorkloadLevel {
+    green
+    yellow
+    red
+  }
+
+  class MemberWorkloadView <<Read Model>> {
+    +memberId: UUID
+    +name: String
+    +issueCount: Int
+    +assignedPoints: Int
+    +completedPoints: Int
+    +inProgressPoints: Int
+    +notStartedPoints: Int
+    +workloadPercent: Int
+    +workloadLevel: WorkloadLevel
+  }
+
+  class BoardIssueView <<Read Model>> {
+    +issueId: UUID
+    +title: String
+    +deadline: Date?
+    +progress: Int
+    +alertLevel: AlertLevel?
+    +assignees: AssigneeSummary[]
+  }
+
+  IssueProgressView --> AlertLevel
+  BoardIssueView --> AlertLevel
+  MemberWorkloadView --> WorkloadLevel
+}
+
+note right of IssueProgressView
+  閾値ロジック (ガントチャート):
+  expectedProgress = (daysElapsed / daysDue) * 100
+
+  IF actualProgress >= expectedProgress:
+    alertLevel = null  (UI: 🟢 green)
+  ELSE IF actualProgress >= expectedProgress * 0.8:
+    alertLevel = yellow (UI: 🟡 yellow)
+  ELSE:
+    alertLevel = red    (UI: 🔴 red)
+end note
+
+note right of BoardIssueView
+  閾値ロジック (カンバンボード):
+  ガントチャートと同一の AlertLevel 判定を使用。
+  追加表示: deadline まで 2日未満の場合は ⏱️ 時間警告を併記。
+end note
+
+note right of MemberWorkloadView
+  閾値ロジック (ワークロード):
+  workloadPercent = assignedPoints / capacityPoints * 100
+
+  IF workloadPercent <= 100%:
+    workloadLevel = green  (🟢 余裕あり)
+  ELSE IF workloadPercent <= 150%:
+    workloadLevel = yellow (🟡 キャパシティ付近)
+  ELSE:
+    workloadLevel = red    (🔴 過負荷)
+end note
+
+@enduml
