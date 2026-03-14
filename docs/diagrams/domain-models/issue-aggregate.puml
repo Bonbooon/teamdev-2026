@@ -5,7 +5,7 @@ package "Issue Aggregate" {
     +id: UUID
     +projectId: UUID
     +parentIssueId: UUID?
-    +issueTemplateId: UUID
+    +issueTemplateId: UUID?
     +title: String
     +storyPoints: StoryPoints
     +estimatedMinutes: EstimatedMinutes
@@ -74,6 +74,7 @@ package "Issue Aggregate" {
     +id: UUID
     +issueId: UUID
     +description: String
+    +isCompleted: Boolean
   }
 
   enum WorkLogSource {
@@ -88,6 +89,7 @@ package "Issue Aggregate" {
     +teamMemberId: UUID
     +source: WorkLogSource
     +externalLogId: String?
+    +description: String?
     +startedAt: DateTime
     +endedAt: DateTime?
     +minutes: Int

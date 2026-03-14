@@ -278,7 +278,10 @@ responses:
 - Get issue detail (requires auth)
 
 **PATCH /api/issues/{issueId}**
-- Update issue (S-03-05, requires auth)
+- Update issue fields: title, story_points, estimated_minutes, deadline (S-03-01, requires auth)
+
+**PATCH /api/issues/{issueId}/status**
+- Update issue status with transition validation (S-03-05, requires auth)
 
 **POST /api/issues/{issueId}/assignees**
 - Add assignee (S-03-02, requires auth)
@@ -303,6 +306,32 @@ responses:
 
 **GET /api/issues/{issueId}/work-logs**
 - List work logs (requires auth)
+
+### Issue Template Endpoints
+
+**GET /api/issue-templates**
+- List active templates (requires auth)
+
+**POST /api/issue-templates**
+- Create template (requires auth)
+
+**GET /api/issue-templates/{templateId}**
+- Get template with items (requires auth)
+
+**PATCH /api/issue-templates/{templateId}**
+- Update template (requires auth)
+
+**DELETE /api/issue-templates/{templateId}**
+- Delete template (requires auth)
+
+**POST /api/issue-templates/{templateId}/items**
+- Add template item (requires auth)
+
+**PATCH /api/issue-templates/{templateId}/items/{itemId}**
+- Update template item (requires auth)
+
+**DELETE /api/issue-templates/{templateId}/items/{itemId}**
+- Delete template item (requires auth)
 
 ### Alert Endpoints
 

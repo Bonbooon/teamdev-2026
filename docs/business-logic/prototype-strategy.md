@@ -127,7 +127,7 @@ Through our first 2 inquiries to the Product Owner, we discovered:
 **Priority 1 (Core):**
 - SMART-style issue templates
 - Basic progress tracking
-- GitHub Actions integration for commit-based updates
+- GitHub Actions integration for commit-based updates (deferred to Phase 2 per ADR 0008)
 
 **Priority 2 (Alert System):**
 - Yellow/Red alert triggers
