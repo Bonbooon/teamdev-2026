@@ -17,6 +17,29 @@ AIエージェントがフロントエンド実装を進めるための実行プ
 | 3A | [phase-3a-surveys.md](phase-3a-surveys.md) | サーベイ回答 + 設定 | 5 + hooks |
 | 3B | [phase-3b-profile-view.md](phase-3b-profile-view.md) | プロフィール閲覧 | 4 + hooks |
 
+## API ギャップ確認（実装前に必読）
+
+各フェーズの実装を始める前に、必ず [frontend-api-gap-backlog.md](frontend-api-gap-backlog.md) を確認してください。
+
+- **✅ Ready** なフェーズはそのまま実装を開始できます
+- **⚠️ Partial** なフェーズは、不足しているAPIエンドポイントをモック or 先にAPI実装する必要があります
+- **❌ Not Ready** なフェーズは、API実装が完了するまで着手できません
+
+| フェーズ | APIブロッカー状況 |
+|---------|------------------|
+| 0A | ✅ Ready — API不要 |
+| 0B | ✅ Ready — 認証エンドポイントのみ（実装済み）|
+| 1A | ⚠️ Partial — `member-workloads`, `condition-summary` 未実装 |
+| 1B | ⚠️ Partial — チーム解除 DELETE 未実装、レスポンス項目不足 |
+| 1C | ✅ Ready — 全エンドポイント実装済み |
+| 2A | ⚠️ Partial — グローバルalerts, my issues, pending surveys, condition 未実装 |
+| 2B | ⚠️ Partial — グローバル `GET /alerts`, reopen 未実装 |
+| 2C | ✅ Ready — 既存エンドポイントで対応可能 |
+| 3A | ⚠️ Partial — pending surveys フィルター未実装 |
+| 3B | ❌ Not Ready — プロフィール閲覧/編集エンドポイント未実装 |
+
+> 詳細: [frontend-api-gap-backlog.md](frontend-api-gap-backlog.md)
+
 ## 依存関係と実行順序
 
 ```mermaid
@@ -98,5 +121,6 @@ Step 5: Phase 3A
 - [UI仕様書](../../../../docs/ui-specification.md)
 - [ページ仕様書](../../../../docs/ui-pages/README.md)
 - [ライブラリ比較](../../../../docs/ui-references/library-comparison.md)
+- [Frontend ↔ API ギャップ一覧](frontend-api-gap-backlog.md)
 - [AIエージェントガイドライン](../../guidelines.md)
 - [既存バックエンドプロンプト](../../spec-execution-prompts.md)
