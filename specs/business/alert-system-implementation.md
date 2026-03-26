@@ -1,7 +1,7 @@
 # Alert System Implementation Specification
 
-**Version:** 1.0  
-**Last Updated:** 2026/03/06  
+**Version:** 1.1  
+**Last Updated:** 2026/03/26  
 **Human Documentation:** `docs/business-logic/workflows/alert-system.md`  
 **Domain Model:** `docs/diagrams/domain-models/alert-aggregate.puml`  
 **Strategy Reference:** `docs/business-logic/prototype-strategy.md`
@@ -25,23 +25,21 @@ This spec is the **operational definition** of alerts described in `specs/busine
 
 **MUST Features (Phase 1):**
 - S-02-01: Alert List Board (display)
-- S-02-03: Project Progress Delay Alert (yellow/red triggers) ✅ **Implemented in Phase 1**
-- S-02-04: Issue Progress Delay Alert (yellow/red triggers) ⏳ **Deferred to Phase 2**
-- S-02-05: Workload Overload Alert (yellow/red triggers) ⏳ **Deferred to Phase 2**
+- S-02-03: Project Progress Delay Alert (yellow/red triggers) ✅ **Implemented**
+- S-02-04: Issue Progress Delay Alert (yellow/red triggers) ✅ **Implemented (Phase 2)**
+- S-02-05: Workload Overload Alert (yellow/red triggers) ✅ **Implemented (Phase 2)**
 - S-02-10: Action Suggest (display suggested actions with alerts)
 
-> **Phase 1 Implementation Note**: The first release focuses on **project-level triggers only** (S-02-03).
-> Issue-level (S-02-04) and team-member-level (S-02-05) triggers are fully coded and tested but
-> disabled in the service provider until Phase 2, when the evaluation context for iterating
-> project issues and team members is implemented. This allows us to validate the core alert
-> infrastructure with a simpler scope first.
+> **Implementation Note**: All MUST alert triggers are now active. The pipeline iterates
+> project issues (for issue-level triggers) and team members (for team-member-level triggers)
+> per project. Alerts are aggregated at the project level — one alert per project per category.
 
 **WANT Features (Phase 1, lower priority):**
 - S-02-02: Detailed Alert List
-- S-02-06: Communication Gap Alert
-- S-02-07: Key Person Absence Alert
-- S-02-08: Document Stagnation Alert
-- S-02-09: Assignment Paralysis Alert
+- S-02-06: Communication Gap Alert — ❌ **Blocked**: No comments/activity tracking system exists
+- S-02-07: Key Person Absence Alert — ❌ **Blocked**: No vacation/absence tracking in team_members
+- S-02-08: Document Stagnation Alert — ❌ **Blocked**: No document management system exists
+- S-02-09: Assignment Paralysis Alert ✅ **Implemented (Phase 2)** — Yellow: 24h unassigned, Red: 48h unassigned. Dependency check for Red is deferred (no dependency tracking exists).
 
 **Out of Scope (Phase 2+):**
 - PM customization of trigger thresholds
@@ -137,7 +135,7 @@ THEN createAlert(yellow)
 
 ---
 
-### Category 2: Individual Issue Progress Delay (S-02-04)
+### Category 2: Individual Issue Progress Delay (S-02-04) ✅ **Implemented**
 
 **Purpose:** Alert PM/assignee that specific task is falling behind
 
@@ -158,7 +156,7 @@ THEN createAlert(yellow)
 
 ---
 
-### Category 3: Workload Overload (S-02-05)
+### Category 3: Workload Overload (S-02-05) ✅ **Implemented**
 
 **Purpose:** Alert PM that team member capacity is exceeded
 
@@ -178,7 +176,11 @@ THEN createAlert(yellow)
 
 ---
 
-### Category 4: Communication Gap / Information Blockage (S-02-06)
+### Category 4: Communication Gap / Information Blockage (S-02-06) ❌ **Blocked**
+
+> **Blocker:** No comments/activity tracking system exists. Requires `issue_comments` and/or
+> `issue_activities` tables. Also requires issue dependency/blocker tracking for detecting
+> "blocker issue unresolved" conditions. Cannot be implemented without these domain models.
 
 **Purpose:** Alert team when information flow is stalled
 
@@ -197,7 +199,11 @@ THEN createAlert(yellow)
 
 ---
 
-### Category 5: Key Person Absence Impact (S-02-07)
+### Category 5: Key Person Absence Impact (S-02-07) ❌ **Blocked**
+
+> **Blocker:** No vacation/absence tracking exists. Requires `on_vacation`, `vacation_start_at`,
+> `vacation_end_at` fields on `team_members` table. Also requires issue dependency tracking
+> for critical path identification. Cannot be implemented without these domain models.
 
 **Purpose:** Alert PM about single points of failure
 
@@ -216,7 +222,11 @@ THEN createAlert(yellow)
 
 ---
 
-### Category 6: Document Stagnation (S-02-08)
+### Category 6: Document Stagnation (S-02-08) ❌ **Blocked**
+
+> **Blocker:** No document management system exists. Requires a `documents` table with
+> update timestamp tracking and project association. Cannot be implemented without this
+> domain model.
 
 **Purpose:** Alert team to update documentation during active project
 
@@ -234,7 +244,7 @@ THEN createAlert(yellow)
 
 ---
 
-### Category 7: Assignment Paralysis (S-02-09)
+### Category 7: Assignment Paralysis (S-02-09) ✅ **Implemented**
 
 **Purpose:** Alert PM when new task created but not assigned
 
@@ -242,15 +252,18 @@ THEN createAlert(yellow)
 - Issue created 24 hours ago
 - No assignee set
 - Logic: `NOW() - createdAt > 24 hours` AND `assignees.count() == 0`
+- Suggested actions: `assign-task`, `decompose-tasks`, `schedule-sync`
 
 **🔴 Red Trigger:**
 - Issue unassigned for 48+ hours
-- Dependencies waiting on this task
+- ~~Dependencies waiting on this task~~ (Deferred: no dependency tracking exists)
+- Logic: `NOW() - createdAt > 48 hours` AND `assignees.count() == 0`
+- Suggested actions: `assign-task`, `decompose-tasks`, `escalate`
 
-**Action Suggestions:**
-- "Assign task to [team member name]"
-- "Clarify task requirements before assignment"
-- "Decompose task to smaller pieces"
+> **Implementation Note:** Red trigger fires on time threshold alone (48h).
+> The "dependencies waiting" condition requires issue dependency tracking
+> which does not exist in the current domain model. This can be added when
+> dependency management is implemented.
 
 ---
 
