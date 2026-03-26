@@ -16,7 +16,8 @@ Runs the repo quality gates in the expected order:
   4) pnpm format
   5) pnpm lint:fix
   6) pnpm typecheck
-  7) pnpm openapi (only if OpenAPI contracts changed)
+  7) pnpm test
+  8) pnpm openapi (only if OpenAPI contracts changed)
 
 Notes:
 - This script does not auto-fix failures; it stops at the first failing command.
@@ -112,6 +113,7 @@ run pnpm check:fix
 run pnpm format
 run pnpm lint:fix
 run pnpm typecheck
+run pnpm test
 
 front_status_after="$(git_changed_paths "$FRONT_DIR" || true)"
 
