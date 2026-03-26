@@ -66,6 +66,19 @@ Options:
 - `./scripts/quality-gates.sh --skip-mise`
 - `./scripts/quality-gates.sh --skip-openapi`
 
+### Frontend quality commands (run from `teamdev-2026-front/`)
+
+When working on frontend-only changes, you can run the individual gates directly:
+
+```bash
+pnpm format     # Auto-fix formatting via Biome
+pnpm lint:fix   # Auto-fix lint issues via Biome
+pnpm test       # Run Jest unit tests
+pnpm check      # Biome check (formatting + lint + organise imports)
+```
+
+The full `quality-gates.sh` script runs these (except `pnpm test`) plus `pnpm typecheck` automatically.
+
 ## Commit Execution Checklist (Agent)
 
 Before finalizing commits:
