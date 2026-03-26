@@ -265,7 +265,12 @@ run = """
 echo "⚙️  Initializing Laravel application..."
 
 echo "Setting up environment file..."
-docker compose exec app cp .env.example .env || echo "⚠️  .env file may already exist"
+if docker compose exec app test -f .env; then
+  echo "  ✓ .env already exists (copied from main worktree) — skipping"
+else
+  docker compose exec app cp .env.example .env || echo "⚠️  Failed to copy .env.example"
+  echo "  ✓ Created .env from .env.example"
+fi
 
 echo "Generating application key..."
 docker compose exec app php artisan key:generate
@@ -377,6 +382,26 @@ git config --file .gitmodules --get-regexp path | awk '{print $2}' | while read 
 done
 
 cd ../..
+
+echo ""
+echo "6️⃣ Copying .env files from main worktree..."
+MAIN_ROOT="$(pwd)"
+
+# Copy frontend .env.local if it exists in main worktree
+if [ -f "$MAIN_ROOT/teamdev-2026-front/.env.local" ]; then
+  cp "$MAIN_ROOT/teamdev-2026-front/.env.local" "$WORKTREE_PATH/teamdev-2026-front/.env.local"
+  echo "  ✓ Copied teamdev-2026-front/.env.local"
+else
+  echo "  ⚠️  No .env.local found in main frontend — skipped"
+fi
+
+# Copy backend .env if it exists in main worktree
+if [ -f "$MAIN_ROOT/teamdev-2026-api/web/.env" ]; then
+  cp "$MAIN_ROOT/teamdev-2026-api/web/.env" "$WORKTREE_PATH/teamdev-2026-api/web/.env"
+  echo "  ✓ Copied teamdev-2026-api/web/.env"
+else
+  echo "  ⚠️  No .env found in main backend — skipped"
+fi
 
 echo ""
 echo "✓ Worktree created successfully!"
