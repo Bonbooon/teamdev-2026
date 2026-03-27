@@ -1,6 +1,6 @@
 # Directory Structure
 
-This document defines layer responsibilities for Clean Architecture + CQRS and the frontend Presentation/Container pattern.
+This document defines layer responsibilities for Clean Architecture + CQRS and the frontend feature-based pattern.
 
 ## Backend (Laravel)
 
@@ -48,45 +48,69 @@ app/
 - `Interfaces`: delivery mechanisms (HTTP/CLI)
 - `Shared`: reusable cross-cutting utilities and contracts
 
-## Frontend (Next.js + Presentation/Container pattern)
+## Frontend (Next.js + Feature-based pattern)
+
+> **Note:** The original plan used a Container/Presentation pattern. During Phase 1 MVP implementation, a simpler feature-based organization (components + hooks) was adopted. See ADR `docs/architecture/adr/0008-feature-based-frontend-organization.md` for rationale.
 
 Base: `teamdev-2026-front/src/`
 
 ```text
 src/
 ├── pages/
-│   └── ...                         # each page only receives feature component
+│   ├── login/
+│   │   └── index.tsx              # AuthLayout → GoogleLoginButton
+│   ├── profile/
+│   │   └── setup.tsx              # SetupLayout → ProfileSetup
+│   ├── teams/
+│   │   ├── index.tsx              # AppLayout → TeamListPage
+│   │   └── [teamId].tsx           # AppLayout → TeamDetailPage
+│   ├── projects/
+│   │   ├── index.tsx              # AppLayout → ProjectListPage
+│   │   └── [projectId]/
+│   │       ├── index.tsx          # AppLayout → ProjectDetailPage
+│   │       └── issues/
+│   │           └── new.tsx        # AppLayout → IssueCreatePage
+│   ├── issues/
+│   │   └── [issueId].tsx          # AppLayout → IssueDetailPage
+│   └── index.tsx                  # AppLayout → Dashboard
 ├── features/
-│   └── [feature]/
-│       ├── container/
-│       ├── presentation/
-│       └── index.ts
-├── application/
-│   ├── commands/
-│   ├── queries/
-│   └── usecases/
-├── domain/
-│   ├── models/
-│   └── value-objects/
-├── infrastructure/
-│   ├── api/
-│   └── repositories/
-└── shared/
-    ├── types/
-    ├── utils/
-    └── constants/
+│   ├── teams/
+│   │   ├── components/            # TeamListPage, TeamCard, TeamHeader, etc.
+│   │   └── hooks/                 # useTeams, useTeam, useTeamMembers
+│   ├── projects/
+│   │   ├── components/            # ProjectListPage, ProjectCard, FilterBar, etc.
+│   │   └── hooks/                 # useProjects, useProject, useProjectIssues, useProjectAlerts
+│   └── issues/
+│       ├── components/            # IssueCreatePage, IssueDetailPage, IssueForm, etc.
+│       └── hooks/                 # useIssue, useIssueSubtasks, useIssueDod, useIssueTemplates
+├── components/
+│   ├── ui/                        # Design system (Button, Input, Modal, Card, Badge, etc.)
+│   └── common/                    # AuthGuard, GoogleLoginButton, Loading, LogoutButton
+├── layouts/
+│   ├── AppLayout.tsx              # Sidebar + Header + content
+│   ├── AuthLayout.tsx             # Centered card layout
+│   ├── SetupLayout.tsx            # Minimal layout for profile setup
+│   ├── Header/                    # Header with TabNav
+│   └── Sidebar/                   # QuickActions + UserSection
+├── hooks/
+│   └── useAuth.ts                 # Authentication hook
+├── styles/
+│   └── globals.css                # Tailwind + Google Fonts
+└── utils/
+    └── cn.ts                      # clsx + twMerge utility
 ```
 
 ### Responsibility by layer
 
-- `pages`: route entry points only
-- `features/*/container`: state, hooks, API/query invocation
-- `features/*/presentation`: stateless/pure UI
-- `features/*/index.ts`: public feature export
-- `application`: CQRS-oriented UI use-cases
-- `domain`: frontend domain models and validation logic
-- `infrastructure`: API client adapters (wrap generated client)
-- `shared`: common helpers
+- `pages`: route entry points only — thin wrappers that compose layout + feature component
+- `features/*/components`: feature-specific UI components (both stateful and presentational)
+- `features/*/hooks`: SWR-based data fetching hooks (one hook per API resource)
+- `components/ui`: shared design system components (stateless, reusable)
+- `components/common`: shared app-level components (auth, loading)
+- `layouts`: page layout shells (AppLayout, AuthLayout, SetupLayout)
+- `hooks`: shared application hooks
+- `styles`: global CSS and Tailwind config
+- `utils`: utility functions
 
 ## CQRS placement rules
 
@@ -106,9 +130,9 @@ Backend:
 
 Frontend:
 
-- `teamdev-2026-front/__tests__/features/[feature]/container/`
-- `teamdev-2026-front/__tests__/features/[feature]/presentation/`
-- `teamdev-2026-front/__tests__/application/`
+- `teamdev-2026-front/__tests__/features/[feature]/components/`
+- `teamdev-2026-front/__tests__/features/[feature]/hooks/`
+- `teamdev-2026-front/__tests__/components/ui/`
 
 ## Adoption guidance
 
