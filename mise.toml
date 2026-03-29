@@ -258,6 +258,12 @@ cd ../teamdev-2026-front
 git fetch --prune && git branch -vv | awk '/: gone]/{print $1}' | xargs -n 1 git branch -D
 """
 
+[tasks.pull-c]
+run = """
+mise run pull-all
+mise run cleanb
+"""
+
 # === アプリケーション初期化 ===
 [tasks.laravel-init]
 description = "Initialize Laravel application (env, key, migrate, seed)"
