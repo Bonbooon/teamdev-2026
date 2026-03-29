@@ -1,7 +1,7 @@
 # OpenAPI Contract Specification
 
 **Version:** 1.0  
-**Last Updated:** 2026/03/06  
+**Last Updated:** 2026/03/29  
 **Human Documentation:** `docs/api/endpoints.md`  
 **Generated File:** `teamdev-2026-api/docs/openapi/openapi.json`
 
@@ -234,11 +234,14 @@ responses:
 **POST /api/teams/{teamId}/invitations**
 - Send invitation (S-04-05, requires auth, manager only)
 
+**GET /api/invitations/{token}**
+- Read invitation metadata (no auth, read-only, browser/frontend lookup)
+
 **POST /api/invitations/{token}/accept**
-- Accept invitation (no auth, token-based)
+- Accept invitation (no auth, token-based POST mutation)
 
 **POST /api/invitations/{token}/decline**
-- Decline invitation (no auth, token-based)
+- Decline invitation (no auth, token-based POST mutation)
 
 ### Project Endpoints
 

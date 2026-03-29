@@ -1,7 +1,7 @@
 # Team Management Specification
 
 **Version:** 1.0  
-**Last Updated:** 2026/03/06  
+**Last Updated:** 2026/03/29  
 **Human Documentation:** `docs/business-logic/workflows/team-management.md`  
 **Domain Model:** `docs/diagrams/domain-models/team-aggregate.puml`
 
@@ -396,28 +396,28 @@ Response (201 Created):
 **Precondition:** Team exists, user is manager  
 
 **Main Flow:**
-1. Manager opens Team Detail
-2. Click "Invite Member" button (Members tab)
-3. Modal opens with user search
-4. Manager searches/selects users to invite
-5. Click "Send Invite"
-6. Invitation created, email sent to invitee
+1. Manager opens the member invitation flow for a team
+2. Manager enters the invitee email address and optional permission role
+3. Manager submits the invite request
+4. Invitation is created and an invitation email is sent to the invitee
 
-**User Search:**
-- Search by name, email
-- Show user profile preview (avatar, title, expertise)
-- Multi-select (invite multiple at once)
+**Phase 1 Current State:**
+- Invitation creation is email-based for a single invitee per request
+- Detailed invitation UI behavior is intentionally left to frontend Phase 2 work
 
 **Invitation Entity:**
 ```
 TeamInvitation {
   id: UUID
   teamId: UUID
-  invitedUserId: UUID
-  invitedByUserId: UUID
+  inviterUserId: UUID
+  inviteeEmail: String
   permissionRole: TeamMemberPermissionRole (default: member)
-  status: InvitationStatus (pending, accepted, declined)
+  token: String
+  status: InvitationStatus (pending, accepted, expired, revoked)
   expiresAt: DateTime (14 days from creation)
+  acceptedAt: DateTime?
+  revokedAt: DateTime?
   createdAt: DateTime
 }
 ```
@@ -431,40 +431,48 @@ Hi [Name],
 
 [Manager Name] has invited you to join the team "[Team Name]".
 
-Expertise: [Team context from description]
-
-Accept Invite: [Link with token]
-Decline: [Link with token]
+Accept Invite: {FRONTEND_URL}/invitations/{token}/accept
+Decline: {FRONTEND_URL}/invitations/{token}/decline
 
 Invite expires in 14 days.
 ```
 
 **Acceptance Flow (Invitee):**
-1. Invitee clicks "Accept Invite" link in email
-2. Logged in (if not)
-3. Invitation accepted, user becomes team member
-4. Redirected to Team Detail
+1. Invitee opens the frontend accept link from the email
+2. Browser or frontend reads invitation metadata via `GET /api/invitations/{token}`
+3. Frontend submits `POST /api/invitations/{token}/accept` with the invitee email
+4. API validates token, expiry, and email match, then creates a TeamMember
 
 **Rejection Flow (Invitee):**
-1. Invitee clicks "Decline" link
-2. Invitation marked declined
-3. No team membership created
+1. Invitee opens the frontend decline link from the email
+2. Browser or frontend may read invitation metadata via `GET /api/invitations/{token}`
+3. Frontend submits `POST /api/invitations/{token}/decline`
+4. Invitation is marked revoked and no team membership is created
 
 **Business Rules:**
 - Invitations expire after 14 days
 - Cannot invite users already in team
 - Manager can set permission role (manager or member)
-- Invitation unique per (team, user)
+- Invitation email links use `FRONTEND_URL`, not `APP_URL`
+- `GET /api/invitations/{token}` is a read-only guest endpoint for browser or frontend flows
+- Accept and decline remain POST-only mutation endpoints
+- Accept requires the invitee email to match the invitation and an existing user account
+- Invitation unique per (team, invitee email)
 
 **Error Cases:**
 - User already in team → 422 Unprocessable Entity
-- User not found → 404 Not Found
 - Invalid permission role → 422 error
 - Permission denied (not manager) → 403 Forbidden
+- Invitation token not found → 404 Not Found
+- Invitation expired → 410 Gone
+- Invitation email mismatch on accept → 422 Unprocessable Entity
+- Invitee user account not found on accept → 404 Not Found
 
 **Acceptance Criteria:**
 - ✅ Invite sent to user
 - ✅ Email notification delivered
+- ✅ Email links point to frontend invitation routes
+- ✅ Browser or frontend can fetch invitation metadata before mutation
 - ✅ Invitee can accept/decline
 - ✅ Accepted invitation creates TeamMember
 - ✅ Expired invitations handled
@@ -482,15 +490,21 @@ POST /api/teams/{teamId}/invitations
 Authorization: Bearer {token}
 Request:
 {
-  "invitedUserId": "uuid",
+  "inviteeEmail": "user@example.com",
   "permissionRole": "manager|member"
 }
 
+// Read invitation metadata (no auth, read-only)
 GET /api/invitations/{invitationToken}
-// Accept invitation (no auth)
-POST /api/invitations/{invitationToken}/accept
 
-// Decline invitation (no auth)
+// Accept invitation (no auth, POST mutation)
+POST /api/invitations/{invitationToken}/accept
+Request:
+{
+  "email": "user@example.com"
+}
+
+// Decline invitation (no auth, POST mutation)
 POST /api/invitations/{invitationToken}/decline
 ```
 
@@ -526,6 +540,7 @@ Only manager can archive. Manager can unarchive.
 | `POST /api/teams` | POST | Create team |
 | `PATCH /api/teams/{teamId}` | PATCH | Update team (manager only) |
 | `POST /api/teams/{teamId}/invitations` | POST | Send invitation |
+| `GET /api/invitations/{token}` | GET | Read invitation metadata for browser/frontend flow |
 | `POST /api/invitations/{token}/accept` | POST | Accept invitation |
 | `POST /api/invitations/{token}/decline` | POST | Decline invitation |
 

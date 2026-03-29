@@ -1,7 +1,7 @@
 # External Services Integration Specification
 
 **Version:** 1.0  
-**Last Updated:** 2026/03/06  
+**Last Updated:** 2026/03/29  
 **Human Documentation:** `docs/api/external-services.md`
 
 ---
@@ -24,6 +24,7 @@ Send alert notifications, survey invitations, team invitations, and system notif
 
 **Environment Variables (Laravel .env):**
 ```
+FRONTEND_URL=https://app.motiv.cloud
 SENDGRID_API_KEY=your_api_key_here
 SENDGRID_FROM_EMAIL=alerts@motiv.cloud
 SENDGRID_FROM_NAME="Motivation Cloud Teamwork"
@@ -32,6 +33,8 @@ SENDGRID_ALERT_TEMPLATE_RED=d-template_id_red
 SENDGRID_SURVEY_TEMPLATE=d-survey_template_id
 SENDGRID_INVITE_TEMPLATE=d-invite_template_id
 ```
+
+`FRONTEND_URL` is required for team invitation emails. Invitation delivery should fail fast if it is missing or empty because invitation links are browser-facing, not API-facing.
 
 ### Template Configuration
 
@@ -68,9 +71,17 @@ Variables:
 - `{{firstName}}` - Invitee first name
 - `{{inviterName}}` - Manager name
 - `{{teamName}}` - Team name
-- `{{acceptLink}}` - Accept invite link
-- `{{declineLink}}` - Decline invite link
+- `{{acceptLink}}` - Frontend accept route built from `FRONTEND_URL`
+- `{{declineLink}}` - Frontend decline route built from `FRONTEND_URL`
 - `{{expiresAt}}` - Invitation expiration date
+
+Invitation links for Phase 1 must be generated as frontend routes:
+- `acceptLink = {FRONTEND_URL}/invitations/{token}/accept`
+- `declineLink = {FRONTEND_URL}/invitations/{token}/decline`
+
+The frontend or browser flow then:
+- reads invitation metadata with `GET /api/invitations/{token}`
+- submits mutations with `POST /api/invitations/{token}/accept` or `POST /api/invitations/{token}/decline`
 
 ### Sending Logic
 
