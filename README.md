@@ -116,6 +116,30 @@ mise run submodule-checkout
 mise run submodule-update
 ```
 
+## デモマネージャーでデモデータにアクセスする手順
+
+Google OAuth の実装上、デモマネージャー用ユーザーは先に Google ログインで作成されている必要があります。そのため `migrate:fresh --seed` ではなく、以下の順序で実行してください。
+
+1. `teamdev-2026-api/web/.env` の `DEMO_MANAGER_EMAIL` に、デモで使う Google アカウントのメールアドレスを設定する
+2. API コンテナ内で `php artisan migrate:fresh` を実行する
+3. フロントエンドで `DEMO_MANAGER_EMAIL` と同じ Google アカウントでログインする
+4. 初回ログインの場合はプロフィール設定を完了する
+5. API コンテナ内で `php artisan db:seed` を実行する
+6. フロントエンドを再読み込みし、デモマネージャーとしてダッシュボード・プロジェクト・アラート・サーベイを確認する
+
+API コンテナに入って実行する例:
+
+```bash
+mise run app-shell
+php artisan migrate:fresh
+php artisan db:seed
+```
+
+補足:
+
+- `php artisan migrate:fresh --seed` だと、Google ログイン前にデモマネージャーのユーザーが未作成のため失敗します
+- デモ用シーダーは `DEMO_MANAGER_EMAIL` で既存ユーザーを検索し、その実ユーザーIDにチーム・プロジェクト・アラートを紐付けます
+
 ## 補足
 
 ### miseのインストール
