@@ -20,125 +20,36 @@ SWAGGER_PORT = "8080"
 # === サブモジュール管理 ===
 [tasks.submodule-checkout]
 description = "Checkout all submodules to their configured branches"
-run = """
-echo "🔄 Checking out submodules to their configured branches..."
-git submodule foreach -q --recursive 'git switch $(git config -f $toplevel/.gitmodules submodule.$name.branch) || echo "Warning: Could not switch branch for $name"'
-echo "✅ Submodule checkout completed"
-"""
+run = "bash scripts/submodule-checkout.sh"
 
 [tasks.submodule-update]
 description = "Update all submodules to their latest commits"
-run = """
-echo "📥 Updating submodules to latest commits..."
-git submodule update --remote --merge
-echo "✅ Submodule update completed"
-"""
+run = "bash scripts/submodule-update.sh"
 
 # === 環境管理 ===
 [tasks.setup]
 description = "Complete project setup (recommended for first-time setup)"
-run = """
-echo "🚀 Setting up development environment..."
-echo "This will take a few minutes on first run..."
-echo ""
-
-echo "1️⃣ Configuring submodules..."
-mise run submodule-checkout
-mise run submodule-update
-
-echo ""
-echo "2️⃣ Building Docker containers..."
-mise run build
-
-echo ""
-echo "3️⃣ Starting services..."
-mise run start
-
-echo ""
-echo "4️⃣ Installing dependencies..."
-mise run install-deps
-
-echo ""
-echo "5️⃣ Initializing application..."
-mise run laravel-init
-
-echo ""
-echo "6️⃣ Installing frontend dependencies locally..."
-mise run front-init
-
-echo ""
-echo "✅ Setup completed successfully!"
-echo ""
-echo "📋 Services are now available at:"
-echo "  - Frontend: http://localhost"
-echo "  - Backend API: http://localhost/api"
-echo "  - Swagger UI: http://localhost:8080"
-echo "  - PostgreSQL: localhost:5432"
-echo ""
-echo "🔧 Useful commands:"
-echo "  mise run dev      - Start development servers"
-echo "  mise run logs     - View container logs"
-echo "  mise run status   - Check service status"
-echo "  mise run stop     - Stop all services"
-echo "  mise run restart  - Restart all services"
-"""
+run = "bash scripts/setup.sh"
 
 [tasks.wt-setup]
 description = "Setup worktree environment (reuses existing Docker images)"
-run = """
-echo "🌿 Setting up worktree environment..."
-echo "Using shared Docker images (no rebuild needed)"
-echo ""
-
-echo "1️⃣ Configuring submodules..."
-mise run submodule-checkout
-mise run submodule-update
-
-echo ""
-echo "2️⃣ Starting services (using existing images)..."
-mise run start
-
-echo ""
-echo "3️⃣ Installing dependencies..."
-mise run install-deps
-
-echo ""
-echo "4️⃣ Initializing application..."
-mise run laravel-init
-
-echo ""
-echo "5️⃣ Installing frontend dependencies locally..."
-mise run front-init
-
-echo ""
-echo "✅ Worktree setup completed!"
-echo ""
-mise run worktree-info
-"""
+run = "bash scripts/wt-setup.sh"
 
 [tasks.start]
 description = "Start the development environment"
-run = """
-docker compose up -d
-"""
+run = "bash scripts/start.sh"
 
 [tasks.ps]
 description = "List running containers"
-run = """
-docker compose ps
-"""
+run = "bash scripts/ps.sh"
 
 [tasks.down]
 description = "Stop and remove all services"
-run = """
-docker compose down
-"""
+run = "bash scripts/down.sh"
 
 [tasks.destroy]
 description = "Completely remove all containers, images, and volumes"
-run = """
-  docker compose down --rmi all --volumes --remove-orphans
-"""
+run = "bash scripts/destroy.sh"
 
 [tasks.build]
 description = "Build the project"
@@ -147,166 +58,77 @@ run = "docker compose build --no-cache --force-rm"
 # === 依存関係インストール ===
 [tasks.install-deps]
 description = "Install all dependencies (backend and frontend)"
-run = """
-echo "📦 Installing all dependencies..."
-
-echo "Installing backend dependencies..."
-docker compose exec app composer install
-
-echo "✅ All dependencies installed"
-"""
+run = "bash scripts/install-deps.sh"
 
 # === 開発支援 ===
 [tasks.front-format]
 description = "Run code formatting (auto-detects Docker/local)"
-run = """
-cd teamdev-2026-front
-pnpm biome check --write .
-"""
+run = "bash scripts/front-format.sh"
 
 [tasks.app-format]
 description = "Format code using Laravel Pint"
-run = """
-docker compose exec app vendor/bin/pint
-"""
+run = "bash scripts/app-format.sh"
 
 [tasks.app-analysis]
 description = "Run code analysis"
-run = """
-docker compose exec app vendor/bin/phpstan analyse --memory-limit=1G
-"""
+run = "bash scripts/app-analysis.sh"
 
 [tasks.fmtl]
 description = "Runs formatter and linter"
-run = """
-docker compose exec app vendor/bin/pint
-docker compose exec app vendor/bin/phpstan analyse --memory-limit=1G
-"""
+run = "bash scripts/fmtl.sh"
 
 [tasks.ft]
 description = "Runs all the unit tests"
-run = """
-docker compose exec app php artisan test
-"""
+run = "bash scripts/ft.sh"
 
 [tasks.t]
 description = "Runs a specific unit test"
-run = """
-docker compose exec app php artisan test --filter={{ arg(name='filter') }}
-"""
+run = "bash scripts/t.sh {{ arg(name='filter') }}"
 
 [tasks.rs]
 description = "Restarts docker containers"
 run = "docker compose down && docker compose up -d"
 
 [tasks.all]
-run = """
-mise fmtl
-mise ft
-"""
+run = "bash scripts/all.sh"
 
 [tasks.codegen-openapi]
 description = "Generate OpenAPI spec from l5-swagger annotations, then regenerate frontend types"
-run = """
-echo "1️⃣  Generating OpenAPI spec from PHP annotations..."
-docker compose exec app php artisan l5-swagger:generate
-
-echo "2️⃣  Copying spec to docs/openapi/ ..."
-cp teamdev-2026-api/web/storage/api-docs/api-docs.json teamdev-2026-api/docs/openapi/openapi.json
-
-echo "3️⃣  Regenerating frontend types..."
-cd teamdev-2026-front
-pnpm run openapi
-pnpm run format
-
-echo "✅ OpenAPI codegen complete"
-"""
+run = "bash scripts/codegen-openapi.sh"
 
 [tasks.render-puml]
 description = "Render PlantUML SVGs locally (mirrors GitHub Actions workflow)"
-run = """
-bash scripts/render-puml.sh
-"""
+run = "bash scripts/render-puml.sh"
 
 [tasks.prd]
 description = "Generate PR review digest markdown from GitHub reviews/comments"
-run = """
-bash scripts/pr-review-digest.sh
-"""
+run = "bash scripts/pr-review-digest.sh"
 
 [tasks.prdf]
 description = "Generate PR review digest markdown from GitHub reviews/comments"
-run = """
-cd teamdev-2026-front
-bash ../scripts/pr-review-digest.sh
-"""
+run = "bash scripts/prdf.sh"
 
 [tasks.prda]
 description = "Generate PR review digest markdown from GitHub reviews/comments"
-run = """
-cd teamdev-2026-api
-bash ../scripts/pr-review-digest.sh
-"""
+run = "bash scripts/prda.sh"
 
 [tasks.pull-all]
-run = """
-git switch master
-git pull
-cd teamdev-2026-api
-git switch main
-git pull
-cd ../teamdev-2026-front
-git switch main
-git pull
-"""
+run = "bash scripts/pull-all.sh"
 
 [tasks.cleanb]
-run = """
-git fetch --prune && git branch -vv | awk '/: gone]/{print $1}' | xargs -n 1 git branch -D
-cd teamdev-2026-api
-git fetch --prune && git branch -vv | awk '/: gone]/{print $1}' | xargs -n 1 git branch -D
-cd ../teamdev-2026-front
-git fetch --prune && git branch -vv | awk '/: gone]/{print $1}' | xargs -n 1 git branch -D
-"""
+run = "bash scripts/cleanb.sh"
 
 [tasks.pull-c]
-run = """
-mise run pull-all
-mise run cleanb
-"""
+run = "bash scripts/pull-c.sh"
 
 # === アプリケーション初期化 ===
 [tasks.laravel-init]
 description = "Initialize Laravel application (env, key, migrate, seed)"
-run = """
-echo "⚙️  Initializing Laravel application..."
-
-echo "Setting up environment file..."
-if docker compose exec app test -f .env; then
-  echo "  ✓ .env already exists (copied from main worktree) — skipping"
-else
-  docker compose exec app cp .env.example .env || echo "⚠️  Failed to copy .env.example"
-  echo "  ✓ Created .env from .env.example"
-fi
-
-echo "Generating application key..."
-docker compose exec app php artisan key:generate
-
-echo "Running database migrations..."
-docker compose exec app php artisan migrate
-
-echo "Seeding database..."
-docker compose exec app php artisan db:seed
-
-echo "✅ Laravel initialization completed"
-"""
+run = "bash scripts/laravel-init.sh"
 
 [tasks.front-init]
 description = "Install frontend deps locally (requires local Node.js/pnpm)"
-run = """
-cd teamdev-2026-front
-pnpm install
-"""
+run = "bash scripts/front-init.sh"
 
 # === コンテナシェル ===
 [tasks.app-shell]
@@ -324,191 +146,20 @@ run = "docker compose exec postgresql bash"
 # === Worktree Management ===
 [tasks.worktree-info]
 description = "Show current worktree Docker Compose isolation info"
-run = """
-echo "----------------------------------------"
-echo "  Worktree Information"
-echo "----------------------------------------"
-echo "Name: $WORKTREE_NAME"
-if [ "$IS_MAIN_WORKTREE" = "true" ]; then
-  echo "Type: Main worktree"
-else
-  echo "Type: Linked worktree"
-fi
-echo "Compose project: $COMPOSE_PROJECT_NAME"
-echo "Ports: web=$WEB_PORT db=$DB_PORT swagger=$SWAGGER_PORT"
-echo ""
-echo "Active containers:"
-docker compose ps
-echo "----------------------------------------"
-"""
+run = "bash scripts/worktree-info.sh"
 
 [tasks.wt-c]
 description = "Create a new worktree with branch-matched submodules"
-run = """
-BRANCH_NAME="{{ arg(pos=1) }}"
-WORKTREE_PATH="worktrees/$BRANCH_NAME"
-
-if [ -z "$BRANCH_NAME" ]; then
-  echo "Error: branch name is required"
-  echo "Usage: mise run wt-c feature/my-feature"
-  exit 1
-fi
-
-mkdir -p ./worktrees
-
-echo "Creating worktree..."
-echo "  Branch: $BRANCH_NAME"
-echo "  Path: $WORKTREE_PATH"
-echo ""
-
-# Create the worktree
-git worktree add "$WORKTREE_PATH" "$BRANCH_NAME"
-
-echo ""
-echo "Initializing submodules and checking out matching branches..."
-echo ""
-
-# Initialize and checkout submodules
-cd "$WORKTREE_PATH"
-git submodule update --init --recursive
-
-# For each submodule, try to checkout to the matching branch
-git config --file .gitmodules --get-regexp path | awk '{print $2}' | while read SUBMODULE_PATH; do
-  SUBMODULE_NAME=$(basename "$SUBMODULE_PATH")
-  echo "Processing submodule: $SUBMODULE_NAME"
-  
-  cd "$SUBMODULE_PATH"
-  
-  # Try to checkout the branch
-  if git rev-parse --verify "origin/$BRANCH_NAME" >/dev/null 2>&1; then
-    # Branch exists on remote, create tracking branch and checkout
-    git switch --create "$BRANCH_NAME" "origin/$BRANCH_NAME"
-    echo "  ✓ Checked out existing branch: $BRANCH_NAME"
-  elif git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
-    # Branch exists locally
-    git switch "$BRANCH_NAME"
-    echo "  ✓ Switched to existing local branch: $BRANCH_NAME"
-  else
-    # Branch doesn't exist, create it from main
-    echo "  • Branch does not exist, creating from main..."
-    git switch --create "$BRANCH_NAME" origin/main
-    echo "  ✓ Created new branch: $BRANCH_NAME (from main)"
-  fi
-  
-  cd ..
-done
-
-cd ../..
-
-echo ""
-echo "6️⃣ Copying .env files from main worktree..."
-MAIN_ROOT="$(pwd)"
-
-# Copy frontend .env.local if it exists in main worktree
-if [ -f "$MAIN_ROOT/teamdev-2026-front/.env.local" ]; then
-  cp "$MAIN_ROOT/teamdev-2026-front/.env.local" "$WORKTREE_PATH/teamdev-2026-front/.env.local"
-  echo "  ✓ Copied teamdev-2026-front/.env.local"
-else
-  echo "  ⚠️  No .env.local found in main frontend — skipped"
-fi
-
-# Copy backend .env if it exists in main worktree
-if [ -f "$MAIN_ROOT/teamdev-2026-api/web/.env" ]; then
-  cp "$MAIN_ROOT/teamdev-2026-api/web/.env" "$WORKTREE_PATH/teamdev-2026-api/web/.env"
-  echo "  ✓ Copied teamdev-2026-api/web/.env"
-else
-  echo "  ⚠️  No .env found in main backend — skipped"
-fi
-
-echo ""
-echo "✓ Worktree created successfully!"
-echo ""
-echo "Submodule status:"
-cd "$WORKTREE_PATH" 2>/dev/null && git submodule foreach --recursive 'echo "  $displaypath: $(git branch --show-current)"' || true
-mise run wt-setup
-mise run worktree-info
-cd - >/dev/null 2>&1
-"""
+run = "bash scripts/wt-c.sh {{ arg(pos=1) }}"
 
 [tasks.wt-list]
 description = "List all worktrees"
-run = """
-git worktree list
-"""
+run = "bash scripts/wt-list.sh"
 
 [tasks.wt-r]
 description = "Remove a worktree and its Docker resources"
-run = """
-WORKTREE_NAME="{{ arg(pos=1) }}"
-
-if [ -z "$WORKTREE_NAME" ]; then
-  echo "Error: worktree name is required"
-  echo "Usage: mise run wt-r feature-my-feature"
-  echo ""
-  echo "Available worktrees:"
-  git worktree list
-  exit 1
-fi
-
-WORKTREE_PATH="worktrees/$WORKTREE_NAME"
-WORKTREE_BASENAME=$(basename "$WORKTREE_PATH")
-COMPOSE_PROJECT_NAME="teamdev-2026-$WORKTREE_BASENAME"
-COMPOSE_PROJECT_NAME=$(echo "$COMPOSE_PROJECT_NAME" | tr '/' '-' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
-
-if [ ! -d "$WORKTREE_PATH" ]; then
-  echo "Error: worktree not found: $WORKTREE_PATH"
-  exit 1
-fi
-
-echo "Removing worktree: $WORKTREE_PATH"
-echo "Stopping/removing Docker resources for: $COMPOSE_PROJECT_NAME"
-
-# Stop containers and remove compose-managed local images for this worktree.
-docker compose -p "$COMPOSE_PROJECT_NAME" -f "$WORKTREE_PATH/compose.yml" down --rmi local --volumes --remove-orphans || true
-
-# Give Docker Desktop a brief moment to release host path handles.
-sleep 1
-
-# Normalize permissions before deletion (worktree files can be created by containers).
-chmod -R u+rwX "$WORKTREE_PATH" 2>/dev/null || true
-chmod -RN "$WORKTREE_PATH" 2>/dev/null || true
-xattr -rc "$WORKTREE_PATH" 2>/dev/null || true
-
-# Best-effort ownership fix using a throwaway container when host permissions are restrictive.
-if command -v docker >/dev/null 2>&1; then
-  docker run --rm \
-    -v "$PWD/$WORKTREE_PATH:/worktree" \
-    alpine:3.20 \
-    sh -c "chown -R $(id -u):$(id -g) /worktree 2>/dev/null || true" || true
-fi
-
-git worktree remove --force "$WORKTREE_PATH" || true
-rm -rf "$WORKTREE_PATH"
-
-if [ -e "$WORKTREE_PATH" ]; then
-  echo "⚠️  Could not fully delete $WORKTREE_PATH"
-  echo "Open handles (if any):"
-  lsof +D "$WORKTREE_PATH" 2>/dev/null | head -20 || true
-  exit 1
-fi
-
-echo "✓ Worktree removed"
-"""
+run = "bash scripts/wt-r.sh {{ arg(pos=1) }}"
 
 [tasks.install-deps-local]
 description = "Install frontend dependencies locally (optional)"
-run = """
-echo "Installing frontend dependencies..."
-
-if ! command -v pnpm &> /dev/null; then
-  echo "pnpm not found. Install with: mise install"
-  exit 1
-fi
-
-cd teamdev-2026-front
-pnpm install
-
-echo ""
-echo "Frontend dependencies installed."
-echo "Backend formatter/linter/tests run in Docker containers via mise tasks."
-"""
+run = "bash scripts/install-deps-local.sh"
