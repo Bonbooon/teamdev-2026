@@ -153,6 +153,28 @@ zsh: command not found: mise
 
 **注意：** miseの有効化後は、新しいターミナルセッションを開くか `source ~/.zshrc` を実行してください。
 
+### Windowsで`mise doctor`が`cannot find a config file`になる場合
+
+Windowsネイティブ環境では、`mise`の`env._.source`でbashスクリプトを読み込む構成が不安定です。特に`C:\Windows\System32\bash.exe`（WSL launcher）が使われると、`failed to load config`や`cannot find a config file`のように見えるエラーになります。
+
+このリポジトリでは、Windows向けに以下の方針へ切り替えています。
+
+1. `mise`タスク自体はGit Bashで実行する
+2. `mise.toml`の環境変数はWindowsでは安全な既定値を使う
+3. linked worktreeの自動ポート分離が必要な場合はWSLまたはUnix系シェルを使う
+
+Windowsでは以下を満たしてください。
+
+1. Git for Windowsをインストールする
+2. 新しいターミナルを開き直す
+3. リポジトリルートで`mise tasks`または`mise run ps`を実行する
+
+もしまだ失敗する場合は、以下のいずれかに`bash.exe`が存在するか確認してください。
+
+- `C:\Program Files\Git\bin\bash.exe`
+- `C:\Program Files\Git\usr\bin\bash.exe`
+- `C:\Users\<your-user>\scoop\apps\git\current\bin\bash.exe`
+
 ## Architecture Diagrams
 
 Generated SVGs are organized by type under [docs/generated-diagrams](docs/generated-diagrams):

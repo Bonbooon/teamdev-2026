@@ -2,9 +2,20 @@
 node = "22.17.1"
 pnpm = "10.14.0"
 
+[settings]
+windows_default_inline_shell_args = "scripts/windows/bash.cmd -lc"
+windows_default_file_shell_args = "scripts/windows/bash.cmd"
+use_file_shell_for_executable_tasks = true
+
 # === Worktree Detection ===
 [env]
-_.source = "scripts/detect-worktree.sh"
+_.path = "scripts/windows"
+IS_MAIN_WORKTREE = "true"
+WORKTREE_NAME = "main"
+COMPOSE_PROJECT_NAME = "teamdev-2026"
+WEB_PORT = "80"
+DB_PORT = "5432"
+SWAGGER_PORT = "8080"
 
 # === サブモジュール管理 ===
 [tasks.submodule-checkout]
