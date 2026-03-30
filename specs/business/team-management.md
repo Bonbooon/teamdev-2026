@@ -487,8 +487,9 @@ Request:
 }
 
 GET /api/invitations/{invitationToken}
-// Accept invitation (no auth)
+// Accept invitation (auth required — identity derived from signed-in user)
 POST /api/invitations/{invitationToken}/accept
+Authorization: Bearer {token}
 
 // Decline invitation (no auth)
 POST /api/invitations/{invitationToken}/decline
@@ -526,7 +527,7 @@ Only manager can archive. Manager can unarchive.
 | `POST /api/teams` | POST | Create team |
 | `PATCH /api/teams/{teamId}` | PATCH | Update team (manager only) |
 | `POST /api/teams/{teamId}/invitations` | POST | Send invitation |
-| `POST /api/invitations/{token}/accept` | POST | Accept invitation |
+| `POST /api/invitations/{token}/accept` | POST | Accept invitation (auth required) |
 | `POST /api/invitations/{token}/decline` | POST | Decline invitation |
 
 ---

@@ -235,7 +235,7 @@ responses:
 - Send invitation (S-04-05, requires auth, manager only)
 
 **POST /api/invitations/{token}/accept**
-- Accept invitation (no auth, token-based)
+- Accept invitation (requires auth — identity derived from signed-in user)
 
 **POST /api/invitations/{token}/decline**
 - Decline invitation (no auth, token-based)
