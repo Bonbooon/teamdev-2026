@@ -21,9 +21,7 @@ exit /b 1
 
 :run
 if /I "%~1"=="-lc" (
-  shift
-  set "BASH_CMD=%*"
-  "%GIT_BASH%" -lc "%BASH_CMD%"
+  "%GIT_BASH%" -lc "%~2"
   exit /b %ERRORLEVEL%
 )
 
