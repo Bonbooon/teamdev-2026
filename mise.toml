@@ -53,7 +53,7 @@ run = "bash scripts/destroy.sh"
 
 [tasks.build]
 description = "Build the project"
-run = "docker compose build --no-cache --force-rm"
+run = "bash scripts/build.sh"
 
 # === 依存関係インストール ===
 [tasks.install-deps]
@@ -87,7 +87,7 @@ run = "bash scripts/t.sh {{ arg(name='filter') }}"
 
 [tasks.rs]
 description = "Restarts docker containers"
-run = "docker compose down && docker compose up -d"
+run = "bash scripts/rs.sh"
 
 [tasks.all]
 run = "bash scripts/all.sh"
@@ -133,15 +133,15 @@ run = "bash scripts/front-init.sh"
 # === コンテナシェル ===
 [tasks.app-shell]
 description = "Open shell in the Laravel app container"
-run = "docker compose exec app bash"
+run = "bash scripts/app-shell.sh"
 
 [tasks.front-shell]
 description = "Open shell in the frontend container"
-run = "docker compose exec front bash"
+run = "bash scripts/front-shell.sh"
 
 [tasks.db-shell]
 description = "Open PostgreSQL shell"
-run = "docker compose exec postgresql bash"
+run = "bash scripts/db-shell.sh"
 
 # === Worktree Management ===
 [tasks.worktree-info]
