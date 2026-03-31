@@ -7,3 +7,5 @@ plantuml.jar
 /worktrees/
 plans
 pr-review-digests
+.worktree.env
+worktrees/**/.worktree.env
