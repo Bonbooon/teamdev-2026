@@ -477,7 +477,7 @@ See `specs/api/openapi-contracts.md` for detailed schema definitions.
 - Google OAuth/OIDC is the sole authentication method for Phase 1
 - No email/password login
 - **Token-only API auth**: `EnsureFrontendRequestsAreStateful` removed from API middleware — no CSRF cookies or sessions for API routes (see ADR 0007)
-- Frontend uses popup-based OAuth flow (`flow: "auth-code"`) with `redirectUri: "postmessage"`
+- Frontend uses popup-based OAuth flow (`flow: "auth-code"`) with `redirectUri` set to the popup page origin; API still accepts legacy `postmessage` and normalizes it when possible
 - Login responses include a `googleProfile` object for profile form prefill hints
 - Profile registration is required but not enforced during login (users can skip and complete later)
 - Future custom avatar support is still planned, but Phase 1 persists and displays the Google avatar only
