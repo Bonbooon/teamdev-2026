@@ -43,6 +43,10 @@ run = "bash scripts/start.sh"
 description = "Ensure the shared PostgreSQL container is running"
 run = "bash scripts/ensure-shared-db.sh"
 
+[tasks.stop-shared-db]
+description = "Stop the shared PostgreSQL container"
+run = "bash scripts/stop-shared-db.sh"
+
 [tasks.ps]
 description = "List running containers"
 run = "bash scripts/ps.sh"

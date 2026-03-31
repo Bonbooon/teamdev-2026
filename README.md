@@ -75,6 +75,9 @@ mise run start
 # 共有PostgreSQLのみを事前に起動/確認
 mise run ensure-shared-db
 
+# 共有PostgreSQLのみを停止
+mise run stop-shared-db
+
 # コンテナの状態確認
 mise run ps
 
@@ -95,6 +98,7 @@ mise run build
 - `compose.yml` は各worktreeの `front` `app` `web` `swagger-ui` を起動し、`postgresql` サービスは持ちません
 - `compose.shared.yml` は全worktree共通のPostgreSQLコンテナを1つだけ起動し、`localhost:5432` で公開します
 - worktree側の `app` / `web` コンテナは外部Dockerネットワーク `teamdev-2026-shared` 経由で共有DBへ接続し、Laravelの `DB_HOST=postgresql` はそのまま使えます
+- `mise run stop-shared-db` は共有PostgreSQLコンテナだけを停止し、worktree側の `front` / `app` / `web` / `swagger-ui` コンテナには触れません
 - `mise run ensure-shared-db` / `mise run start` は、旧構成で残った誤った共有ネットワーク名を検知した場合、shared PostgreSQL を正しい `teamdev-2026-shared` ネットワークへ自動的に作り直します
 - `mise run start` は共有DBの起動確認に加えて、移行前の古い `postgresql` / `web` / `swagger-ui` コンテナが現在のポートを掴んでいる場合に自動掃除し、`docker compose up -d --remove-orphans` 相当でworktreeスタックを起動します
 - `mise run wt-setup` は worktree 用の `.env` / `APP_KEY` を整えるだけで、共有DBに対する `migrate` / `seed` は実行しません。共有DBを意図的に初期化したい場合だけ `mise run laravel-init` を明示的に実行してください
