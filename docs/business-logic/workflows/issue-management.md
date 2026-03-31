@@ -59,8 +59,10 @@ If a component has no data (e.g., no subtasks), its weight is redistributed prop
 ### 7. Work Log Recording
 
 - Manual time logging by team members
+- Current API contract is available via `GET/POST /api/issues/{issueId}/work-logs`
 - Fields: started_at, ended_at (optional), minutes, description (optional)
 - Source enum: `manual`, `github_api`, `github_actions`
+- `GET /api/issues/{issueId}/work-logs` returns `workLogs: []` when the issue does not exist
 - GitHub-based sources deferred to Phase 2 (per ADR 0008)
 
 ### 8. Template Management (S-03-03)
@@ -68,6 +70,7 @@ If a component has no data (e.g., no subtasks), its weight is redistributed prop
 Templates are **global** (not project-scoped):
 
 - Templates have a name, description, and active flag
+- `GET /api/issue-templates` returns active templates together with embedded template item definitions
 - Template items define field schema: item_key, label, value_type, is_required, position
 - Supported value types: string, integer, date, datetime, boolean, number, json
 - Issues can optionally reference a template; template values are stored per-issue

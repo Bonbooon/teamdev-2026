@@ -50,7 +50,7 @@ IssueCreatePage
 ## Data Requirements
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
-| テンプレート一覧 | `GET /issue-templates` | Select無効化 | リトライ |
+| テンプレート一覧 + 項目定義 | `GET /issue-templates` | Select無効化 | リトライ |
 | チームメンバー | `GET /teams/{teamId}/members` | Select無効化 | リトライ |
 | **mutation** | `POST /projects/{projectId}/issues` | ボタンスピナー | Toast(error) + フィールドエラー |
 
@@ -82,5 +82,7 @@ IssueCreatePage
 ## Notes
 - storyPoints: 必須、1-13の整数
 - estimatedMinutes: 必須、分単位の整数
-- SMART全フィールドが入力必須
+- `GET /issue-templates` はテンプレート本体と `items[]` を返す
+- 現状の画面はテンプレート項目をまだ描画せず、SMARTプレースホルダー切替のみを行う
+- SMART入力値は現状保存されず、必須バリデーション対象でもない
 - DoDが未設定だと完了にできない（バックエンド制約）

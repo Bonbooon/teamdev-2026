@@ -1,7 +1,7 @@
 # Issue Management Specification
 
 **Version:** 1.0  
-**Last Updated:** 2026/03/06  
+**Last Updated:** 2026/03/31  
 **Human Documentation:** `docs/business-logic/workflows/issue-management.md`  
 **Domain Model:** `docs/diagrams/domain-models/issue-aggregate.puml`
 
@@ -128,6 +128,9 @@ Templates are pre-configured per project by PM. Examples:
 
 **Template-Specific Fields:**
 Each template defines additional required fields. See S-03-03.
+
+**Template Contract Note:**
+- `GET /api/issue-templates` returns active templates together with their `items[]` field definitions.
 
 **Business Rules:**
 - Issue cannot be created without project
@@ -785,7 +788,8 @@ IssueWorkLog {
 | `POST /api/issues/{parentIssueId}/subtasks` | POST | Create subtask |
 | `GET /api/issues/{parentIssueId}/subtasks` | GET | List subtasks |
 | `POST /api/issues/{issueId}/work-logs` | POST | Log work (manual) |
-| `GET /api/issues/{issueId}/work-logs` | GET | List work logs |
+| `GET /api/issues/{issueId}/work-logs` | GET | List work logs (returns an empty collection when the issue does not exist) |
+| `GET /api/issue-templates` | GET | List active templates with embedded item definitions |
 
 ---
 

@@ -41,7 +41,7 @@ IssueDetailPage
     │   │       └── Toggle ("予期せぬ作業" フラグ — 後から付与/解除可能)
     │   └── Button (サブタスク追加)
     │       └── Checkbox ("予期せぬ作業として登録")
-    ├── WorkLogSection (フェーズ2 — MVP外)
+    ├── WorkLogSection (現状はプレースホルダー。API契約は利用可能)
     ├── Sidebar (右側)
     │   ├── ProgressSummary (予定 vs 実績)
     │   ├── TimelineInfo (開始日, 期限)
@@ -68,7 +68,7 @@ IssueDetailPage
 | Issue情報 | `GET /issues/{issueId}` | セクションスケルトン | リトライ |
 | 関連アラート | `GET /issues/{issueId}/alerts` | リストスケルトン | リトライ |
 | サブタスク | `GET /issues/{issueId}/sub-issues` | リストスケルトン | リトライ |
-| 作業ログ (フェーズ2) | `GET /issues/{issueId}/work-logs` | — | — |
+| 作業ログAPI (UI接続は次フェーズ) | `GET /issues/{issueId}/work-logs` | 現状は未接続 | 現状は未接続 |
 
 ## UI States
 | 状態 | 表現 |
@@ -95,5 +95,7 @@ IssueDetailPage
 
 ## Notes
 - 進捗率はバックエンド算出。フロントは表示のみ (S-03-08)
-- WorkLogSectionはフェーズ2だがコンポーネント枠は確保
+- WorkLogSectionは現状「工事中」プレースホルダーを表示する
+- `GET /issues/{issueId}/work-logs` と `POST /issues/{issueId}/work-logs` のAPI契約と生成クライアント型はPhase 1で利用可能
+- `GET /issues/{issueId}/work-logs` は対象Issueが存在しない場合でも空配列を返す
 - "予期せぬ作業" フラグは作成時にも後からも変更可能
