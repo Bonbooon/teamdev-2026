@@ -305,12 +305,12 @@ responses:
 - Log work (requires auth)
 
 **GET /api/issues/{issueId}/work-logs**
-- List work logs (requires auth)
+- List work logs (requires auth, returns an empty `workLogs` array when the issue does not exist)
 
 ### Issue Template Endpoints
 
 **GET /api/issue-templates**
-- List active templates (requires auth)
+- List active templates with embedded item definitions (requires auth)
 
 **POST /api/issue-templates**
 - Create template (requires auth)
