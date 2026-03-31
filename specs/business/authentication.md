@@ -207,7 +207,7 @@ Content-Type: application/json
 Request:
 {
   "authorizationCode": "string", // Google OAuth authorization code
-  "redirectUri": "string" // Popup flow page origin (for example, http://localhost:3000). Legacy "postmessage" is accepted for backward compatibility only when the backend can resolve it to an allowed popup origin; otherwise it returns 422.
+  "redirectUri": "string" // HTTP/HTTPS popup flow page origin (for example, http://localhost:3000). Legacy "postmessage" is accepted for backward compatibility only when the backend can resolve it to an allowed popup origin; otherwise it returns 422.
 }
 
 Response (201 Created):
@@ -481,7 +481,7 @@ See `specs/api/openapi-contracts.md` for detailed schema definitions.
 - Frontend uses popup-based OAuth flow (`flow: "auth-code"`) with `redirectUri` set to the popup page origin
 - Legacy compatibility: the API still accepts `redirectUri = "postmessage"`
 - Legacy normalization order: when `redirectUri = "postmessage"`, the backend resolves the popup origin from `FRONTEND_URL`, then from the origin of `GOOGLE_OAUTH_REDIRECT_URI`, then from the request `Origin` header only if that origin matches the configured allowed frontend origins
-- A valid popup origin must match the configured allowed frontend origins. The request `Origin` header is never trusted unless it passes that allowlist check.
+- A valid popup origin must be an HTTP/HTTPS origin that matches the configured allowed frontend origins. The request `Origin` header is never trusted unless it passes that allowlist check.
 - Legacy failure behavior: if none of those values produce a valid popup origin, the API returns `422` and the client must send the explicit popup page origin
 - Login responses include a `googleProfile` object for profile form prefill hints
 - Profile registration is required but not enforced during login (users can skip and complete later)
