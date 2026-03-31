@@ -797,6 +797,8 @@ IssueWorkLog {
 | `GET /api/issues/{parentIssueId}/subtasks` | GET | List subtasks |
 | `POST /api/issues/{issueId}/work-logs` | POST | Log work (manual) |
 | `GET /api/issues/{issueId}/work-logs` | GET | List work logs (returns an empty collection when the issue does not exist) |
+| `PATCH /api/issues/{issueId}/work-logs/{workLogId}` | PATCH | Update a work log |
+| `DELETE /api/issues/{issueId}/work-logs/{workLogId}` | DELETE | Delete a work log |
 | `GET /api/issue-templates` | GET | List active templates with embedded item definitions |
 
 ---

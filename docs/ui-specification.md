@@ -949,7 +949,7 @@ IssueDetailPage
     │   │  エンティティ: IssueWorkLog（手動記録 + GitHub連携による自動記録）
     │   │  出典: specs/business/issue-management.md,
     │   │        specs/database/table-schema-plan.sql (issue_work_logs),
-    │   │        specs/api/openapi-design-reference.json (POST/GET /issues/{issueId}/work-logs)
+    │   │        specs/api/openapi-design-reference.json (GET/POST /issues/{issueId}/work-logs, PATCH/DELETE /issues/{issueId}/work-logs/{workLogId})
     │   ├── WorkLogEntry[]
     │   │   ├── MemberName
     │   │   ├── StartedAt / EndedAt

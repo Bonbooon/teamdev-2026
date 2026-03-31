@@ -307,6 +307,12 @@ responses:
 **GET /api/issues/{issueId}/work-logs**
 - List work logs (requires auth, returns an empty `workLogs` array when the issue does not exist)
 
+**PATCH /api/issues/{issueId}/work-logs/{workLogId}**
+- Update a work log (requires auth, validates `minutes`, optional `description`, and optional `logged_at`)
+
+**DELETE /api/issues/{issueId}/work-logs/{workLogId}**
+- Delete a work log (requires auth, returns `204` on success and `404` when the issue or work log is not found)
+
 ### Issue Template Endpoints
 
 **GET /api/issue-templates**

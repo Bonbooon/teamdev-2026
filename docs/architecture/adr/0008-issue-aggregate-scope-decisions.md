@@ -58,7 +58,7 @@ The spec defines MUST features (S-03-01 through S-03-08) and WANT features (S-03
 - Manual entry is simpler than GitHub integration (no webhook)
 - Natural fit with progress calculation testing
 
-**Implementation:** Phase 7 includes POST /api/issues/{issueId}/work-logs endpoint with manual source type.
+**Implementation:** Phase 7 introduced the manual work log flow with `POST /api/issues/{issueId}/work-logs`. The current API contract also includes `GET /api/issues/{issueId}/work-logs` plus `PATCH/DELETE /api/issues/{issueId}/work-logs/{workLogId}` for manual work log maintenance.
 
 ### 4. Email Notifications
 **Decision:** Defer email notifications to later phase (outside Issue aggregate scope).
@@ -122,7 +122,7 @@ The spec defines MUST features (S-03-01 through S-03-08) and WANT features (S-03
 **Phase Adjustments:**
 - Phase 1: Add IssueRoleAssignment, IssueRoleAssignmentOwner models
 - Phase 2 or 1.5: Add template CRUD endpoints (GET, POST, PATCH, DELETE for templates and template items)
-- Phase 7: Include POST /api/issues/{issueId}/work-logs for manual logging
+- Phase 7: Include manual work log endpoints, starting with `POST /api/issues/{issueId}/work-logs` and now covering `GET/POST/PATCH/DELETE`
 - Phase 7: Strict on-demand progress calculation (no Redis/cache)
 
 **Future Enhancements:**

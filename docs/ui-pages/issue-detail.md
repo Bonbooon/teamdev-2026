@@ -41,7 +41,7 @@ IssueDetailPage
     │   │       └── Toggle ("予期せぬ作業" フラグ — 後から付与/解除可能)
     │   └── Button (サブタスク追加)
     │       └── Checkbox ("予期せぬ作業として登録")
-    ├── WorkLogSection (現状はプレースホルダー。API契約は利用可能)
+    ├── WorkLogSection (現状はプレースホルダー。API契約は GET/POST/PATCH/DELETE まで利用可能)
     ├── Sidebar (右側)
     │   ├── ProgressSummary (予定 vs 実績)
     │   ├── TimelineInfo (開始日, 期限)
@@ -96,6 +96,7 @@ IssueDetailPage
 ## Notes
 - 進捗率はバックエンド算出。フロントは表示のみ (S-03-08)
 - WorkLogSectionは現状「工事中」プレースホルダーを表示する
-- `GET /issues/{issueId}/work-logs` と `POST /issues/{issueId}/work-logs` のAPI契約と生成クライアント型はPhase 1で利用可能
+- `GET/POST /issues/{issueId}/work-logs` と `PATCH/DELETE /issues/{issueId}/work-logs/{workLogId}` のAPI契約と生成クライアント型はPhase 2時点で利用可能
 - `GET /issues/{issueId}/work-logs` は対象Issueが存在しない場合でも空配列を返す
+- 作業ログの更新/削除UIは未接続のまま据え置き
 - "予期せぬ作業" フラグは作成時にも後からも変更可能
