@@ -27,14 +27,7 @@ echo "Stopping/removing Docker resources for: $COMPOSE_PROJECT_NAME"
 
 # Clean up the worktree's compose stack using the worktree's compose file
 # The compose file exists at this point and defines the services for this worktree
-compose_down_stderr_file="$(mktemp)"
-if ! docker compose -f "$WORKTREE_PATH/compose.yml" -p "$COMPOSE_PROJECT_NAME" down --rmi local --volumes --remove-orphans 2>"$compose_down_stderr_file"; then
-  echo "Warning: failed to fully clean Docker resources for: $COMPOSE_PROJECT_NAME" >&2
-  cat "$compose_down_stderr_file" >&2
-elif [ "${MISE_WORKTREE_VERBOSE:-0}" = "1" ] && [ -s "$compose_down_stderr_file" ]; then
-  cat "$compose_down_stderr_file" >&2
-fi
-rm -f "$compose_down_stderr_file"
+docker compose -f "$WORKTREE_PATH/compose.yml" -p "$COMPOSE_PROJECT_NAME" down --rmi local --volumes --remove-orphans 2>/dev/null || true
 sleep 1
 
 chmod -R u+rwX "$WORKTREE_PATH" 2>/dev/null || true
