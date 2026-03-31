@@ -156,13 +156,13 @@ Define the complete authentication and authorization flows for all user types (P
 **Main Flow:**
 1. User visits app login page
 2. User clicks "Sign in with Google"
-3. Redirected to Google OAuth consent/login
+3. Frontend opens the Google OAuth consent/login popup
 4. User enters Google credentials (or uses existing session)
-5. Google popup flow returns an authorization code to the frontend login page context using the popup page origin
+5. Google returns an authorization code to the frontend popup/login page context, and the frontend sends that popup page origin as `redirectUri`
 6. App exchanges the authorization code for tokens
 7. App validates ID token claims (`iss`, `aud`, `exp`) and `state`
-7. **If user exists:** Create Sanctum token, redirect to appropriate dashboard
-8. **If user is new:** Create User + OAuthAccount, redirect to profile registration
+8. **If user exists:** Create Sanctum token, redirect to appropriate dashboard
+9. **If user is new:** Create User + OAuthAccount, redirect to profile registration
 
 **Data from Google OIDC Claims:**
 - `email` → User.email
@@ -446,8 +446,8 @@ See `specs/api/openapi-contracts.md` for detailed schema definitions.
 **Environment Variables Required:**
 - `GOOGLE_OAUTH_CLIENT_ID` - Google OAuth client ID
 - `GOOGLE_OAUTH_CLIENT_SECRET` - Google OAuth client secret
-- `GOOGLE_OAUTH_REDIRECT_URI` - Full Google OAuth callback URL used for server-side code exchange. Its origin is also used as a legacy `redirectUri = "postmessage"` fallback when `FRONTEND_URL` is unavailable.
-- `FRONTEND_URL` - Preferred popup page origin for the current environment. The backend uses this first when normalizing legacy `redirectUri = "postmessage"` requests, and it should also be included in the allowed frontend origins configuration.
+- `GOOGLE_OAUTH_REDIRECT_URI` - Full Google OAuth callback URL registered with Google for server-side code exchange. In the popup flow the frontend should still send its own popup page origin via `redirectUri`; the backend only reuses this callback URL's origin as a legacy `redirectUri = "postmessage"` fallback when `FRONTEND_URL` is unavailable and that origin is intentionally compatible with the deployed popup origin.
+- `FRONTEND_URL` - Preferred popup page origin for the current environment. The frontend should send this origin (or the equivalent runtime origin) as `redirectUri`, and the backend uses it first when normalizing legacy `redirectUri = "postmessage"` requests. It should also be included in the allowed frontend origins configuration.
 - `GOOGLE_OAUTH_SCOPES` - Optional, default `openid profile email`
 - `SANCTUM_EXPIRATION_HOURS` - Token lifetime (default: 720 = 30 days)
 
