@@ -25,7 +25,9 @@ fi
 echo "Removing worktree: $WORKTREE_PATH"
 echo "Stopping/removing Docker resources for: $COMPOSE_PROJECT_NAME"
 
-docker compose -p "$COMPOSE_PROJECT_NAME" -f "$WORKTREE_PATH/compose.yml" down --rmi local --volumes --remove-orphans || true
+# Clean up the worktree's compose stack using the worktree's compose file
+# The compose file exists at this point and defines the services for this worktree
+docker compose -f "$WORKTREE_PATH/compose.yml" -p "$COMPOSE_PROJECT_NAME" down --rmi local --volumes --remove-orphans 2>/dev/null || true
 sleep 1
 
 chmod -R u+rwX "$WORKTREE_PATH" 2>/dev/null || true

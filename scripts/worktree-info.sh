@@ -15,7 +15,8 @@ else
   echo "Type: Linked worktree"
 fi
 echo "Compose project: $COMPOSE_PROJECT_NAME"
-echo "Ports: web=$WEB_PORT db=$DB_PORT swagger=$SWAGGER_PORT"
+echo "Ports: web=$WEB_PORT swagger=$SWAGGER_PORT"
+echo "Database: localhost:$DB_PORT (shared across all worktrees)"
 echo ""
 echo "Active containers:"
 docker compose ps

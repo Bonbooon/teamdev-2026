@@ -10,17 +10,17 @@ description: Understand the system architecture, tech stack, and key directories
 ```
 Next.js Frontend (localhost:3000)
     ↓ (aspida - type-safe API)
-Nginx (localhost:80)
+Nginx (per worktree)
     ↓
 Laravel API (PHP-FPM)
-    ↓
-PostgreSQL (localhost:5432)
+    ↓ (external Docker network: teamdev-2026-shared)
+Shared PostgreSQL (compose.shared.yml, localhost:5432)
 ```
 
 **Tech Stack**: 
 - Frontend: Next.js 15 + TypeScript + Tailwind CSS
 - Backend: Laravel + PostgreSQL
-- Container: Docker Compose
+- Container: Docker Compose with per-worktree app/web/swagger services and one shared PostgreSQL service
 
 ---
 
@@ -49,7 +49,7 @@ Laravel Annotations → teamdev-2026-api/docs/openapi/openapi.json
 ## Service Ports
 - Frontend: 3000
 - API: 80
-- Database: 5432
+- Database: 5432 (shared across all worktrees)
 
 ---
 
@@ -65,8 +65,9 @@ Laravel Annotations → teamdev-2026-api/docs/openapi/openapi.json
 ## Commands
 
 ```bash
-mise setup              # Initial setup
-docker compose up -d    # Start services
+mise run setup          # Initial setup
+mise run start          # Start current worktree services and ensure shared DB
+mise run worktree-info  # Show current worktree ports and shared DB info
 mise codegen-openapi    # Regenerate API types
 mise app-shell          # Access Laravel container
 ```

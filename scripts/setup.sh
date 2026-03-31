@@ -14,19 +14,23 @@ echo "2) Building Docker containers..."
 mise run build
 
 echo ""
-echo "3) Starting services..."
+echo "3) Ensuring shared PostgreSQL is running..."
+mise run ensure-shared-db
+
+echo ""
+echo "4) Starting services..."
 mise run start
 
 echo ""
-echo "4) Installing dependencies..."
+echo "5) Installing dependencies..."
 mise run install-deps
 
 echo ""
-echo "5) Initializing application..."
+echo "6) Initializing application..."
 mise run laravel-init
 
 echo ""
-echo "6) Installing frontend dependencies locally..."
+echo "7) Installing frontend dependencies locally..."
 mise run front-init
 
 echo ""
@@ -41,7 +45,7 @@ if [ -f ".worktree.env" ]; then
     echo "  - Frontend: http://localhost"
     echo "  - Backend API: http://localhost/api"
     echo "  - Swagger UI: http://localhost:8080"
-    echo "  - PostgreSQL: localhost:5432"
+    echo "  - PostgreSQL: localhost:5432 (shared)"
   else
     echo "Linked worktree detected. Check worktree-info for actual ports:"
     echo "  mise run worktree-info"
@@ -51,5 +55,5 @@ else
   echo "  - Frontend: http://localhost"
   echo "  - Backend API: http://localhost/api"
   echo "  - Swagger UI: http://localhost:8080"
-  echo "  - PostgreSQL: localhost:5432"
+  echo "  - PostgreSQL: localhost:5432 (shared)"
 fi

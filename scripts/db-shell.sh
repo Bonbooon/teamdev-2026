@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Source worktree detection to get COMPOSE_PROJECT_NAME and port environment
+# Access the shared PostgreSQL container
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/detect-worktree.sh"
+COMPOSE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-docker compose exec postgresql bash
+# Ensure the shared DB is running before accessing it
+bash "$SCRIPT_DIR/ensure-shared-db.sh"
+
+docker compose -p "teamdev-2026-shared" -f "$COMPOSE_DIR/compose.shared.yml" exec postgresql bash

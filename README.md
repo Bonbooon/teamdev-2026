@@ -44,7 +44,8 @@ mise run setup
 - サブモジュールの設定とチェックアウト
 - サブモジュールの最新コミットへの更新
 - Dockerコンテナのビルド
-- 全コンテナの起動
+- 共有PostgreSQLコンテナの起動確認
+- 現在のworktree用スタックの起動
 - バックエンド（Laravel）とフロントエンド（Next.js）の依存関係インストール
 - データベースの初期化（マイグレーション・シード）
 
@@ -62,26 +63,41 @@ pnpm dev
 - **フロントエンド**: http://localhost:3000
 - **バックエンドAPI**: http://localhost
 - **Swagger UI**: http://localhost:8080
-- **PostgreSQL**: `mise run db-shell`でコンテナに接続し、`psql -d posse -U user`でPostgreSQLにアクセス後、`\dt`でテーブル一覧を確認
+- **PostgreSQL**: 共有PostgreSQLは `localhost:5432` で公開されます。`mise run db-shell` は共有DBコンテナに接続します。ホスト側から確認する場合は `psql -h localhost -p 5432 -U user -d posse` を利用してください
 
 ## 基本操作
 
 ```bash
-# 開発サーバーの起動
-mise run up
+# 現在のworktreeの開発スタックを起動
+# 共有DBを自動確認し、必要に応じて旧コンテナを掃除する
+mise run start
+
+# 共有PostgreSQLのみを事前に起動/確認
+mise run ensure-shared-db
 
 # コンテナの状態確認
 mise run ps
 
-# すべてのコンテナを停止
+# 現在のworktreeのコンテナを停止
+# 共有PostgreSQLは停止しない
 mise run down
 
-# すべてのコンテナを削除
+# 現在のworktreeのコンテナ/ボリュームを削除
+# 共有PostgreSQLは削除しない
 mise run destroy
 
 # すべてのコンテナをビルド
 mise run build
 ```
+
+### WorktreeごとのDocker構成
+
+- `compose.yml` は各worktreeの `front` `app` `web` `swagger-ui` を起動し、`postgresql` サービスは持ちません
+- `compose.shared.yml` は全worktree共通のPostgreSQLコンテナを1つだけ起動し、`localhost:5432` で公開します
+- worktree側の `app` / `web` コンテナは外部Dockerネットワーク `teamdev-2026-shared` 経由で共有DBへ接続し、Laravelの `DB_HOST=postgresql` はそのまま使えます
+- `mise run start` は共有DBの起動確認に加えて、移行前の古い `postgresql` / `web` / `swagger-ui` コンテナが現在のポートを掴んでいる場合に自動掃除し、`docker compose up -d --remove-orphans` 相当でworktreeスタックを起動します
+- `mise run worktree-info` で現在の `web` / `swagger` ポートと、共有DBが `localhost:5432` で使われることを確認できます
+- すべてのworktreeは同じDBを共有するため、マイグレーションやシードの実行結果は他のworktreeにも反映されます
 
 ### 開発支援
 
@@ -102,7 +118,7 @@ mise run app-shell
 # フロントエンドコンテナに接続
 mise run front-shell
 
-# データベースに接続
+# 共有PostgreSQLコンテナに接続
 mise run db-shell
 ```
 

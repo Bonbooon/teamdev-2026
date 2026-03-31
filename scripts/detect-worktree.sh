@@ -38,7 +38,8 @@ else
   fi
   export COMPOSE_PROJECT_NAME="$PROJECT_NAME"
 
-  # Main worktree keeps canonical ports. Linked worktrees get deterministic offsets.
+  # Main worktree keeps canonical web/swagger ports. Linked worktrees get deterministic offsets.
+  # All worktrees share one PostgreSQL database on 5432.
   if [ "$IS_MAIN_WORKTREE" = "true" ]; then
     export WEB_PORT="80"
     export DB_PORT="5432"
@@ -51,7 +52,7 @@ else
     done
     OFFSET=$((HASH % 2000 + 1))
     export WEB_PORT="$((10080 + OFFSET))"
-    export DB_PORT="$((15432 + OFFSET))"
+    export DB_PORT="5432"
     export SWAGGER_PORT="$((18080 + OFFSET))"
   fi
 fi

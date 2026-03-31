@@ -39,6 +39,10 @@ run = "bash scripts/wt-setup.sh"
 description = "Start the development environment"
 run = "bash scripts/start.sh"
 
+[tasks.ensure-shared-db]
+description = "Ensure the shared PostgreSQL container is running"
+run = "bash scripts/ensure-shared-db.sh"
+
 [tasks.ps]
 description = "List running containers"
 run = "bash scripts/ps.sh"

@@ -22,7 +22,8 @@ else
   PROJECT_NAME=$(echo "$PROJECT_NAME" | tr '/' '-' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
 fi
 
-# Main worktree keeps canonical ports. Linked worktrees keep their offsets.
+# Main worktree keeps canonical web/swagger ports. Linked worktrees keep their offsets.
+# All worktrees share one PostgreSQL database on 5432.
 if [ "$IS_MAIN_WORKTREE" = "true" ]; then
   WEB_PORT="80"
   DB_PORT="5432"
@@ -36,7 +37,7 @@ else
   done
   OFFSET=$((HASH % 2000 + 1))
   WEB_PORT="$((10080 + OFFSET))"
-  DB_PORT="$((15432 + OFFSET))"
+  DB_PORT="5432"
   SWAGGER_PORT="$((18080 + OFFSET))"
 fi
 
