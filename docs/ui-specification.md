@@ -930,18 +930,30 @@ IssueDetailPage
     │   └── Button (条件追加)
     ├── SubtaskEditor
     │   └── SubtaskRow[]
-    └── WorkLogSection (フェーズ2 — MVP外)
-        │  エンティティ: IssueWorkLog（手動記録 + GitHub連携による自動記録）
-        │  出典: specs/business/issue-management.md,
-        │        specs/database/table-schema-plan.sql (issue_work_logs),
-        │        specs/api/openapi-design-reference.json (GET/POST /issues/{issueId}/work-logs, PATCH/DELETE /issues/{issueId}/work-logs/{workLogId})
-        ├── WorkLogEntry[]
-        │   ├── MemberName
-        │   ├── StartedAt / EndedAt
-        │   ├── Minutes
-        │   ├── Source (manual / github_api / github_actions)
-        │   └── Description
-        └── Button (作業ログ追加)
+    └── WorkLogSection
+      │  エンティティ: IssueWorkLog（手動記録 + GitHub連携による自動記録）
+      │  出典: specs/business/issue-management.md,
+      │        specs/database/table-schema-plan.sql (issue_work_logs),
+      │        specs/api/openapi-design-reference.json (GET/POST /issues/{issueId}/work-logs, PATCH/DELETE /issues/{issueId}/work-logs/{workLogId})
+      ├── EmptyState (ログ0件時)
+      ├── WorkLogEntry[]
+      │   ├── Minutes
+      │   ├── Description
+      │   ├── LoggedAt
+      │   ├── Button (編集)
+      │   └── Button (削除)
+      ├── WorkLogInlineEditForm (編集中のみ)
+      │   ├── Input[type=number] (minutes)
+      │   ├── Textarea (description)
+      │   ├── Input[type=date] (logged_at)
+      │   ├── Button (保存)
+      │   └── Button (キャンセル)
+      ├── WorkLogCreateForm
+      │   ├── Input[type=number] (minutes)
+      │   ├── Textarea (description)
+      │   ├── Input[type=date] (logged_at)
+      │   └── Button (追加)
+      └── ConfirmDialog (削除確認)
 ```
 
 ### 5.10 アラート一覧 (`/alerts`)
@@ -1268,15 +1280,17 @@ const canResolve = alert.assigneeId === currentUser.id;
 
 ### 7.7 Issue詳細 (`/issues/[issueId]`)
 
-| データ | エンドポイント | loading | error |
-|--------|--------------|---------|-------|
-| Issue情報 | `GET /issues/{issueId}` | セクションスケルトン | リトライ |
-| 関連アラート | `GET /issues/{issueId}/alerts` | リストスケルトン | リトライ |
-| サブタスク | `GET /issues/{issueId}/sub-issues` | リストスケルトン | リトライ |
-| 作業ログ (フェーズ2) | `GET /issues/{issueId}/work-logs` | リストスケルトン | リトライ | MVP外。エンティティ: IssueWorkLog |
-| mutation: 作業ログ追加 (フェーズ2) | `POST /issues/{issueId}/work-logs` | ボタンスピナー | Toast(error) | MVP外 |
-| **mutation: ステータス** | `PATCH /issues/{issueId}/status` | バッジスピナー | Toast(error) |
-| **mutation: DoD** | `PATCH /issues/{issueId}/definition-of-dones` | チェック切替 | Toast(error) + ロールバック |
+| データ | エンドポイント | loading | error | 備考 |
+|--------|--------------|---------|-------|------|
+| Issue情報 | `GET /issues/{issueId}` | セクションスケルトン | リトライ | |
+| 関連アラート | `GET /issues/{issueId}/alerts` | リストスケルトン | リトライ | |
+| サブタスク | `GET /issues/{issueId}/sub-issues` | リストスケルトン | リトライ | |
+| 作業ログ | `GET /issues/{issueId}/work-logs` | カード内ローディング表示 | カード内エラー表示 | エンティティ: IssueWorkLog |
+| mutation: 作業ログ追加 | `POST /issues/{issueId}/work-logs` | 専用の送信中表示なし | 専用の mutation エラー表示なし | フォーム送信後に一覧再取得 |
+| mutation: 作業ログ更新 | `PATCH /issues/{issueId}/work-logs/{workLogId}` | 専用の送信中表示なし | 専用の mutation エラー表示なし | インライン編集で更新 |
+| mutation: 作業ログ削除 | `DELETE /issues/{issueId}/work-logs/{workLogId}` | ConfirmDialog 表示 | 専用の mutation エラー表示なし | 確認後に一覧再取得 |
+| **mutation: ステータス** | `PATCH /issues/{issueId}/status` | バッジスピナー | Toast(error) | |
+| **mutation: DoD** | `PATCH /issues/{issueId}/definition-of-dones` | チェック切替 | Toast(error) + ロールバック | |
 
 ### 7.8 アラート一覧 (`/alerts`)
 
@@ -1449,7 +1463,7 @@ src/
 │   │   │   ├── SubtaskEditor.tsx
 │   │   │   ├── DefinitionOfDone.tsx
 │   │   │   ├── AssigneeSelector.tsx
-│   │   │   └── WorkLogSection.tsx    # フェーズ2（MVP外だがエンティティとして定義済み）
+│   │   │   └── WorkLogSection.tsx    # Issue詳細の作業ログCRUD UI
 │   │   └── hooks/
 │   │
 │   ├── alerts/
@@ -1965,7 +1979,6 @@ AppLayout
 | 項目 | 理由 |
 |------|------|
 | GitHub Actions連携 (S-03-10) | 優先度低、MVP後に評価 |
-| WorkLog（作業ログ: IssueWorkLog エンティティ） | GitHub連携と合わせてフェーズ2で実装。エンティティ定義・API定義は済み |
 | アプリ内通知（ベルアイコン + 未読バッジ等） | MVPではアラートページを見に行く運用。通知はメール（SendGrid）のみ |
 | レスポンシブ対応（タブレット/モバイル） | デスクトップのみ |
 | 高度な分析・履歴トレンド | フェーズ2 |
