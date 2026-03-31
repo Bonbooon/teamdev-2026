@@ -1,7 +1,7 @@
 # Database Schema Documentation
 
 **Version:** 1.1  
-**Last Updated:** 2026/03/07  
+**Last Updated:** 2026/04/01  
 **Source Spec:** Migrations in `teamdev-2026-api/web/database/migrations/`  
 **Domain Models:** `docs/diagrams/domain-models/`
 
@@ -173,22 +173,22 @@ See migration files directly for exact column definitions, defaults, and constra
 
 **IssueTemplates Table** (Entity)
 - `id: UUID`
-- `project_id: UUID FK`
 - `name: String`
 - `description: String?`
-- `required_fields: JSON` - SMART criteria definitions
-- `custom_fields: JSON` - Template-specific fields
-- `created_at, updated_at: Timestamps`
+- `is_active: Boolean`
+- `created_at, updated_at: Timestamps with time zone`
 
 **IssueTemplateItems Table** (Entity)
 - `id: UUID`
 - `issue_template_id: UUID FK`
-- `name: String`
+- `item_key: String` - Form key used in `templateItemValues`
 - `label: String`
 - `value_type: Enum(string, integer, date, datetime, boolean, number, json)`
 - `is_required: Boolean`
 - `position: Int`
 - `created_at, updated_at: Timestamps`
+- Unique constraint: `(issue_template_id, item_key)`
+- Unique constraint: `(issue_template_id, position)`
 
 **Issues Table** (Aggregate Root)
 - `id: UUID`
@@ -211,11 +211,11 @@ See migration files directly for exact column definitions, defaults, and constra
 - Primary key: `(issue_id, team_id)`
 
 **IssueTemplateItemValues Table** (Entity)
-- `id: UUID`
 - `issue_id: UUID FK`
 - `issue_template_item_id: UUID FK`
-- `value: String` - Serialized value
-- `created_at, updated_at: Timestamps`
+- `value: JSON` - Stores the submitted template item value
+- `created_at, updated_at: Timestamps with time zone`
+- Primary key: `(issue_id, issue_template_item_id)`
 
 **IssueAssignees Table** (Entity)
 - `issue_id: UUID FK`

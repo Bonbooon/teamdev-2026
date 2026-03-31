@@ -1,7 +1,7 @@
 # Page: Issue作成
 
 ## Purpose
-SMARTテンプレートに基づいてプロジェクト内にIssueを作成する。
+選択したIssueテンプレートの項目定義に基づいて、プロジェクト内にIssueを作成する。
 
 ## Route
 `/projects/[projectId]/issues/new`
@@ -20,33 +20,32 @@ IssueCreatePage
     ├── PageHeader
     │   └── Title ("Issue作成")
     └── IssueForm
-        ├── Select (テンプレート選択 — 複数種類、プレースホルダーが変わる)
+        ├── Select (テンプレート選択)
         ├── Input (タイトル)
-        ├── SMARTTemplateFields
-        │   ├── Textarea (Specific: 何をすべきか)
-        │   ├── Textarea (Measurable: 完了基準)
-        │   ├── Textarea (Achievable: スコープ)
-        │   ├── Textarea (Relevant: プロジェクト目標との関連)
-        ├── Input (ストーリーポイント — 必須, 1-21)
+        ├── Select (ストーリーポイント — 必須, 1-21)
         ├── Input (見積時間 — 必須, 分単位)
         ├── DatePicker (期限)
         ├── Select (ステータス)
-        ├── CheckboxGroup (チームタグ — project.teams から複数選択)
-        ├── AssigneeSelector
-        │   └── MemberCheckbox[] (選択済みチームのメンバーのみ・複数選択可)
+        ├── DynamicTemplateFields
+        │   ├── Checkbox (boolean)
+        │   ├── Input[type=number] (integer / number)
+        │   ├── Input[type=date] (date)
+        │   ├── Input[type=datetime-local] (datetime)
+        │   └── Textarea (string / json)
         ├── DefinitionOfDone
         │   └── ChecklistEditor
         │       ├── Input[] (受け入れ条件)
         │       └── Button (条件追加)
+        ├── AssignmentSection
+        │   └── Text (アサインUIは未実装のプレースホルダー)
         └── Button (作成)
 ```
 
 ## Data Requirements
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
-| テンプレート一覧 + 項目定義 | `GET /issue-templates` | Select無効化 | リトライ |
-| プロジェクト詳細（チームタグ表示用） | `GET /projects/{projectId}` | フォームスケルトン | リトライ |
-| チームメンバー | `GET /teams/{teamId}/members` | AssigneeSelectorをスケルトン表示 | リトライ |
+| テンプレート一覧 | `GET /issue-templates` | Select無効化 | リトライ |
+| 選択テンプレート詳細 | `GET /issue-templates/{templateId}` | DynamicTemplateFields を未表示 | リトライ |
 | **mutation** | `POST /projects/{projectId}/issues` | ボタンスピナー | Toast(error) + フィールドエラー |
 
 ## Issueテンプレート（MVP）
@@ -63,12 +62,11 @@ IssueCreatePage
 | success | フォーム表示 |
 
 ## Interactions
-- テンプレート選択 → SMARTフィールドのプレースホルダーテキストが変化
-- チームタグ選択 → プロジェクトに紐づくチームを複数選択できる
-- チームタグ変更 → アサイン対象者をリセットし、選択済みチームのメンバーだけを候補表示
+- テンプレート選択 → `GET /issue-templates/{templateId}` を取得し、`template.items` から動的項目を描画する
+- テンプレート切り替え → `templateItemValues` を再初期化する
 - DefinitionOfDone → 項目の動的追加/削除
-- フォーム送信 → React Hook Form + Zod バリデーション
-- 送信時バリデーション → チーム1件以上、アサイン対象者1人以上、Definition of Done 1件以上が必須
+- フォーム送信 → React Hook Form + Zod バリデーション + テンプレート必須項目チェック
+- テンプレート必須チェック → `false` と `0` は有効値として扱い、`itemKey` がない項目は描画・検証対象から外す
 
 ## Mutations
 | 操作 | エンドポイント | 成功時 | 失敗時 |
@@ -78,9 +76,7 @@ IssueCreatePage
 ## Notes
 - storyPoints: 必須、1-21の整数
 - estimatedMinutes: 必須、分単位の整数
-- `GET /issue-templates` はテンプレート本体と `items[]` を返す
-- チームタグは `GET /projects/{projectId}` の `project.teams[]` を使って描画する
-- 現状の画面はテンプレート項目をまだ描画せず、SMARTプレースホルダー切替のみを行う
-- SMART入力値は現状保存されず、必須バリデーション対象でもない
-- AssigneeSelector はチームタグ選択後にだけ表示され、選択済みチームのメンバーを統合表示する
-- Definition of Done は完了時だけでなく、Issue作成時にも1件以上必須
+- DynamicTemplateFields は `template.items` を `position` 順に描画する
+- 対応する `valueType` は `boolean`, `integer`, `number`, `date`, `datetime`, `string`, `json`
+- 動的項目の入力値は `templateItemValues` として送信される
+- アサインUIは現状プレースホルダー表示のみ

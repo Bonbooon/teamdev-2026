@@ -1,7 +1,7 @@
 # UI設計 / 仕様書 — Motivation Cloud Teamwork
 
 **バージョン:** 1.0  
-**最終更新:** 2026/03/28  
+**最終更新:** 2026/04/01  
 **対象:** フェーズ1 MVP
 
 ---
@@ -39,7 +39,7 @@
 | `/teams/[teamId]` | チーム詳細 | S-04-03 | 必要 | 全員 | タブ: プロジェクト一覧, メンバー一覧 | ✅ Phase 1A |
 | `/projects` | プロジェクト一覧 | — | 必要 | 全員 | 参加中プロジェクト一覧 | ✅ Phase 1B |
 | `/projects/[projectId]` | プロジェクト詳細 | S-05-04 | 必要 | 全員 | 進捗ボード, ガントチャート, アラート | ✅ Phase 1B |
-| `/projects/[projectId]/issues/new` | Issue作成 | S-03-01 | 必要 | 全員 | SMARTテンプレート付きIssue作成 | ✅ Phase 1C |
+| `/projects/[projectId]/issues/new` | Issue作成 | S-03-01 | 必要 | 全員 | 動的テンプレート項目付きIssue作成 | ✅ Phase 1C |
 | `/issues/[issueId]` | Issue詳細 | S-03-05, S-03-06 | 必要 | 全員 | サブタスク, 進捗, ステータス管理 | ✅ Phase 1C |
 | `/alerts` | アラート一覧 | S-02-01, S-02-02 | 必要 | 全員 | 横断的アラート一覧 | ⬜ Phase 2B |
 | `/surveys` | サーベイ | S-05-01 | 必要 | 全員 | パルスサーベイ回答 | ⬜ Phase 3A |
@@ -893,25 +893,25 @@ IssueCreatePage
     ├── PageHeader
     │   └── Title ("Issue作成")
     └── IssueForm
-        ├── Select (テンプレート選択 — 複数種類から選択、テンプレによりSMARTフィールドのプレースホルダーが変わる)
-        ├── Input (タイトル)
-        ├── SMARTTemplateFields
-        │   ├── Textarea (Specific: 何をすべきか)
-        │   ├── Textarea (Measurable: 完了基準)
-        │   ├── Textarea (Achievable: スコープ)
-        │   ├── Textarea (Relevant: プロジェクト目標との関連)
-    ├── Input (ストーリーポイント — 必須, 1-21)
-    ├── Input (見積時間 — 必須, 分単位)
-    ├── DatePicker (期限)
-    ├── Select (ステータス)
-    ├── CheckboxGroup (チームタグ — project.teams から複数選択)
-        ├── AssigneeSelector
-    │   └── MemberCheckbox[] (選択済みチームのメンバーのみ・複数選択可)
-        ├── DefinitionOfDone
-        │   └── ChecklistEditor
-        │       ├── Input[] (受け入れ条件)
-        │       └── Button (条件追加)
-        └── Button (作成)
+      ├── Select (テンプレート選択)
+      ├── Input (タイトル)
+      ├── Select (ストーリーポイント — 必須, 1-21)
+      ├── Input (見積時間 — 必須, 分単位)
+      ├── DatePicker (期限)
+      ├── Select (ステータス)
+      ├── DynamicTemplateFields
+      │   ├── Checkbox (boolean)
+      │   ├── Input[type=number] (integer / number)
+      │   ├── Input[type=date] (date)
+      │   ├── Input[type=datetime-local] (datetime)
+      │   └── Textarea (string / json)
+      ├── DefinitionOfDone
+      │   └── ChecklistEditor
+      │       ├── Input[] (受け入れ条件)
+      │       └── Button (条件追加)
+      ├── AssignmentSection
+      │   └── Text (アサインUIは未実装のプレースホルダー)
+      └── Button (作成)
 ```
 
 ### 5.9 Issue詳細 (`/issues/[issueId]`)
@@ -921,60 +921,27 @@ IssueDetailPage
 └── AppLayout
     ├── IssueHeader
     │   ├── IssueTitle
-    │   ├── StatusBadge (ステータス変更可能)
-    │   ├── ProgressBar (自動算出 S-03-08)
-    │   └── Actions
-    │       └── Button (編集 → EditIssueModal を開く)
-    ├── IssueBody
-    │   ├── SMARTFields (読み取り専用)
-    │   ├── AssigneeList
-    │   │   └── Avatar[] + Name
-    │   ├── DefinitionOfDone
-    │   │   └── Checklist (チェック切替可)
-    │   └── DueDateInfo
-    ├── SubtaskSection (S-03-06 + S-03-09)
-    │   │  ※ 予期せぬ作業 (S-03-09) もサブタスクの1つとして登録する
-    │   │  ※ 別エンティティとしては扱わない
-    │   ├── SubtaskList
-    │   │   └── SubtaskRow[]
-    │   │       ├── Checkbox
-    │   │       ├── SubtaskName
-    │   │       ├── EstimatedTime
-    │   │       ├── StatusBadge
-    │   │       ├── Badge ("予期せぬ作業" — 該当時のみ表示)
-    │   │       └── Toggle ("予期せぬ作業" フラグ — 後から付与/解除可能)
-    │   └── Button (サブタスク追加)
-    │       └── Checkbox ("予期せぬ作業として登録" — 作成時にフラグ付与可能)
-    ├── WorkLogSection (フェーズ2 — MVP外)
-    │   │  エンティティ: IssueWorkLog（手動記録 + GitHub連携による自動記録）
-    │   │  出典: specs/business/issue-management.md,
-    │   │        specs/database/table-schema-plan.sql (issue_work_logs),
-    │   │        specs/api/openapi-design-reference.json (GET/POST /issues/{issueId}/work-logs, PATCH/DELETE /issues/{issueId}/work-logs/{workLogId})
-    │   ├── WorkLogEntry[]
-    │   │   ├── MemberName
-    │   │   ├── StartedAt / EndedAt
-    │   │   ├── Minutes
-    │   │   ├── Source (manual / github_api / github_actions)
-    │   │   └── Description
-    │   └── Button (作業ログ追加)
-    ├── Sidebar (右側)
-    │   ├── ProgressSummary (予定 vs 実績)
-    │   ├── TimelineInfo (開始日, 期限)
-    │   └── RelatedAlerts (このIssueに関連するアラート — MVP内)
-    └── EditIssueModal (モーダル — 全フィールド編集可能)
-        ├── Input (タイトル)
-        ├── Textarea (説明)
-        ├── SMARTTemplateFields
-        ├── AssigneeSelector (アサイン者 — 複数選択可)
-        ├── Select (ステータス: 未着手/進行中/レビュー中/完了)
-        ├── Select (優先度: low/medium/high/critical)
-        ├── Input (ストーリーポイント — 必須, 1-13)
-        ├── Input (見積時間 — 必須, 分単位)
-        ├── DefinitionOfDone (ChecklistEditor)
-        ├── DatePicker (開始日)
-        ├── DatePicker (期限)
-        ├── Select (チームタグ)
-        └── Button (保存)
+    │   ├── StatusBadge
+    │   ├── StoryPoints
+    │   ├── MetaInfo (見積時間, 期限, 担当者リンク)
+    │   └── Select (ステータス変更)
+    ├── DefinitionOfDone
+    │   ├── Checklist (チェック切替可)
+    │   └── Button (条件追加)
+    ├── SubtaskEditor
+    │   └── SubtaskRow[]
+    └── WorkLogSection (フェーズ2 — MVP外)
+        │  エンティティ: IssueWorkLog（手動記録 + GitHub連携による自動記録）
+        │  出典: specs/business/issue-management.md,
+        │        specs/database/table-schema-plan.sql (issue_work_logs),
+        │        specs/api/openapi-design-reference.json (GET/POST /issues/{issueId}/work-logs, PATCH/DELETE /issues/{issueId}/work-logs/{workLogId})
+        ├── WorkLogEntry[]
+        │   ├── MemberName
+        │   ├── StartedAt / EndedAt
+        │   ├── Minutes
+        │   ├── Source (manual / github_api / github_actions)
+        │   └── Description
+        └── Button (作業ログ追加)
 ```
 
 ### 5.10 アラート一覧 (`/alerts`)
@@ -1478,7 +1445,7 @@ src/
 │   │   │   ├── EditIssueModal.tsx     # 編集モーダル
 │   │   │   ├── IssueCard.tsx
 │   │   │   ├── IssueHeader.tsx
-│   │   │   ├── SMARTTemplateFields.tsx
+│   │   │   ├── DynamicTemplateFields.tsx
 │   │   │   ├── SubtaskEditor.tsx
 │   │   │   ├── DefinitionOfDone.tsx
 │   │   │   ├── AssigneeSelector.tsx
