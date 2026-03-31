@@ -158,7 +158,7 @@ Define the complete authentication and authorization flows for all user types (P
 2. User clicks "Sign in with Google"
 3. Redirected to Google OAuth consent/login
 4. User enters Google credentials (or uses existing session)
-5. Google returns authorization code to callback URL
+5. Google popup flow returns an authorization code to the frontend login page context using the popup page origin
 6. App exchanges the authorization code for tokens
 7. App validates ID token claims (`iss`, `aud`, `exp`) and `state`
 7. **If user exists:** Create Sanctum token, redirect to appropriate dashboard
@@ -207,7 +207,7 @@ Content-Type: application/json
 Request:
 {
   "authorizationCode": "string", // Google OAuth authorization code
-  "redirectUri": "string" // Popup flow page origin (for example, http://localhost:3000). Legacy "postmessage" is accepted for backward compatibility; the backend resolves it to a popup origin or returns 422 when it cannot.
+  "redirectUri": "string" // Popup flow page origin (for example, http://localhost:3000). Legacy "postmessage" is accepted for backward compatibility only when the backend can resolve it to an allowed popup origin; otherwise it returns 422.
 }
 
 Response (201 Created):
@@ -447,7 +447,7 @@ See `specs/api/openapi-contracts.md` for detailed schema definitions.
 - `GOOGLE_OAUTH_CLIENT_ID` - Google OAuth client ID
 - `GOOGLE_OAUTH_CLIENT_SECRET` - Google OAuth client secret
 - `GOOGLE_OAUTH_REDIRECT_URI` - Full Google OAuth callback URL used for server-side code exchange. Its origin is also used as a legacy `redirectUri = "postmessage"` fallback when `FRONTEND_URL` is unavailable.
-- `FRONTEND_URL` - Preferred popup page origin for the current environment. The backend uses this first when normalizing legacy `redirectUri = "postmessage"` requests.
+- `FRONTEND_URL` - Preferred popup page origin for the current environment. The backend uses this first when normalizing legacy `redirectUri = "postmessage"` requests, and it should also be included in the allowed frontend origins configuration.
 - `GOOGLE_OAUTH_SCOPES` - Optional, default `openid profile email`
 - `SANCTUM_EXPIRATION_HOURS` - Token lifetime (default: 720 = 30 days)
 
@@ -480,7 +480,8 @@ See `specs/api/openapi-contracts.md` for detailed schema definitions.
 - **Token-only API auth**: `EnsureFrontendRequestsAreStateful` removed from API middleware — no CSRF cookies or sessions for API routes (see ADR 0007)
 - Frontend uses popup-based OAuth flow (`flow: "auth-code"`) with `redirectUri` set to the popup page origin
 - Legacy compatibility: the API still accepts `redirectUri = "postmessage"`
-- Legacy normalization order: when `redirectUri = "postmessage"`, the backend resolves the popup origin from `FRONTEND_URL`, then from the origin of `GOOGLE_OAUTH_REDIRECT_URI`, then from the request `Origin` header
+- Legacy normalization order: when `redirectUri = "postmessage"`, the backend resolves the popup origin from `FRONTEND_URL`, then from the origin of `GOOGLE_OAUTH_REDIRECT_URI`, then from the request `Origin` header only if that origin matches the configured allowed frontend origins
+- A valid popup origin must match the configured allowed frontend origins. The request `Origin` header is never trusted unless it passes that allowlist check.
 - Legacy failure behavior: if none of those values produce a valid popup origin, the API returns `422` and the client must send the explicit popup page origin
 - Login responses include a `googleProfile` object for profile form prefill hints
 - Profile registration is required but not enforced during login (users can skip and complete later)
