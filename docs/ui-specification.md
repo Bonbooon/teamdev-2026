@@ -746,20 +746,22 @@ TeamDetailPage
     │       └── Button (チーム編集 → EditTeamModal)
     ├── Tabs
     │   ├── ProjectsTab (デフォルト)
-    │   │   └── ProjectCard[]
-    │   │       ├── ProjectName
-    │   │       ├── ProgressBar
-    │   │       ├── StatusBadge
-    │   │       └── DueDate
+    │   │   └── ProjectList
+    │   │       ├── loading: Skeleton[]
+    │   │       ├── error: ErrorState
+    │   │       ├── empty: EmptyState
+    │   │       └── success: ProjectLink[]
+    │   │           ├── ProjectTitle
+    │   │           ├── StatusBadge
+    │   │           ├── [Optional] Description
+    │   │           └── DueDate
     │   └── MembersTab
-    │       ├── WorkloadTable (S-07-01)
-    │       │   ├── MemberRow[]
-    │       │   │   ├── Avatar + Name
-    │       │   │   ├── IssueCount (完了/着手中/未着手)
-    │       │   │   ├── TotalPoints
-    │       │   │   └── WorkloadIndicator (green/yellow/red — デフォルト閾値、カスタマイズはMVP外)
-    │       │   └── Pagination
-    │       └── [Manager] Button (メンバー招待)
+    │       └── WorkloadTable
+    │           ├── empty: "メンバーがいません"
+    │           └── MemberRow[]
+    │               ├── NameLink
+    │               ├── RoleBadge
+    │               └── StatusBadge
     ├── [Manager] InviteMemberModal
     │   ├── Tabs (追加方法切替)
     │   │   ├── [既存ユーザー追加タブ]
@@ -1239,9 +1241,8 @@ const canResolve = alert.assigneeId === currentUser.id;
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
 | チーム情報 | `GET /teams/{teamId}` | ヘッダースケルトン | リトライ |
+| プロジェクト一覧 | `GET /projects?team_id={teamId}` | カードスケルトン | リトライ |
 | メンバー一覧 | `GET /teams/{teamId}/members` | テーブルスケルトン | リトライ |
-| ワークロード | `GET /teams/{teamId}/member-workloads` | テーブルスケルトン | リトライ |
-| コンディション | `GET /teams/{teamId}/condition-summary` | カードスケルトン | リトライ |
 
 ### 7.4 プロジェクト一覧 (`/projects`)
 

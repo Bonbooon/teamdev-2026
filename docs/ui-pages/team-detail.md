@@ -25,20 +25,22 @@ TeamDetailPage
     │       └── Button (チーム編集 → EditTeamModal)
     ├── Tabs
     │   ├── ProjectsTab (デフォルト)
-    │   │   └── ProjectCard[]
-    │   │       ├── ProjectName
-    │   │       ├── ProgressBar
-    │   │       ├── StatusBadge
-    │   │       └── DueDate
+    │   │   └── ProjectList
+    │   │       ├── loading: Skeleton[]
+    │   │       ├── error: ErrorState
+    │   │       ├── empty: EmptyState
+    │   │       └── success: ProjectLink[]
+    │   │           ├── ProjectTitle
+    │   │           ├── StatusBadge
+    │   │           ├── [Optional] Description
+    │   │           └── DueDate
     │   └── MembersTab
-    │       ├── WorkloadTable (S-07-01)
-    │       │   ├── MemberRow[]
-    │       │   │   ├── Avatar + Name
-    │       │   │   ├── IssueCount (完了/着手中/未着手)
-    │       │   │   ├── TotalPoints
-    │       │   │   └── WorkloadIndicator (green/yellow/red — デフォルト閾値、カスタマイズはMVP外)
-    │       │   └── Pagination
-    │       └── [Manager] Button (メンバー招待)
+    │       └── WorkloadTable
+    │           ├── empty: "メンバーがいません"
+    │           └── MemberRow[]
+    │               ├── NameLink
+    │               ├── RoleBadge
+    │               └── StatusBadge
     ├── [Manager] InviteMemberModal
     │   ├── Tabs (追加方法切替)
     │   │   ├── [既存ユーザー追加タブ]
@@ -63,25 +65,23 @@ TeamDetailPage
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
 | チーム情報 | `GET /teams/{teamId}` | ヘッダースケルトン | リトライ |
+| プロジェクト一覧 | `GET /projects?team_id={teamId}` | カードスケルトン | リトライ |
 | メンバー一覧 | `GET /teams/{teamId}/members` | テーブルスケルトン | リトライ |
-| ワークロード | `GET /teams/{teamId}/member-workloads` | テーブルスケルトン | リトライ |
-| コンディション | `GET /teams/{teamId}/condition-summary` | カードスケルトン | リトライ |
 
 ## UI States
 | 状態 | 表現 |
 |------|------|
 | loading | ヘッダースケルトン + タブ内スケルトン |
 | empty (プロジェクト) | EmptyState: "プロジェクトがありません" |
-| empty (メンバー) | EmptyState: "メンバーがいません" + 招待ボタン(Manager) |
+| empty (メンバー) | テーブル内メッセージ: "メンバーがいません" |
 | error | ErrorState + リトライ |
-| success | タブ表示 |
+| success | ProjectsTab: プロジェクトカード一覧 / MembersTab: メンバーテーブル |
 
 ## Interactions
-- ProjectCardクリック → `/projects/[projectId]` に遷移
-- メンバー行のアバター/名前クリック → `/users/[userId]` に遷移
+- ProjectsTabのプロジェクトカードクリック → `/projects/[projectId]` に遷移
+- メンバー名クリック → `/users/[userId]` に遷移
 - メンバー招待 (Manager) → InviteMemberModal
 - チーム編集 (Manager) → EditTeamModal
-- ページネーション (MembersTab): `?page=1&per_page=20`
 
 ## Mutations
 | 操作 | エンドポイント | 成功時 | 失敗時 |
@@ -91,5 +91,5 @@ TeamDetailPage
 | チーム編集 | `PATCH /teams/{teamId}` | Toast(success) + モーダル閉じ + 再取得 | Toast(error) |
 
 ## Notes
-- WorkloadIndicator閾値: green ≤ 80%, yellow 80-100%, red > 100% (基準値: 40pt/週)
-- メンバーのアバター/名前は `/users/[userId]` へのリンク
+- プロジェクト一覧は `team_id` クエリで対象チームに絞り込む
+- 期限未設定のプロジェクトは "期限未設定" と表示する
