@@ -127,7 +127,7 @@ run = "bash scripts/pull-c.sh"
 
 # === アプリケーション初期化 ===
 [tasks.laravel-init]
-description = "Initialize Laravel application (env, key, migrate, seed)"
+description = "Initialize Laravel application (env, key, migrate:fresh, wait for Google login, seed)"
 run = "bash scripts/laravel-init.sh"
 
 [tasks.front-init]
