@@ -13,8 +13,8 @@ if [ -z "$WORKTREE_NAME" ]; then
 fi
 
 WORKTREE_PATH="worktrees/$WORKTREE_NAME"
-WORKTREE_BASENAME=$(basename "$WORKTREE_PATH")
-COMPOSE_PROJECT_NAME="teamdev-2026-$WORKTREE_BASENAME"
+# Match the exact project naming logic from gen-worktree-env.sh to ensure consistency
+COMPOSE_PROJECT_NAME="teamdev-2026-$WORKTREE_NAME"
 COMPOSE_PROJECT_NAME=$(echo "$COMPOSE_PROJECT_NAME" | tr '/' '-' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
 
 if [ ! -d "$WORKTREE_PATH" ]; then

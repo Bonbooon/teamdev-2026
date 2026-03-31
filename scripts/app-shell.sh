@@ -5,4 +5,4 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/detect-worktree.sh"
 
-docker compose exec app vendor/bin/pint
+docker compose exec app bash

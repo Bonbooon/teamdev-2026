@@ -32,8 +32,24 @@ mise run front-init
 echo ""
 echo "Setup completed successfully"
 echo ""
-echo "Services are now available at:"
-echo "  - Frontend: http://localhost"
-echo "  - Backend API: http://localhost/api"
-echo "  - Swagger UI: http://localhost:8080"
-echo "  - PostgreSQL: localhost:5432"
+
+# Only show default ports for main worktree. Linked worktrees use different ports.
+if [ -f ".worktree.env" ]; then
+  source .worktree.env
+  if [ "$IS_MAIN_WORKTREE" = "true" ]; then
+    echo "Services are now available at:"
+    echo "  - Frontend: http://localhost"
+    echo "  - Backend API: http://localhost/api"
+    echo "  - Swagger UI: http://localhost:8080"
+    echo "  - PostgreSQL: localhost:5432"
+  else
+    echo "Linked worktree detected. Check worktree-info for actual ports:"
+    echo "  mise run worktree-info"
+  fi
+else
+  echo "Services are now available at:"
+  echo "  - Frontend: http://localhost"
+  echo "  - Backend API: http://localhost/api"
+  echo "  - Swagger UI: http://localhost:8080"
+  echo "  - PostgreSQL: localhost:5432"
+fi

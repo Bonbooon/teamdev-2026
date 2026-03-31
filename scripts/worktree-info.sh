@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Source worktree detection to get WORKTREE_NAME, COMPOSE_PROJECT_NAME, and ports
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/detect-worktree.sh"
+
 echo "----------------------------------------"
 echo "  Worktree Information"
 echo "----------------------------------------"
