@@ -22,7 +22,7 @@ echo "4) Installing dependencies..."
 mise run install-deps
 
 echo ""
-echo "5) Initializing application..."
+echo "5) Initializing application (will pause for DEMO_MANAGER_EMAIL + Google login before seeding)..."
 mise run laravel-init
 
 echo ""
