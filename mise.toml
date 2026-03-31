@@ -32,7 +32,7 @@ description = "Complete project setup (recommended for first-time setup)"
 run = "bash scripts/setup.sh"
 
 [tasks.wt-setup]
-description = "Setup worktree environment (reuses existing Docker images)"
+description = "Setup worktree environment (reuses existing Docker images and skips shared DB reset)"
 run = "bash scripts/wt-setup.sh"
 
 [tasks.start]

@@ -97,6 +97,7 @@ mise run build
 - worktree側の `app` / `web` コンテナは外部Dockerネットワーク `teamdev-2026-shared` 経由で共有DBへ接続し、Laravelの `DB_HOST=postgresql` はそのまま使えます
 - `mise run ensure-shared-db` / `mise run start` は、旧構成で残った誤った共有ネットワーク名を検知した場合、shared PostgreSQL を正しい `teamdev-2026-shared` ネットワークへ自動的に作り直します
 - `mise run start` は共有DBの起動確認に加えて、移行前の古い `postgresql` / `web` / `swagger-ui` コンテナが現在のポートを掴んでいる場合に自動掃除し、`docker compose up -d --remove-orphans` 相当でworktreeスタックを起動します
+- `mise run wt-setup` は worktree 用の `.env` / `APP_KEY` を整えるだけで、共有DBに対する `migrate` / `seed` は実行しません。共有DBを意図的に初期化したい場合だけ `mise run laravel-init` を明示的に実行してください
 - `mise run worktree-info` で現在の `web` / `swagger` ポートと、共有DBが `localhost:5432` で使われることを確認できます
 - すべてのworktreeは同じDBを共有するため、マイグレーションやシードの実行結果は他のworktreeにも反映されます
 
