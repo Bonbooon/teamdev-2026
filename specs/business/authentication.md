@@ -156,13 +156,13 @@ Define the complete authentication and authorization flows for all user types (P
 **Main Flow:**
 1. User visits app login page
 2. User clicks "Sign in with Google"
-3. Redirected to Google OAuth consent/login
+3. Frontend opens the Google OAuth consent/login popup
 4. User enters Google credentials (or uses existing session)
-5. Google returns authorization code to callback URL
+5. Google returns an authorization code to the frontend popup/login page context, and the frontend sends that popup page origin as `redirectUri`
 6. App exchanges the authorization code for tokens
 7. App validates ID token claims (`iss`, `aud`, `exp`) and `state`
-7. **If user exists:** Create Sanctum token, redirect to appropriate dashboard
-8. **If user is new:** Create User + OAuthAccount, redirect to profile registration
+8. **If user exists:** Create Sanctum token, redirect to appropriate dashboard
+9. **If user is new:** Create User + OAuthAccount, redirect to profile registration
 
 **Data from Google OIDC Claims:**
 - `email` → User.email
@@ -207,7 +207,7 @@ Content-Type: application/json
 Request:
 {
   "authorizationCode": "string", // Google OAuth authorization code
-  "redirectUri": "string" // "postmessage" for popup flow, or callback URI
+  "redirectUri": "string" // HTTP/HTTPS popup flow page origin (for example, http://localhost:3000). Legacy "postmessage" is accepted for backward compatibility only when the backend can resolve it to an allowed popup origin; otherwise it returns 422.
 }
 
 Response (201 Created):
@@ -446,7 +446,8 @@ See `specs/api/openapi-contracts.md` for detailed schema definitions.
 **Environment Variables Required:**
 - `GOOGLE_OAUTH_CLIENT_ID` - Google OAuth client ID
 - `GOOGLE_OAUTH_CLIENT_SECRET` - Google OAuth client secret
-- `GOOGLE_OAUTH_REDIRECT_URI` - OAuth callback URL
+- `GOOGLE_OAUTH_REDIRECT_URI` - Full Google OAuth callback URL registered with Google for server-side code exchange. In the popup flow the frontend should still send its own popup page origin via `redirectUri`; the backend only reuses this callback URL's origin as a legacy `redirectUri = "postmessage"` fallback when `FRONTEND_URL` is unavailable and that origin is intentionally compatible with the deployed popup origin.
+- `FRONTEND_URL` - Preferred popup page origin for the current environment. The frontend should send this origin (or the equivalent runtime origin) as `redirectUri`, and the backend uses it first when normalizing legacy `redirectUri = "postmessage"` requests. It should also be included in the allowed frontend origins configuration.
 - `GOOGLE_OAUTH_SCOPES` - Optional, default `openid profile email`
 - `SANCTUM_EXPIRATION_HOURS` - Token lifetime (default: 720 = 30 days)
 
@@ -477,7 +478,11 @@ See `specs/api/openapi-contracts.md` for detailed schema definitions.
 - Google OAuth/OIDC is the sole authentication method for Phase 1
 - No email/password login
 - **Token-only API auth**: `EnsureFrontendRequestsAreStateful` removed from API middleware — no CSRF cookies or sessions for API routes (see ADR 0007)
-- Frontend uses popup-based OAuth flow (`flow: "auth-code"`) with `redirectUri: "postmessage"`
+- Frontend uses popup-based OAuth flow (`flow: "auth-code"`) with `redirectUri` set to the popup page origin
+- Legacy compatibility: the API still accepts `redirectUri = "postmessage"`
+- Legacy normalization order: when `redirectUri = "postmessage"`, the backend resolves the popup origin from `FRONTEND_URL`, then from the origin of `GOOGLE_OAUTH_REDIRECT_URI`, then from the request `Origin` header only if that origin matches the configured allowed frontend origins
+- A valid popup origin must be an HTTP/HTTPS origin that matches the configured allowed frontend origins. The request `Origin` header is never trusted unless it passes that allowlist check.
+- Legacy failure behavior: if none of those values produce a valid popup origin, the API returns `422` and the client must send the explicit popup page origin
 - Login responses include a `googleProfile` object for profile form prefill hints
 - Profile registration is required but not enforced during login (users can skip and complete later)
 - Future custom avatar support is still planned, but Phase 1 persists and displays the Google avatar only
