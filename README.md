@@ -152,6 +152,8 @@ php artisan migrate:fresh
 php artisan db:seed
 ```
 
+`mise run laravel-init` はこの手順を対話的に補助します。`.env` と `APP_KEY` を整えたあと `migrate:fresh` を実行し、`DEMO_MANAGER_EMAIL` の確認と Google ログイン完了を待ってから `db:seed` を続行します。
+
 補足:
 
 - `php artisan migrate:fresh --seed` だと、Google ログイン前にデモマネージャーのユーザーが未作成のため失敗します
