@@ -207,7 +207,7 @@ Content-Type: application/json
 Request:
 {
   "authorizationCode": "string", // Google OAuth authorization code
-  "redirectUri": "string" // "postmessage" for popup flow, or callback URI
+  "redirectUri": "string" // Popup flow page origin (for example, http://localhost:3000). Legacy "postmessage" is also accepted.
 }
 
 Response (201 Created):
