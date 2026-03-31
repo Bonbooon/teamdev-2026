@@ -38,12 +38,14 @@ User Browser
     ↓
 Next.js Frontend (localhost:3000)
     ↓ (aspida - type-safe API client)
-Nginx (localhost:80)
+Nginx (per worktree)
     ↓
 Laravel API (PHP-FPM)
-    ↓
-PostgreSQL (localhost:5432)
+    ↓ (external Docker network: teamdev-2026-shared)
+Shared PostgreSQL (compose.shared.yml, localhost:5432)
 ```
+
+Each worktree keeps its own app/web/swagger containers and isolated web/swagger ports, but all worktrees share one PostgreSQL container on `localhost:5432`. Inside Docker, the database host remains `postgresql`.
 
 ---
 
@@ -69,7 +71,7 @@ PostgreSQL (localhost:5432)
 
 - **Containers**: Docker + Docker Compose
 - **Web Server**: Nginx
-- **Development**: Local containers
+- **Development**: Per-worktree local containers + one shared PostgreSQL container
 
 ---
 
@@ -94,7 +96,7 @@ PostgreSQL (localhost:5432)
 
 - **Laravel**: `teamdev-2026-api/web/`
 - **Next.js**: `teamdev-2026-front/`
-- **Docker**: `compose.yml`, `docker/`
+- **Docker**: `compose.yml`, `compose.shared.yml`, `docker/`
 
 ---
 
@@ -127,8 +129,9 @@ PostgreSQL (localhost:5432)
 
 ```bash
 # Setup
-mise setup                    # Initial setup
-docker compose up -d          # Start containers
+mise run setup               # Initial setup
+mise run start               # Start current worktree stack and ensure shared DB
+mise run worktree-info       # Show current worktree ports and shared DB info
 
 # Development
 cd teamdev-2026-front && npm run dev       # Start Next.js dev server
@@ -136,7 +139,7 @@ mise codegen-openapi                       # Regenerate API types
 
 # Containers
 mise app-shell                      # Access Laravel container
-docker compose exec app bash        # Alternative
+mise run db-shell                   # Access shared PostgreSQL container
 ```
 
 ---
@@ -168,6 +171,8 @@ Type-safe API calls
 | API        | 80   | http://localhost      |
 | PostgreSQL | 5432 | localhost:5432        |
 | Swagger UI | 8080 | http://localhost:8080 |
+
+For linked worktrees, API and Swagger ports are offset per worktree while PostgreSQL remains shared on `localhost:5432`.
 
 ---
 

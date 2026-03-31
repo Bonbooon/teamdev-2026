@@ -68,10 +68,31 @@ else
 fi
 
 echo ""
+echo "Generating worktree-local Docker environment..."
+MAIN_REPO_ROOT="$(pwd)"
+bash "$MAIN_REPO_ROOT/scripts/gen-worktree-env.sh" "$BRANCH_NAME" "false" > "$WORKTREE_PATH/.worktree.env"
+if [ ! -f "$WORKTREE_PATH/.worktree.env" ] || [ ! -s "$WORKTREE_PATH/.worktree.env" ]; then
+  echo "Error: Failed to generate .worktree.env"
+  exit 1
+fi
+echo "  Generated $WORKTREE_PATH/.worktree.env"
+
+echo ""
 echo "Worktree created successfully"
 echo ""
 echo "Submodule status:"
-cd "$WORKTREE_PATH" 2>/dev/null && git submodule foreach --recursive 'echo "  $displaypath: $(git branch --show-current)"' || true
+cd "$WORKTREE_PATH"
+git submodule foreach --recursive 'echo "  $displaypath: $(git branch --show-current)"' || true
+
+# Load the worktree env before running tasks
+if [ ! -f .worktree.env ]; then
+  echo "Error: .worktree.env not found in worktree directory"
+  exit 1
+fi
+set -a
+source .worktree.env
+set +a
+
 mise run wt-setup
 mise run worktree-info
 cd - >/dev/null 2>&1

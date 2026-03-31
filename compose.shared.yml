@@ -1,0 +1,33 @@
+# Shared PostgreSQL service for all worktrees
+# Usage: docker compose -p teamdev-2026-shared -f compose.shared.yml up -d
+# This service is exposed on localhost:5432 and all worktrees connect to it via Docker network
+
+services:
+  postgresql:
+    image: postgres:14.7
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
+      POSTGRES_DB: posse
+    volumes:
+      - ./docker/postgresql/initdb.d:/docker-entrypoint-initdb.d
+      - shared-db-store:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - teamdev-2026-shared
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d posse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  shared-db-store:
+    driver: local
+
+networks:
+  teamdev-2026-shared:
+    driver: bridge
+    name: teamdev-2026-shared

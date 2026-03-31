@@ -14,26 +14,46 @@ echo "2) Building Docker containers..."
 mise run build
 
 echo ""
-echo "3) Starting services..."
+echo "3) Ensuring shared PostgreSQL is running..."
+mise run ensure-shared-db
+
+echo ""
+echo "4) Starting services..."
 mise run start
 
 echo ""
-echo "4) Installing dependencies..."
+echo "5) Installing dependencies..."
 mise run install-deps
 
 echo ""
-echo "5) Initializing application..."
+echo "6) Initializing application (will pause for DEMO_MANAGER_EMAIL + Google login before seeding)..."
 mise run laravel-init
 
 echo ""
-echo "6) Installing frontend dependencies locally..."
+echo "7) Installing frontend dependencies locally..."
 mise run front-init
 
 echo ""
 echo "Setup completed successfully"
 echo ""
-echo "Services are now available at:"
-echo "  - Frontend: http://localhost"
-echo "  - Backend API: http://localhost/api"
-echo "  - Swagger UI: http://localhost:8080"
-echo "  - PostgreSQL: localhost:5432"
+
+# Only show default ports for main worktree. Linked worktrees use different ports.
+if [ -f ".worktree.env" ]; then
+  source .worktree.env
+  if [ "$IS_MAIN_WORKTREE" = "true" ]; then
+    echo "Services are now available at:"
+    echo "  - Frontend: http://localhost"
+    echo "  - Backend API: http://localhost/api"
+    echo "  - Swagger UI: http://localhost:8080"
+    echo "  - PostgreSQL: localhost:5432 (shared)"
+  else
+    echo "Linked worktree detected. Check worktree-info for actual ports:"
+    echo "  mise run worktree-info"
+  fi
+else
+  echo "Services are now available at:"
+  echo "  - Frontend: http://localhost"
+  echo "  - Backend API: http://localhost/api"
+  echo "  - Swagger UI: http://localhost:8080"
+  echo "  - PostgreSQL: localhost:5432 (shared)"
+fi

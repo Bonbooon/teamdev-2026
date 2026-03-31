@@ -13,8 +13,8 @@ if [ -z "$WORKTREE_NAME" ]; then
 fi
 
 WORKTREE_PATH="worktrees/$WORKTREE_NAME"
-WORKTREE_BASENAME=$(basename "$WORKTREE_PATH")
-COMPOSE_PROJECT_NAME="teamdev-2026-$WORKTREE_BASENAME"
+# Match the exact project naming logic from gen-worktree-env.sh to ensure consistency
+COMPOSE_PROJECT_NAME="teamdev-2026-$WORKTREE_NAME"
 COMPOSE_PROJECT_NAME=$(echo "$COMPOSE_PROJECT_NAME" | tr '/' '-' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
 
 if [ ! -d "$WORKTREE_PATH" ]; then
@@ -25,7 +25,9 @@ fi
 echo "Removing worktree: $WORKTREE_PATH"
 echo "Stopping/removing Docker resources for: $COMPOSE_PROJECT_NAME"
 
-docker compose -p "$COMPOSE_PROJECT_NAME" -f "$WORKTREE_PATH/compose.yml" down --rmi local --volumes --remove-orphans || true
+# Clean up the worktree's compose stack using the worktree's compose file
+# The compose file exists at this point and defines the services for this worktree
+docker compose -f "$WORKTREE_PATH/compose.yml" -p "$COMPOSE_PROJECT_NAME" down --rmi local --volumes --remove-orphans 2>/dev/null || true
 sleep 1
 
 chmod -R u+rwX "$WORKTREE_PATH" 2>/dev/null || true

@@ -19,6 +19,8 @@ services:
       - ./teamdev-2026-api/web:/work/web
       - ./scripts:/usr/local/bin/scripts
     command: ["/bin/sh", "-c", "chmod -R +x /usr/local/bin/scripts && exec php-fpm"]
+    networks:
+      - teamdev-2026-shared
 
   web:
     image: nginx
@@ -29,19 +31,9 @@ services:
       - ./teamdev-2026-api/web:/work/web
     depends_on:
       - app
+    networks:
+      - teamdev-2026-shared
 
-  postgresql:
-      image: postgres:14.7
-      restart: always
-      environment:
-        POSTGRES_PASSWORD: password
-        POSTGRES_USER: user
-        POSTGRES_DB: posse
-      volumes:
-        - ./docker/postgresql/initdb.d:/docker-entrypoint-initdb.d
-        - ./teamdev-2026-api/db-store:/var/lib/postgresql/data
-      ports:
-        - ${DB_PORT:-5432}:5432
   swagger-ui:
     image: swaggerapi/swagger-ui
     volumes:
@@ -50,3 +42,7 @@ services:
       SWAGGER_JSON: /app/openapi.json
     ports:
       - ${SWAGGER_PORT:-8080}:8080
+
+networks:
+  teamdev-2026-shared:
+    external: true

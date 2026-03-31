@@ -32,12 +32,16 @@ description = "Complete project setup (recommended for first-time setup)"
 run = "bash scripts/setup.sh"
 
 [tasks.wt-setup]
-description = "Setup worktree environment (reuses existing Docker images)"
+description = "Setup worktree environment (reuses existing Docker images and skips shared DB reset)"
 run = "bash scripts/wt-setup.sh"
 
 [tasks.start]
 description = "Start the development environment"
 run = "bash scripts/start.sh"
+
+[tasks.ensure-shared-db]
+description = "Ensure the shared PostgreSQL container is running"
+run = "bash scripts/ensure-shared-db.sh"
 
 [tasks.ps]
 description = "List running containers"
@@ -53,7 +57,7 @@ run = "bash scripts/destroy.sh"
 
 [tasks.build]
 description = "Build the project"
-run = "docker compose build --no-cache --force-rm"
+run = "bash scripts/build.sh"
 
 # === 依存関係インストール ===
 [tasks.install-deps]
@@ -87,7 +91,7 @@ run = "bash scripts/t.sh {{ arg(name='filter') }}"
 
 [tasks.rs]
 description = "Restarts docker containers"
-run = "docker compose down && docker compose up -d"
+run = "bash scripts/rs.sh"
 
 [tasks.all]
 run = "bash scripts/all.sh"
@@ -123,7 +127,7 @@ run = "bash scripts/pull-c.sh"
 
 # === アプリケーション初期化 ===
 [tasks.laravel-init]
-description = "Initialize Laravel application (env, key, migrate, seed)"
+description = "Initialize Laravel application (env, key, migrate:fresh, wait for Google login, seed)"
 run = "bash scripts/laravel-init.sh"
 
 [tasks.front-init]
@@ -133,15 +137,15 @@ run = "bash scripts/front-init.sh"
 # === コンテナシェル ===
 [tasks.app-shell]
 description = "Open shell in the Laravel app container"
-run = "docker compose exec app bash"
+run = "bash scripts/app-shell.sh"
 
 [tasks.front-shell]
 description = "Open shell in the frontend container"
-run = "docker compose exec front bash"
+run = "bash scripts/front-shell.sh"
 
 [tasks.db-shell]
 description = "Open PostgreSQL shell"
-run = "docker compose exec postgresql bash"
+run = "bash scripts/db-shell.sh"
 
 # === Worktree Management ===
 [tasks.worktree-info]
