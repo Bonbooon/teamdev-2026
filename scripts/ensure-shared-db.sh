@@ -11,6 +11,18 @@ CANONICAL_SHARED_NETWORK_NAME="teamdev-2026-shared"
 LEGACY_SHARED_NETWORK_NAME="${SHARED_PROJECT_NAME}_teamdev-2026-shared"
 COMPOSE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+is_shared_db_running() {
+  local container_id
+
+  container_id=$(docker compose -p "$SHARED_PROJECT_NAME" -f "$COMPOSE_DIR/compose.shared.yml" ps -q postgresql 2>/dev/null || true)
+
+  if [ -z "$container_id" ]; then
+    return 1
+  fi
+
+  [ "$(docker inspect --format '{{.State.Running}}' "$container_id" 2>/dev/null || echo false)" = "true" ]
+}
+
 get_container_networks() {
   local container_name="$1"
 
@@ -88,7 +100,7 @@ fi
 reconcile_shared_db_network_attachment
 
 # Check if the shared DB container is already running
-if docker compose -p "$SHARED_PROJECT_NAME" -f "$COMPOSE_DIR/compose.shared.yml" ps postgresql | grep -q "postgresql.*Up"; then
+if is_shared_db_running; then
   exit 0
 fi
 
