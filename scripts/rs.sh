@@ -5,8 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/detect-worktree.sh"
 
-# Ensure shared PostgreSQL is running
-# Execute in subshell to prevent exit statements from terminating this script
-bash "$SCRIPT_DIR/ensure-shared-db.sh"
-
-docker compose down && docker compose up -d
+# Restart the current stack, then reuse start.sh so restart gets the same
+# shared DB checks, legacy port cleanup, and orphan removal behavior.
+docker compose down --remove-orphans
+bash "$SCRIPT_DIR/start.sh"

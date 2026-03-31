@@ -6,10 +6,9 @@
 
 ### 1. Issue Creation (S-03-01)
 
-A project manager creates an issue within a project scope:
+A team member or project manager creates an issue within a project scope:
 
-- **Required**: title, project assignment, at least one team
-- **Optional**: template, story points (Fibonacci 1-13), estimated minutes, deadline
+- **Required**: title, template, at least one team, at least one assignee, at least one Definition of Done item, story points, estimated minutes, deadline
 - Initial status: `not_in_progress`
 
 ### 2. Assignee Management (S-03-02)
