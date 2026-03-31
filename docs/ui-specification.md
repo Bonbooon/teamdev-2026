@@ -567,7 +567,7 @@ react-toastify を使用（既存導入済み）。
 | `category` | `string` | カテゴリ名 |
 | `title` | `string` | アラートタイトル |
 | `description` | `string` | 説明 |
-| `suggestedActions` | `string[]` | 推奨アクション (S-02-10, MVP内) |
+| `suggestedActions` | `Array<{ actionPlanId?: string; code?: string; title?: string; description?: string; priority?: number }>` | 推奨アクション (S-02-10, MVP内) |
 | `createdAt` | `string` | 発生日時 |
 | `projectName` | `string` | 関連プロジェクト名 |
 | `canResolve` | `boolean` | 解決ボタン表示可否（フロント判定: `alert.assigneeId === currentUser.id`） |

@@ -336,10 +336,10 @@ responses:
 ### Alert Endpoints
 
 **GET /api/projects/{projectId}/alerts**
-- List alerts (requires auth)
+- List alerts with embedded suggested actions (requires auth)
 
 **GET /api/alerts**
-- List all alerts (cross-project, manager view, requires auth)
+- List all alerts with embedded suggested actions (cross-project, manager view, requires auth)
 
 **PATCH /api/projects/{projectId}/alerts/{alertId}/resolve**
 - Resolve alert (S-02, requires auth)
