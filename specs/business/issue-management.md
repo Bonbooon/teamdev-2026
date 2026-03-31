@@ -104,11 +104,12 @@ done            - Accepted, closed
 1. User navigates to project → "Create Issue" button
 2. Select issue template (SMART template)
 3. Fill template-specific fields
-4. Select assignees (required: at least 1)
-5. Select team tag (required)
-6. Set deadline (required)
-7. Click "Create"
-8. Issue created, user redirected to issue detail
+4. Select one or more team tags from the project's assigned teams (required)
+5. Select assignees from members of the selected teams (required: at least 1)
+6. Add Definition of Done items (required: at least 1)
+7. Set story points, estimated minutes, and deadline (required)
+8. Click "Create"
+9. Issue created, user redirected to the project detail page
 
 **Template Selection:**
 Templates are pre-configured per project by PM. Examples:
@@ -122,9 +123,11 @@ Templates are pre-configured per project by PM. Examples:
 - Title (max 255 chars)
 - Deadline (future date)
 - Template selection
-- Team tag
-- Assignees (1+)
-- Story points (optional, default = 5)
+- Team tags (1+)
+- Assignees (1+, selected from chosen teams)
+- Definition of Done items (1+)
+- Story points (required, Fibonacci scale 1-21)
+- Estimated minutes (required, positive integer)
 
 **Template-Specific Fields:**
 Each template defines additional required fields. See S-03-03.
@@ -134,20 +137,24 @@ Each template defines additional required fields. See S-03-03.
 
 **Business Rules:**
 - Issue cannot be created without project
-- Assignees must be active team members of project's assigned teams
+- At least one team tag must be selected
+- Assignees must be active team members of the selected project teams
+- Definition of Done must contain at least one non-empty item
 - Deadline must be ≥ today
-- Story points: 1-13 (Fibonacci scale)
-- Estimated minutes auto-calculated from story points (or manual override)
+- Story points: 1-21 (Fibonacci scale)
+- Estimated minutes must be entered as a positive integer
 
 **Error Cases:**
 - Missing required field → 422 Unprocessable Entity
-- Invalid assignee (not in project team) → 422 error
+- Invalid assignee (not in selected project team) → 422 error
 - Deadline in past → 422 error
 - Project not found → 404 Not Found
 
 **Acceptance Criteria:**
 - ✅ Issue created with all required fields
+- ✅ Selected team tags saved with issue
 - ✅ Assignees set correctly
+- ✅ Definition of Done items saved
 - ✅ Story points saved
 - ✅ Deadline set
 - ✅ Status defaults to "not_in_progress"
@@ -155,9 +162,11 @@ Each template defines additional required fields. See S-03-03.
 
 **Test Cases:**
 - TC-03-01-01: Create issue with all required fields → issue created
-- TC-03-01-02: Create without assignees → validation error
-- TC-03-01-03: Deadline in past → validation error
-- TC-03-01-04: Invalid template → validation error
+- TC-03-01-02: Create without team tags → validation error
+- TC-03-01-03: Create without assignees → validation error
+- TC-03-01-04: Create without Definition of Done items → validation error
+- TC-03-01-05: Deadline in past → validation error
+- TC-03-01-06: Invalid template → validation error
 
 **API Endpoint:**
 ```
@@ -168,15 +177,14 @@ Content-Type: application/json
 Request:
 {
   "title": "string",
-  "issueTemplateId": "uuid",
-  "storyPoints": 5,
-  "estimatedMinutes": 480,
-  "deadline": "2026-03-15T17:00:00Z",
-  "teamMemberId": ["uuid", ...],
-  "teamTag": "backend",
-  "templateData": {
-    // Template-specific fields
-  }
+  "issue_template_id": "uuid",
+  "story_points": 5,
+  "estimated_minutes": 480,
+  "deadline": "2026-03-15",
+  "status": "not_in_progress",
+  "assigneeIds": ["uuid", ...],
+  "teamIds": ["uuid", ...],
+  "definitionOfDoneItems": ["string", ...]
 }
 
 Response (201 Created):

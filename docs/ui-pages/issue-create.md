@@ -27,23 +27,17 @@ IssueCreatePage
         │   ├── Textarea (Measurable: 完了基準)
         │   ├── Textarea (Achievable: スコープ)
         │   ├── Textarea (Relevant: プロジェクト目標との関連)
-        │   └── DatePicker (Time-bound: 期限)
-        ├── AssigneeSelector
-        │   └── MemberSelect (複数選択可)
-        ├── Input (ストーリーポイント — 必須, 1-13)
+        ├── Input (ストーリーポイント — 必須, 1-21)
         ├── Input (見積時間 — 必須, 分単位)
-        ├── DatePicker (開始日)
+        ├── DatePicker (期限)
+        ├── Select (ステータス)
+        ├── CheckboxGroup (チームタグ — project.teams から複数選択)
+        ├── AssigneeSelector
+        │   └── MemberCheckbox[] (選択済みチームのメンバーのみ・複数選択可)
         ├── DefinitionOfDone
         │   └── ChecklistEditor
         │       ├── Input[] (受け入れ条件)
         │       └── Button (条件追加)
-        ├── SubtaskEditor (S-03-06)
-        │   └── SubtaskRow[]
-        │       ├── Input (サブタスク名)
-        │       ├── Input (見積時間)
-        │       ├── Checkbox ("予期せぬ作業" フラグ)
-        │       └── Button (削除)
-        ├── Select (チームタグ)
         └── Button (作成)
 ```
 
@@ -51,7 +45,8 @@ IssueCreatePage
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
 | テンプレート一覧 + 項目定義 | `GET /issue-templates` | Select無効化 | リトライ |
-| チームメンバー | `GET /teams/{teamId}/members` | Select無効化 | リトライ |
+| プロジェクト詳細（チームタグ表示用） | `GET /projects/{projectId}` | フォームスケルトン | リトライ |
+| チームメンバー | `GET /teams/{teamId}/members` | AssigneeSelectorをスケルトン表示 | リトライ |
 | **mutation** | `POST /projects/{projectId}/issues` | ボタンスピナー | Toast(error) + フィールドエラー |
 
 ## Issueテンプレート（MVP）
@@ -69,10 +64,11 @@ IssueCreatePage
 
 ## Interactions
 - テンプレート選択 → SMARTフィールドのプレースホルダーテキストが変化
+- チームタグ選択 → プロジェクトに紐づくチームを複数選択できる
+- チームタグ変更 → アサイン対象者をリセットし、選択済みチームのメンバーだけを候補表示
 - DefinitionOfDone → 項目の動的追加/削除
-- SubtaskEditor → サブタスクの動的追加/削除
-- "予期せぬ作業" チェック → サブタスクにフラグ付与
 - フォーム送信 → React Hook Form + Zod バリデーション
+- 送信時バリデーション → チーム1件以上、アサイン対象者1人以上、Definition of Done 1件以上が必須
 
 ## Mutations
 | 操作 | エンドポイント | 成功時 | 失敗時 |
@@ -80,9 +76,11 @@ IssueCreatePage
 | Issue作成 | `POST /projects/{projectId}/issues` | Toast(success) + `/projects/[projectId]` に遷移 + SWRキャッシュ再検証 | Toast(error) + フィールドエラー |
 
 ## Notes
-- storyPoints: 必須、1-13の整数
+- storyPoints: 必須、1-21の整数
 - estimatedMinutes: 必須、分単位の整数
 - `GET /issue-templates` はテンプレート本体と `items[]` を返す
+- チームタグは `GET /projects/{projectId}` の `project.teams[]` を使って描画する
 - 現状の画面はテンプレート項目をまだ描画せず、SMARTプレースホルダー切替のみを行う
 - SMART入力値は現状保存されず、必須バリデーション対象でもない
-- DoDが未設定だと完了にできない（バックエンド制約）
+- AssigneeSelector はチームタグ選択後にだけ表示され、選択済みチームのメンバーを統合表示する
+- Definition of Done は完了時だけでなく、Issue作成時にも1件以上必須

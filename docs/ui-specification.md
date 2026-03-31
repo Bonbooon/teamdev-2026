@@ -900,24 +900,17 @@ IssueCreatePage
         │   ├── Textarea (Measurable: 完了基準)
         │   ├── Textarea (Achievable: スコープ)
         │   ├── Textarea (Relevant: プロジェクト目標との関連)
-        │   └── DatePicker (Time-bound: 期限)
+    ├── Input (ストーリーポイント — 必須, 1-21)
+    ├── Input (見積時間 — 必須, 分単位)
+    ├── DatePicker (期限)
+    ├── Select (ステータス)
+    ├── CheckboxGroup (チームタグ — project.teams から複数選択)
         ├── AssigneeSelector
-        │   └── MemberSelect (複数選択可)
-        ├── Input (ストーリーポイント — 必須, 1-13)
-        ├── Input (見積時間 — 必須, 分単位)
-        ├── DatePicker (開始日)
+    │   └── MemberCheckbox[] (選択済みチームのメンバーのみ・複数選択可)
         ├── DefinitionOfDone
         │   └── ChecklistEditor
         │       ├── Input[] (受け入れ条件)
         │       └── Button (条件追加)
-        ├── SubtaskEditor (S-03-06)
-        │   └── SubtaskRow[]
-        │       ├── Input (サブタスク名)
-        │       ├── Input (見積時間)
-        │       ├── Checkbox ("予期せぬ作業" フラグ — 作成時に任意で付与可能)
-        │       └── Button (削除)
-        │   ※ "予期せぬ作業" フラグは作成後もIssue詳細から付与/解除可能 (S-03-09)
-        ├── Select (チームタグ)
         └── Button (作成)
 ```
 
@@ -1292,7 +1285,8 @@ const canResolve = alert.assigneeId === currentUser.id;
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
 | テンプレート一覧 | `GET /issue-templates` | Select無効化 | リトライ |
-| チームメンバー | `GET /teams/{teamId}/members` | Select無効化 | リトライ |
+| プロジェクト詳細（チームタグ表示用） | `GET /projects/{projectId}` | フォームスケルトン | リトライ |
+| チームメンバー | `GET /teams/{teamId}/members` | AssigneeSelectorをスケルトン表示 | リトライ |
 | **mutation** | `POST /projects/{projectId}/issues` | ボタンスピナー | Toast(error) + フィールドエラー |
 
 > **Issueテンプレート（MVP）:**
@@ -1301,6 +1295,9 @@ const canResolve = alert.assigneeId === currentUser.id;
 > 2. **バグ修正** — 不具合修正向け（再現手順、期待結果、実際の結果のガイド）
 > 3. **調査・検証** — リサーチ・PoC向け
 > 4. **ドキュメント** — ドキュメント作成・更新向け
+
+> **現在の作成フロー:**
+> project detail の `teams[]` をチームタグとして表示し、チームを1件以上選択した後に、そのチームに属するメンバーだけをアサイン候補として読み込む。送信時は `teamIds` と `assigneeIds` を両方含め、Definition of Done も1件以上必須。
 
 ### 7.7 Issue詳細 (`/issues/[issueId]`)
 
