@@ -75,10 +75,10 @@ TeamDetailPage
 | empty (プロジェクト) | EmptyState: "プロジェクトがありません" |
 | empty (メンバー) | テーブル内メッセージ: "メンバーがいません" |
 | error | ErrorState + リトライ |
-| success | ProjectsTab: プロジェクトカード一覧 / MembersTab: メンバーテーブル |
+| success | ProjectsTab: プロジェクトリスト / MembersTab: メンバーテーブル |
 
 ## Interactions
-- ProjectsTabのプロジェクトカードクリック → `/projects/[projectId]` に遷移
+- ProjectsTabのプロジェクトリンククリック → `/projects/[projectId]` に遷移
 - メンバー名クリック → `/users/[userId]` に遷移
 - メンバー招待 (Manager) → InviteMemberModal
 - チーム編集 (Manager) → EditTeamModal

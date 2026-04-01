@@ -567,7 +567,7 @@ react-toastify を使用（既存導入済み）。
 | `category` | `string` | カテゴリ名 |
 | `title` | `string` | アラートタイトル |
 | `description` | `string` | 説明 |
-| `suggestedActions` | `Array<{ actionPlanId?: string; code?: string; title?: string; description?: string; priority?: number }>` | 推奨アクション (S-02-10, MVP内) |
+| `suggestedActions` | `Array<{ actionPlanId?: string; code?: string; title?: string; description?: string; rationale?: string; priority?: number }>` | 推奨アクション（API の `suggestedActionPlans` をフラット化して受ける, S-02-10, MVP内） |
 | `createdAt` | `string` | 発生日時 |
 | `projectName` | `string` | 関連プロジェクト名 |
 | `canResolve` | `boolean` | 解決ボタン表示可否（フロント判定: `alert.assigneeId === currentUser.id`） |
@@ -936,7 +936,7 @@ IssueDetailPage
       │  エンティティ: IssueWorkLog（手動記録 + GitHub連携による自動記録）
       │  出典: specs/business/issue-management.md,
       │        specs/database/table-schema-plan.sql (issue_work_logs),
-      │        specs/api/openapi-design-reference.json (GET/POST /issues/{issueId}/work-logs, PATCH/DELETE /issues/{issueId}/work-logs/{workLogId})
+      │        specs/api/openapi-contracts.md (GET/POST /issues/{issueId}/work-logs, PATCH/DELETE /issues/{issueId}/work-logs/{workLogId})
       ├── EmptyState (ログ0件時)
       ├── WorkLogEntry[]
       │   ├── Minutes
