@@ -31,6 +31,7 @@ Human-readable documentation for the {{template}} project.
 #### Development
 
 - [Setup Guide](./development/setup.md) - Getting started
+- [Mise Cross-Platform Research](./development/mise-cross-platform-research.md) - Host OS handling and task portability review
 - [Development Workflow](./development/workflow.md) - Daily development process
 - [Coding Standards](./development/coding-standards.md) - Code quality guidelines
 - [Troubleshooting](./development/troubleshooting.md) - Common issues & solutions
@@ -140,6 +141,7 @@ docs/
 │
 ├── development/                 # Development guides
 │   ├── setup.md
+│   ├── mise-cross-platform-research.md
 │   ├── workflow.md
 │   ├── coding-standards.md
 │   └── troubleshooting.md
