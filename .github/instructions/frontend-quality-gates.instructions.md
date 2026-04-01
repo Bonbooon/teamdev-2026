@@ -1,10 +1,6 @@
 ---
 description: "Use when running frontend pnpm quality gates, Biome, Jest, typecheck, or OpenAPI generation in this workspace or any worktree. Requires running pnpm from the active worktree's teamdev-2026-front directory on the host shell and avoiding container-based installs for quality gates."
-applyTo:
-  - "teamdev-2026-front/**"
-  - "teamdev-2026-api/**"
-  - "worktrees/**/teamdev-2026-front/**"
-  - "worktrees/**/teamdev-2026-api/**"
+applyTo: "teamdev-2026-front/**, worktrees/**/teamdev-2026-front/**"
 ---
 
 # Frontend Pnpm Execution Policy
