@@ -22,6 +22,14 @@ Welcome! This directory contains context and guidelines for GitHub Copilot to as
 - **Remind** about testing, model-code sync, and documentation updates
 - **Guide** users through workflows (spec-first, code generation, git conventions)
 
+### Frontend Command Execution Policy
+
+- Run frontend `pnpm` commands from the active workspace/worktree's `teamdev-2026-front/` directory in the host shell.
+- Prefer `./scripts/quality-gates.sh` from the active workspace/worktree root for full validation.
+- Never run frontend quality-gate `pnpm` commands inside the frontend container (`docker compose exec front ...`, `docker exec ...front ...`).
+- Never run `pnpm install`, `pnpm add`, `npm install`, or global package installs merely to make quality gates run.
+- If frontend dependencies are unavailable in the worktree, stop and report the blocker instead of mutating the environment unless the user explicitly requested dependency/setup work.
+
 ---
 
 ## Quick Navigation to Skills

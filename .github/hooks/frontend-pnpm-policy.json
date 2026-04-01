@@ -1,0 +1,11 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "node scripts/hooks/validate-terminal-policy.mjs",
+        "timeout": 15
+      }
+    ]
+  }
+}

@@ -50,7 +50,7 @@ Create commits that are easy to review and revert.
 
 ## Quality Gates (Must pass before committing)
 
-Run the quality gates via the single entrypoint script from the repo root:
+Run the quality gates via the single entrypoint script from the active workspace/worktree root on the host shell:
 
 ```bash
 ./scripts/quality-gates.sh
@@ -66,7 +66,14 @@ Options:
 - `./scripts/quality-gates.sh --skip-mise`
 - `./scripts/quality-gates.sh --skip-openapi`
 
-### Frontend quality commands (run from `teamdev-2026-front/`)
+### Frontend execution policy
+
+- Run frontend `pnpm` commands from the active workspace/worktree's `teamdev-2026-front/` directory in the host shell.
+- Never run frontend quality-gate commands through the frontend container (`docker compose exec front ...`, `docker exec ...front ...`).
+- Never run `pnpm install`, `pnpm add`, `npm install`, or global installs merely to make the quality gates run.
+- If `node_modules` or other frontend dependencies are missing, report the blocker and ask before changing the environment.
+
+### Frontend quality commands (run from the active worktree's `teamdev-2026-front/`)
 
 When working on frontend-only changes, you can run the individual gates directly:
 
