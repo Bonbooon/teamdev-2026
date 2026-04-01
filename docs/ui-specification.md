@@ -1290,7 +1290,7 @@ const canResolve = alert.assigneeId === currentUser.id;
 | mutation: 作業ログ更新 | `PATCH /issues/{issueId}/work-logs/{workLogId}` | 専用の送信中表示なし | 専用の mutation エラー表示なし | インライン編集で更新 |
 | mutation: 作業ログ削除 | `DELETE /issues/{issueId}/work-logs/{workLogId}` | ConfirmDialog 表示 | 専用の mutation エラー表示なし | 確認後に一覧再取得 |
 | **mutation: ステータス** | `PATCH /issues/{issueId}/status` | バッジスピナー | Toast(error) | |
-| **mutation: DoD** | `PATCH /definition-of-done/{doneItemId}` | チェック切替 | Toast(error) + ロールバック | |
+| **mutation: DoD** | `PATCH /issues/{issueId}/definition-of-done/{doneItemId}` | チェック切替 | Toast(error) + ロールバック | |
 
 ### 7.8 アラート一覧 (`/alerts`)
 

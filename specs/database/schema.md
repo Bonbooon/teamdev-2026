@@ -186,7 +186,6 @@ See migration files directly for exact column definitions, defaults, and constra
 - `value_type: Enum(string, integer, date, datetime, boolean, number, json)`
 - `is_required: Boolean`
 - `position: Int`
-- `created_at, updated_at: Timestamps`
 - Unique constraint: `(issue_template_id, item_key)`
 - Unique constraint: `(issue_template_id, position)`
 
@@ -213,7 +212,7 @@ See migration files directly for exact column definitions, defaults, and constra
 **IssueTemplateItemValues Table** (Entity)
 - `issue_id: UUID FK`
 - `issue_template_item_id: UUID FK`
-- `value: JSON` - Stores the submitted template item value
+- `value: JSONB` - Stores the submitted template item value
 - `created_at, updated_at: Timestamps with time zone`
 - Primary key: `(issue_id, issue_template_item_id)`
 
