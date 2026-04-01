@@ -25,6 +25,20 @@ const deny = (reason) => ({
   },
 });
 
+const QUALITY_GATE_COMMAND_PATTERNS = [
+  /\bpnpm\s+check(?::fix)?\b/i,
+  /\bpnpm\s+format(?::check)?\b/i,
+  /\bpnpm\s+lint(?::fix)?\b/i,
+  /\bpnpm\s+typecheck\b/i,
+  /\bpnpm\s+test(?:[:\w-]+)?\b/i,
+  /\bpnpm\s+exec\s+jest\b/i,
+  /\bpnpm\s+openapi(?::(?:pull|gen))?\b/i,
+  /\bpnpm\s+biome\b/i,
+  /(?:^|[\s;|])(?:\.\/)?scripts\/quality-gates\.sh\b/i,
+];
+
+const QUALITY_GATE_INTENT_PATTERN = /\bquality(?:-|\s)?gates?\b/i;
+
 const getCommandContext = (payload) => {
   const toolName = payload?.tool_name;
   const toolInput = payload?.tool_input ?? {};
@@ -53,20 +67,26 @@ const getCommandContext = (payload) => {
   return null;
 };
 
-const isFrontContainerPnpmCommand = (command) => {
+const isExplicitQualityGateCommand = (command) => QUALITY_GATE_COMMAND_PATTERNS.some((pattern) => pattern.test(command));
+
+const hasQualityGateIntent = (text) => QUALITY_GATE_INTENT_PATTERN.test(text);
+
+const isFrontContainerQualityGateCommand = (command) => {
   const isDockerExec = /docker\s+(?:compose\s+exec|exec)\b/i.test(command);
   const mentionsPnpm = /\bpnpm\b/i.test(command);
   const targetsFront = /(?:^|[\s'"`])front(?:[\s'"`]|$)|-front-\d+|teamdev-2026-front|\bcd\s+\/app\b/i.test(command);
 
-  return isDockerExec && mentionsPnpm && targetsFront;
+  return isDockerExec && mentionsPnpm && targetsFront && isExplicitQualityGateCommand(command);
 };
 
 const isQualityGateInstallCommand = (command, explanation, goal) => {
-  const commandText = `${command}\n${explanation}\n${goal}`;
-  const isInstall = /\bpnpm\s+(?:install|i|add)\b/i.test(command) || /\bnpm\s+install(?:\s+-g)?\b/i.test(command);
-  const qualityTerms = /\b(?:quality(?:-|\s)?gates?|check(?::fix)?|format(?::check)?|lint(?::fix)?|typecheck|test|jest|biome|openapi(?:\:gen)?|build)\b/i;
+  const contextText = `${explanation}\n${goal}`;
+  const isDependencyInstall = /\bpnpm\s+(?:install|i)\b/i.test(command) || /\bnpm\s+install(?:\s+-g)?\b/i.test(command);
+  const isPackageAdd = /\bpnpm\s+add\b/i.test(command);
+  const explicitQualityGateCommand = isExplicitQualityGateCommand(command);
+  const explicitQualityGateIntent = hasQualityGateIntent(contextText);
 
-  return isInstall && qualityTerms.test(commandText);
+  return (isDependencyInstall && (explicitQualityGateIntent || explicitQualityGateCommand)) || (isPackageAdd && explicitQualityGateIntent);
 };
 
 const main = async () => {
@@ -95,11 +115,11 @@ const main = async () => {
 
   const { command, explanation, goal } = context;
 
-  if (isFrontContainerPnpmCommand(command)) {
+  if (isFrontContainerQualityGateCommand(command)) {
     process.stdout.write(
       JSON.stringify(
         deny(
-          "Frontend pnpm quality gates must run from the active worktree's teamdev-2026-front directory on the host shell, not through the frontend container.",
+          "Frontend pnpm quality-gate commands must run from the active worktree's teamdev-2026-front directory on the host shell, not through the frontend container.",
         ),
       ),
     );
