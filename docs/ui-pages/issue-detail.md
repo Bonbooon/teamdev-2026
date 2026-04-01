@@ -77,7 +77,6 @@ IssueDetailPage
 |------|--------------|--------|--------|
 | ステータス変更 | `PATCH /issues/{issueId}/status` | バッジ即時更新 | Toast(error) |
 | DoD切替 | `PATCH /issues/{issueId}/definition-of-done/{doneItemId}` | チェック即時反映 | ロールバック + Toast(error) |
-| DoD追加 | `POST /issues/{issueId}/definition-of-done` | Toast(success) + リスト再取得 | Toast(error) |
 | 作業ログ追加 | `POST /issues/{issueId}/work-logs` | フォームをリセットし、一覧を再取得 | 専用の mutation エラー表示は未実装 |
 | 作業ログ更新 | `PATCH /issues/{issueId}/work-logs/{workLogId}` | インライン編集を閉じ、一覧を再取得 | 専用の mutation エラー表示は未実装 |
 | 作業ログ削除 | `DELETE /issues/{issueId}/work-logs/{workLogId}` | 確認ダイアログを閉じ、一覧を再取得 | 専用の mutation エラー表示は未実装 |

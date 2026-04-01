@@ -37,7 +37,8 @@ IssueCreatePage
         │       ├── Input[] (受け入れ条件)
         │       └── Button (条件追加)
         ├── AssignmentSection
-        │   └── Text (アサインUIは未実装のプレースホルダー)
+        │   ├── Text (MVPではteam tags / assigneesの入力UIは未実装)
+        │   └── Text (現状はアサインなしでIssue作成可能。将来対応時に仕様を更新)
         └── Button (作成)
 ```
 
@@ -66,7 +67,7 @@ IssueCreatePage
 - テンプレート切り替え → `templateItemValues` を再初期化する
 - DefinitionOfDone → 項目の動的追加/削除
 - フォーム送信 → React Hook Form + Zod バリデーション + テンプレート必須項目チェック
-- テンプレート必須チェック → `false` と `0` は有効値として扱い、`itemKey` がない項目は描画・検証対象から外す
+- テンプレート必須チェック → `false` と `0` は有効値として扱う（`itemKey` はスキーマ上必須だが、UIは欠損時にも安全にスキップする）
 
 ## Mutations
 | 操作 | エンドポイント | 成功時 | 失敗時 |

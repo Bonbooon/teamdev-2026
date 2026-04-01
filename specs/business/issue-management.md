@@ -112,7 +112,7 @@ done            - Accepted, closed
 9. Issue created, user redirected to the project detail page
 
 **Template Selection:**
-Templates are pre-configured per project by PM. Examples:
+Templates are **global** (not project-scoped). Examples:
 - "Backend Feature"
 - "Frontend Component"
 - "Bug Fix"
@@ -295,7 +295,7 @@ IssueTemplateItem {
 - Template selection triggers `GET /api/issue-templates/{templateId}`
 - The form renders inputs from `template.items`, ordered by `position`
 - Supported input types are `boolean`, `integer`, `number`, `date`, `datetime`, `string`, and `json`
-- Items without `itemKey` are ignored for rendering and required validation
+- Items without `itemKey` are defensively skipped for rendering and required validation (the schema requires `itemKey`, but the UI handles malformed data gracefully)
 
 **Validation Rules:**
 - All required items with an `itemKey` must have a value before submit
