@@ -111,8 +111,8 @@ mise run build
 # 依存関係の再インストール
 mise run install-deps
 
-# コードのリント
-mise run lint
+# フォーマットと静的解析
+mise run fmtl
 ```
 
 ### コンテナシェル
