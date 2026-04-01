@@ -1,7 +1,7 @@
 # Page: Issue詳細
 
 ## Purpose
-Issueの詳細情報、サブタスク、進捗、関連アラートを表示・管理する。
+Issueの詳細情報、Definition of Done、サブタスク、作業ログを表示・管理する。
 
 ## Route
 `/issues/[issueId]`
@@ -19,83 +19,71 @@ IssueDetailPage
 └── AppLayout
     ├── IssueHeader
     │   ├── IssueTitle
-    │   ├── StatusBadge (ステータス変更可能)
-    │   ├── ProgressBar (自動算出 S-03-08)
-    │   └── Actions
-    │       └── Button (編集 → EditIssueModal)
-    ├── IssueBody
-    │   ├── SMARTFields (読み取り専用)
-    │   ├── AssigneeList
-    │   │   └── Avatar[] + Name
-    │   ├── DefinitionOfDone
-    │   │   └── Checklist (チェック切替可)
-    │   └── DueDateInfo
-    ├── SubtaskSection (S-03-06 + S-03-09)
-    │   ├── SubtaskList
-    │   │   └── SubtaskRow[]
-    │   │       ├── Checkbox
-    │   │       ├── SubtaskName
-    │   │       ├── EstimatedTime
-    │   │       ├── StatusBadge
-    │   │       ├── Badge ("予期せぬ作業" — 該当時のみ)
-    │   │       └── Toggle ("予期せぬ作業" フラグ — 後から付与/解除可能)
-    │   └── Button (サブタスク追加)
-    │       └── Checkbox ("予期せぬ作業として登録")
-    ├── WorkLogSection (現状はプレースホルダー。API契約は利用可能)
-    ├── Sidebar (右側)
-    │   ├── ProgressSummary (予定 vs 実績)
-    │   ├── TimelineInfo (開始日, 期限)
-    │   └── RelatedAlerts (このIssueに関連するアラート — MVP内)
-    └── EditIssueModal (全フィールド編集可能)
-        ├── Input (タイトル)
-        ├── Textarea (説明)
-        ├── SMARTTemplateFields
-        ├── AssigneeSelector (複数選択可)
-        ├── Select (ステータス: 未着手/進行中/レビュー中/完了)
-        ├── Select (優先度: low/medium/high/critical)
-        ├── Input (ストーリーポイント — 必須, 1-13)
-        ├── Input (見積時間 — 必須, 分単位)
-        ├── DefinitionOfDone (ChecklistEditor)
-        ├── DatePicker (開始日)
-        ├── DatePicker (期限)
-        ├── Select (チームタグ)
-        └── Button (保存)
+    │   ├── StatusBadge
+    │   ├── StoryPoints
+    │   ├── MetaInfo (見積時間, 期限, 担当者リンク)
+    │   └── Select (ステータス変更)
+    └── IssueContent
+        ├── DefinitionOfDone
+        │   ├── Checklist (チェック切替可)
+        │   └── Button (条件追加)
+        ├── SubtaskEditor
+        │   └── SubtaskRow[]
+        └── WorkLogSection
+            ├── EmptyState (ログ0件時)
+            ├── WorkLogEntry[]
+            │   ├── Minutes
+            │   ├── Description
+            │   ├── LoggedAt
+            │   ├── Button (編集)
+            │   └── Button (削除)
+            ├── WorkLogCreateForm
+            │   ├── Input[type=number] (分数)
+            │   ├── Textarea (説明)
+            │   ├── Input[type=date] (作業日)
+            │   └── Button (追加)
+            └── ConfirmDialog (削除確認)
 ```
 
 ## Data Requirements
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
 | Issue情報 | `GET /issues/{issueId}` | セクションスケルトン | リトライ |
-| 関連アラート | `GET /issues/{issueId}/alerts` | リストスケルトン | リトライ |
-| サブタスク | `GET /issues/{issueId}/sub-issues` | リストスケルトン | リトライ |
-| 作業ログAPI (UI接続は次フェーズ) | `GET /issues/{issueId}/work-logs` | 現状は未接続 | 現状は未接続 |
+| Definition of Done | `GET /issues/{issueId}/definition-of-done` | セクションスケルトン | リトライ |
+| サブタスク | `GET /issues/{issueId}/subtasks` | リストスケルトン | リトライ |
+| 作業ログ | `GET /issues/{issueId}/work-logs` | カード内ローディング表示 | カード内エラー表示 |
 
 ## UI States
 | 状態 | 表現 |
 |------|------|
-| loading | セクションスケルトン |
-| error | ErrorState + リトライ |
-| success | Issue詳細表示 |
+| loading | Issue詳細の読み込み中はセクションスケルトン、作業ログはカード内に「読み込み中...」を表示 |
+| error | Issue詳細の取得失敗時は ErrorState + リトライ、作業ログはカード内エラー文言を表示 |
+| success(empty) | 作業ログ EmptyState + 新規作業ログフォーム |
+| success(with logs) | 作業ログ一覧 + 新規作業ログフォーム |
+| editing | 対象作業ログ行がインライン編集フォームに切り替わる |
+| confirmingDelete | ConfirmDialog で削除確認を表示 |
 
 ## Interactions
-- StatusBadgeクリック → ステータス変更ドロップダウン
+- ステータス選択 → API経由で更新
 - DoDチェック切替 → 楽観的更新 → API
-- 編集ボタン → EditIssueModal
-- サブタスク追加ボタン → インラインフォーム
-- アサイン者アバター/名前クリック → `/users/[userId]`
-- "予期せぬ作業" Toggle → フラグ付与/解除
+- DoD追加ボタン → 入力欄を表示して API 経由で追加
+- 作業ログ追加フォーム送信 → API経由で作業ログを追加し、一覧を再取得
+- 作業ログの編集ボタン → 対象行をインライン編集フォームに切り替え、保存後に一覧を再取得
+- 作業ログの削除ボタン → ConfirmDialog 表示 → 確認後に API 経由で削除し、一覧を再取得
+- 担当者リンククリック → `/users/[userId]`
 
 ## Mutations
 | 操作 | エンドポイント | 成功時 | 失敗時 |
 |------|--------------|--------|--------|
 | ステータス変更 | `PATCH /issues/{issueId}/status` | バッジ即時更新 | Toast(error) |
-| DoD切替 | `PATCH /issues/{issueId}/definition-of-dones` | チェック即時反映 | ロールバック + Toast(error) |
-| Issue編集 | `PATCH /issues/{issueId}` | Toast(success) + モーダル閉じ + 再取得 | Toast(error) + フィールドエラー |
-| サブタスク追加 | `POST /issues/{issueId}/sub-issues` | Toast(success) + リスト再取得 | Toast(error) |
+| DoD切替 | `PATCH /issues/{issueId}/definition-of-done/{doneItemId}` | チェック即時反映 | ロールバック + Toast(error) |
+| 作業ログ追加 | `POST /issues/{issueId}/work-logs` | フォームをリセットし、一覧を再取得 | 専用の mutation エラー表示は未実装 |
+| 作業ログ更新 | `PATCH /issues/{issueId}/work-logs/{workLogId}` | インライン編集を閉じ、一覧を再取得 | 専用の mutation エラー表示は未実装 |
+| 作業ログ削除 | `DELETE /issues/{issueId}/work-logs/{workLogId}` | 確認ダイアログを閉じ、一覧を再取得 | 専用の mutation エラー表示は未実装 |
 
 ## Notes
-- 進捗率はバックエンド算出。フロントは表示のみ (S-03-08)
-- WorkLogSectionは現状「工事中」プレースホルダーを表示する
-- `GET /issues/{issueId}/work-logs` と `POST /issues/{issueId}/work-logs` のAPI契約と生成クライアント型はPhase 1で利用可能
+- WorkLogSection は空状態、一覧表示、新規追加、インライン編集、削除確認まで接続済み
+- 作業ログの追加・編集フォームは `logged_at` を日付入力で扱い、既存ログの `loggedAt` を編集フォームへ初期表示する
+- 現状の作業ログ UI は `minutes`、`description`、`loggedAt` を表示し、API の `source` は画面表示していない
 - `GET /issues/{issueId}/work-logs` は対象Issueが存在しない場合でも空配列を返す
-- "予期せぬ作業" フラグは作成時にも後からも変更可能
+- 現状の Issue詳細 / 編集UI ではテンプレート項目値を表示・編集しない

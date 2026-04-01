@@ -421,10 +421,10 @@ If alert trigger becomes true again:
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `GET /api/projects/{projectId}/alerts` | GET | List all alerts for project |
+| `GET /api/projects/{projectId}/alerts` | GET | List all alerts for project with embedded suggested actions |
 | `GET /api/projects/{projectId}/alerts/{alertId}` | GET | Get alert details with suggested actions |
 | `PATCH /api/projects/{projectId}/alerts/{alertId}/resolve` | PATCH | Manually resolve alert |
-| `GET /api/alerts` | GET | List all alerts across projects (PM dashboard) |
+| `GET /api/alerts` | GET | List all alerts across projects with embedded suggested actions (PM dashboard) |
 
 ---
 

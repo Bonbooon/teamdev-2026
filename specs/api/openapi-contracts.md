@@ -307,6 +307,12 @@ responses:
 **GET /api/issues/{issueId}/work-logs**
 - List work logs (requires auth, returns an empty `workLogs` array when the issue does not exist)
 
+**PATCH /api/issues/{issueId}/work-logs/{workLogId}**
+- Update a work log (requires auth, validates `minutes`, optional `description`, and optional `logged_at`)
+
+**DELETE /api/issues/{issueId}/work-logs/{workLogId}**
+- Delete a work log (requires auth, returns `204` on success and `404` when the issue or work log is not found)
+
 ### Issue Template Endpoints
 
 **GET /api/issue-templates**
@@ -336,10 +342,10 @@ responses:
 ### Alert Endpoints
 
 **GET /api/projects/{projectId}/alerts**
-- List alerts (requires auth)
+- List alerts with embedded suggested actions (requires auth)
 
 **GET /api/alerts**
-- List all alerts (cross-project, manager view, requires auth)
+- List all alerts with embedded suggested actions (cross-project, manager view, requires auth)
 
 **PATCH /api/projects/{projectId}/alerts/{alertId}/resolve**
 - Resolve alert (S-02, requires auth)

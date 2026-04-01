@@ -1,7 +1,7 @@
 # Issue Management Specification
 
 **Version:** 1.0  
-**Last Updated:** 2026/03/31  
+**Last Updated:** 2026/04/01  
 **Human Documentation:** `docs/business-logic/workflows/issue-management.md`  
 **Domain Model:** `docs/diagrams/domain-models/issue-aggregate.puml`
 
@@ -112,7 +112,7 @@ done            - Accepted, closed
 9. Issue created, user redirected to the project detail page
 
 **Template Selection:**
-Templates are pre-configured per project by PM. Examples:
+Templates are **global** (not project-scoped). Examples:
 - "Backend Feature"
 - "Frontend Component"
 - "Bug Fix"
@@ -133,7 +133,8 @@ Templates are pre-configured per project by PM. Examples:
 Each template defines additional required fields. See S-03-03.
 
 **Template Contract Note:**
-- `GET /api/issue-templates` returns active templates together with their `items[]` field definitions.
+- `GET /api/issue-templates` provides the active templates used in the selector.
+- After selection, the UI fetches `GET /api/issue-templates/{templateId}` and renders the returned `items[]` dynamically.
 
 **Business Rules:**
 - Issue cannot be created without project
@@ -143,6 +144,7 @@ Each template defines additional required fields. See S-03-03.
 - Deadline must be ≥ today
 - Story points: 1-21 (Fibonacci scale)
 - Estimated minutes must be entered as a positive integer
+- Dynamic template item values are submitted as `templateItemValues`, keyed by each item's `itemKey`
 
 **Error Cases:**
 - Missing required field → 422 Unprocessable Entity
@@ -157,6 +159,7 @@ Each template defines additional required fields. See S-03-03.
 - ✅ Definition of Done items saved
 - ✅ Story points saved
 - ✅ Deadline set
+- ✅ Template item values saved when provided
 - ✅ Status defaults to "not_in_progress"
 - ✅ Created timestamp recorded
 
@@ -184,7 +187,14 @@ Request:
   "status": "not_in_progress",
   "assigneeIds": ["uuid", ...],
   "teamIds": ["uuid", ...],
-  "definitionOfDoneItems": ["string", ...]
+  "definitionOfDoneItems": ["string", ...],
+  "templateItemValues": {
+    "requireFlag": false,
+    "requiredCount": 0,
+    "plannedAt": "2026-04-15",
+    "startedAt": "2026-04-15T10:00",
+    "notes": "string or json payload"
+  }
 }
 
 Response (201 Created):
@@ -264,86 +274,47 @@ DELETE /api/issues/{issueId}/assignees/{teamMemberId}
 **Actor:** PM (configures templates), Team Members (fills during issue creation)  
 **Precondition:** Project exists  
 
-**SMART Framework Application:**
+**Implementation Model:**
 
-Each issue template enforces SMART criteria:
+Phase 3 renders template input fields from each template's ordered `items[]` definition instead of using hardcoded SMART input components.
 
-**S - Specific:** Issue has clear, specific description
-- Field: "What needs to be done?" (required, max 500 chars)
-- Enforced at template level
-
-**M - Measurable:** Issue has Definition of Done items
-- Field: "How will we know it's complete?" (required, 1+ items)
-- See S-03-04 for details
-
-**A - Achievable:** Issue includes effort estimate
-- Field: "Estimated effort" (required, story points 1-13)
-- Auto-calculates expected time
-
-**R - Relevant:** Issue is aligned with project goals
-- Field: "Project component/area" (required, dropdown)
-- Links to business context
-
-**T - Time-bound:** Issue has clear deadline
-- Field: "Deadline" (required, future date)
-- Enforced at issue creation
-
-**Template Definition (Database Model):**
+**Template Item Shape:**
 
 ```
-IssueTemplate {
+IssueTemplateItem {
   id: UUID
-  projectId: UUID
-  name: String (e.g., "Backend Feature")
-  description: String
-  requiredFields: Json {
-    "specificDescription": { required: true, maxLen: 500 },
-    "successCriteria": { required: true, minItems: 1 },
-    "effortEstimate": { required: true, type: "integer", min: 1, max: 13 },
-    "component": { required: true, type: "enum", values: ["auth", "issue", "alert", ...] },
-    "deadline": { required: true, type: "date", validation: "futureDate" }
-  }
-  customFields: Json {
-    // Additional template-specific fields
-  }
+  itemKey: String
+  label: String
+  position: Int
+  isRequired: Boolean
+  valueType: Enum(string, integer, date, datetime, boolean, number, json)
 }
 ```
 
-**Example Template: "Backend Feature"**
-```json
-{
-  "name": "Backend Feature",
-  "requiredFields": {
-    "specificDescription": "What API endpoint/service do you need to build?",
-    "successCriteria": "What acceptance tests pass?",
-    "effortEstimate": "Story points?",
-    "component": "Backend component?",
-    "deadline": "Target date?"
-  },
-  "customFields": {
-    "apiContract": "OpenAPI specification?",
-    "database": "New tables or migrations?",
-    "externalDependencies": "Third-party libraries?"
-  }
-}
-```
+**UI Behavior:**
+- Template selection triggers `GET /api/issue-templates/{templateId}`
+- The form renders inputs from `template.items`, ordered by `position`
+- Supported input types are `boolean`, `integer`, `number`, `date`, `datetime`, `string`, and `json`
+- Items without `itemKey` are defensively skipped for rendering and required validation (the schema requires `itemKey`, but the UI handles malformed data gracefully)
 
-**Template Validation:**
-- All required fields must be present before issue save
-- Custom field types validated (string, enum, date, etc.)
-- Effort estimate within 1-13 range
+**Validation Rules:**
+- All required items with an `itemKey` must have a value before submit
+- `false` and `0` are valid required values
+- Empty string and whitespace-only string values are invalid for required string-like fields
+- Submitted values are keyed by `itemKey` inside `templateItemValues`
 
 **Acceptance Criteria:**
-- ✅ Issue form enforces all SMART criteria
-- ✅ Cannot create issue without all required fields
-- ✅ Template customizable per project (Phase 2)
-- ✅ Template validation on save
+- ✅ Issue form renders the selected template's items dynamically
+- ✅ Cannot create issue without all required template items
+- ✅ Required boolean `false` and numeric `0` values are accepted
+- ✅ Items without `itemKey` do not block submission
+- ✅ Template validation runs before save
 
 **Test Cases:**
-- TC-03-03-01: Complete all SMART fields → issue created
-- TC-03-03-02: Missing specific description → validation error
-- TC-03-03-03: No success criteria → validation error
-- TC-03-03-04: Effort estimate > 13 → validation error
+- TC-03-03-01: Render selected template items dynamically → fields shown in `position` order
+- TC-03-03-02: Required boolean field set to `false` → issue created
+- TC-03-03-03: Required integer field set to `0` → issue created
+- TC-03-03-04: Required item without `itemKey` → skipped by rendering and validation
 
 ---
 
@@ -797,7 +768,10 @@ IssueWorkLog {
 | `GET /api/issues/{parentIssueId}/subtasks` | GET | List subtasks |
 | `POST /api/issues/{issueId}/work-logs` | POST | Log work (manual) |
 | `GET /api/issues/{issueId}/work-logs` | GET | List work logs (returns an empty collection when the issue does not exist) |
-| `GET /api/issue-templates` | GET | List active templates with embedded item definitions |
+| `PATCH /api/issues/{issueId}/work-logs/{workLogId}` | PATCH | Update a work log |
+| `DELETE /api/issues/{issueId}/work-logs/{workLogId}` | DELETE | Delete a work log |
+| `GET /api/issue-templates` | GET | List active templates for issue creation |
+| `GET /api/issue-templates/{templateId}` | GET | Get a selected template with item definitions |
 
 ---
 

@@ -58,8 +58,9 @@ If a component has no data (e.g., no subtasks), its weight is redistributed prop
 ### 7. Work Log Recording
 
 - Manual time logging by team members
-- Current API contract is available via `GET/POST /api/issues/{issueId}/work-logs`
-- Fields: started_at, ended_at (optional), minutes, description (optional)
+- Current API contract is available via `GET/POST /api/issues/{issueId}/work-logs` and `PATCH/DELETE /api/issues/{issueId}/work-logs/{workLogId}`
+- Write requests accept `minutes`, optional `description`, and optional `logged_at`
+  - `logged_at` maps to the domain model's `started_at`. The storage model also includes an optional/nullable `ended_at` column; for manual work logs, `ended_at` is not provided by the client and duration is derived from `minutes` (the column may remain null or be populated by internal processes or other integrations).
 - Source enum: `manual`, `github_api`, `github_actions`
 - `GET /api/issues/{issueId}/work-logs` returns `workLogs: []` when the issue does not exist
 - GitHub-based sources deferred to Phase 2 (per ADR 0008)
