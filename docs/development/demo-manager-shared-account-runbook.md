@@ -60,6 +60,7 @@
 ```bash
 mise run app-shell
 php artisan migrate:fresh
+# ここでブラウザからデモ用 Google アカウントでログイン（初回ならプロフィール設定も完了）してから次を実行する
 php artisan db:seed
 ```
 
