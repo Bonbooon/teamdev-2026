@@ -41,7 +41,7 @@
 | `/projects/[projectId]` | プロジェクト詳細 | S-05-04 | 必要 | 全員 | 進捗ボード, ガントチャート, アラート | ✅ Phase 1B |
 | `/projects/[projectId]/issues/new` | Issue作成 | S-03-01 | 必要 | 全員 | 動的テンプレート項目付きIssue作成 | ✅ Phase 1C |
 | `/issues/[issueId]` | Issue詳細 | S-03-05, S-03-06 | 必要 | 全員 | サブタスク, 進捗, ステータス管理 | ✅ Phase 1C |
-| `/alerts` | アラート一覧 | S-02-01, S-02-02 | 必要 | 全員 | 横断的アラート一覧 | ✅ 実装済み（追加 UX は Phase 2+） |
+| `/alerts` | アラート一覧 | S-02-01, S-02-02 | 必要 | 全員 | 横断的アラート一覧 | ✅ 実装済み（category / project filter は後続） |
 | `/surveys` | サーベイ | S-05-01 | 必要 | 全員 | パルスサーベイ回答 | ⬜ Phase 3A |
 | `/users/[userId]` | プロフィール閲覧 | S-06-02 | 必要 | 全員 | 他メンバーのプロフィール表示 | ⬜ Phase 3B |
 
@@ -567,13 +567,14 @@ react-toastify を使用（既存導入済み）。
 | `level` | `"yellow" \| "red"` | アラートレベル |
 | `category` | `string` | カテゴリ名 |
 | `description` | `string` | 説明 |
+| `projectName` | `string` | 関連 project 名。存在する場合にカード内へ表示 |
 | `isResolved` | `boolean` | 解決済み表示用 |
 | `suggestedActions` | `Array<{ actionPlanId?: string; code?: string; title?: string; description?: string; priority?: number }>` | 推奨アクション（UI では API の `suggestedActions` を表示に使う, S-02-10, MVP内） |
 | `createdAt` | `string` | 発生日時 |
 | `canResolve` | `boolean` | 解決ボタン表示可否 |
 | `canReopen` | `boolean` | 再開ボタン表示可否 |
 
-**Note:** `GET /alerts` の契約には `projectName` が含まれるが、現行の `AlertCard` 実装では未表示。Phase 2+ で利用予定。
+**Note:** `AlertCard` は `GET /alerts` の既存 `projectName` を表示に使う。Phase 2 では alert response contract の追加変更は行わない。
 
 **スタイル:**
 - Yellow: `border-l-4 border-warning-500 bg-warning-50`
@@ -979,6 +980,7 @@ AlertListPage
   │   ├── AlertLevel (yellow/red)
   │   ├── Category
   │   ├── Description
+  │   ├── ProjectName?
   │   ├── SuggestedActions[] (S-02-10: アクションサジェスト — MVP内)
   │   ├── CreatedAt
   │   ├── ResolvedBadge? (解決済み)
@@ -986,7 +988,7 @@ AlertListPage
   └── Pagination
 ```
 
-> **Phase 1 Sync:** `GET /alerts` は `projectName` と日本語の `suggestedActions` を返すが、現在の `/alerts` UI での `projectName` 表示、category / project filter、refetch 中の既存表示維持、API `message` 優先 toast は未実装で、後続フェーズに残している。
+> **Current Sync:** `/alerts` は既存 contract の `projectName` と日本語 `suggestedActions` をそのまま利用し、`AlertCard` に project 名を表示する。filter 変更時は SWR `keepPreviousData` で前回の summary / list を維持したまま再取得し、resolve / reopen 失敗時は API `message` を優先して toast 表示する。category / project filter は後続フェーズに残している。
 
 ### 5.11 サーベイ (`/surveys`)
 
@@ -1300,13 +1302,16 @@ const canResolve = alert.assigneeId === currentUser.id;
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
 | アラート一覧 | `GET /alerts` | スケルトンカード×3 | リトライ |
-| **mutation: 解決** | `PATCH /alerts/{alertId}/resolve` | ボタンスピナー | Toast(error: 固定メッセージ) | ※ 権限判定は API 側 |
-| **mutation: 再開** | `POST /alerts/{alertId}/reopen` | ボタンスピナー | Toast(error: 固定メッセージ) | ※ 権限判定は API 側 |
+| **mutation: 解決** | `PATCH /alerts/{alertId}/resolve` | ボタンスピナー | Toast(error: API `message` 優先、未提供時は固定 fallback) | ※ 権限判定は API 側 |
+| **mutation: 再開** | `POST /alerts/{alertId}/reopen` | ボタンスピナー | Toast(error: API `message` 優先、未提供時は固定 fallback) | ※ 権限判定は API 側 |
 
-**Phase 1 contract note:**
+**Current sync note:**
 - `GET /alerts` のレスポンスには `alerts[].projectName` が含まれ、project relation が欠損した場合は `Project {projectId}` にフォールバックする。
 - `suggestedActions` の shape は維持され、seed 済み title / description は日本語で返る。
-- `projectName` の UI 表示、non-blank refetch、API `message` 優先 toast、category / project filter は Phase 2+ に残している。
+- `/alerts` は既存 `projectName` を `AlertCard` で表示し、このフェーズで backend contract 変更は発生していない。
+- global alert の filter 変更時は SWR `keepPreviousData` により前回の summary / list を維持したまま再取得する。
+- resolve / reopen failure toast は API `message` を優先し、未提供時のみ既存 fallback を使う。
+- category / project filter は後続フェーズに残している。
 
 ### 7.9 サーベイ (`/surveys`)
 

@@ -2,12 +2,16 @@
 
 **Related Feature Spec:** `specs/features/manual-testing-ux-followups.md` (Scope B)
 
-## Phase 1 Sync Status
+## Current Sync Status
 - `GET /alerts` の各 alert には `projectName` が含まれる
+- `AlertCard` は `projectName` が存在する場合にカード内へ表示する
 - `projectName` は project title を優先し、relation が欠損した場合は `Project {projectId}` にフォールバックする
 - `suggestedActions` のレスポンス shape は維持されている
 - Seed 済み action plan の title / description は日本語
-- `projectName` のカード表示、category / project filter、non-blank refetch、API `message` 優先 toast は Phase 2+ の継続項目
+- フィルター変更時は SWR `keepPreviousData` により前回の一覧表示を維持したまま再取得する
+- 解決 / 再開の失敗 toast は backend の `message` を優先し、未提供時のみ既存 fallback を使う
+- このフェーズで alert API contract の追加変更はない
+- category / project filter は後続フェーズに残している
 
 ## Purpose
 横断的なアラート一覧を表示し、レベル/ステータスで絞り込み、解決・再開操作を行う。
@@ -40,6 +44,7 @@ AlertListPage
     │   ├── AlertLevel (yellow/red)
     │   ├── Category
     │   ├── Description
+    │   ├── ProjectName?
     │   ├── SuggestedActions[] (S-02-10: アクションサジェスト — MVP内)
     │   ├── CreatedAt
     │   ├── ResolvedBadge? (解決済み)
@@ -52,19 +57,19 @@ AlertListPage
 |--------|--------------|---------|-------|
 | アラート一覧 | `GET /alerts` | スケルトンカード×3 | リトライ |
 
-**Contract Note:** レスポンスには `alerts[].projectName` と既存 shape の `alerts[].suggestedActions[]` が含まれる。
+**Contract Note:** レスポンスには `alerts[].projectName` と既存 shape の `alerts[].suggestedActions[]` が含まれる。Phase 2 はこの既存 contract を UI で利用しており、backend 変更は発生していない。
 
 ## UI States
 | 状態 | 表現 |
 |------|------|
 | loading | スケルトンカード×3 |
-| refetching | 専用 state なし（フィルター変更時は loading に戻る） |
+| refetching | 専用 indicator は出さず、前回の AlertSummary / AlertCard リストを維持したまま再取得 |
 | empty | EmptyState: BellIcon, "アラートはありません" |
 | error | ErrorState + リトライ |
 | success | AlertSummary + FilterBar + AlertCardリスト |
 
 ## Interactions
-- フィルター変更 → ローカル state 更新 + データ再取得
+- フィルター変更 → ローカル state 更新 + 前回表示を維持したままデータ再取得
 - URL クエリパラメータ同期は未実装
 - 解決ボタン → API
 - 再開ボタン → API
@@ -73,12 +78,12 @@ AlertListPage
 ## Mutations
 | 操作 | エンドポイント | 成功時 | 失敗時 |
 |------|--------------|--------|--------|
-| 解決 | `PATCH /alerts/{alertId}/resolve` | Toast(success) + 一覧再取得 | Toast(error: 固定メッセージ) |
-| 再開 | `POST /alerts/{alertId}/reopen` | Toast(success) + 一覧再取得 | Toast(error: 固定メッセージ) |
+| 解決 | `PATCH /alerts/{alertId}/resolve` | Toast(success) + 一覧再取得 | Toast(error: API `message` 優先、未提供時は固定 fallback) |
+| 再開 | `POST /alerts/{alertId}/reopen` | Toast(success) + 一覧再取得 | Toast(error: API `message` 優先、未提供時は固定 fallback) |
 
 ## Notes
 - SuggestedActions はカード内に直接表示される
-- `GET /alerts` 契約には `projectName` が含まれるが、現在の AlertCard UI では未表示
+- `AlertCard` は `projectName` が存在する場合に表示する
 - `projectName` は project title を優先し、relation が欠損した場合は `Project {projectId}` にフォールバックする
 - SuggestedActions の title / description は seed data で日本語化されている
-- category / project filter、non-blank refetch、API `message` 優先 toast は Phase 2+ で対応する
+- category / project filter は後続フェーズで対応する
