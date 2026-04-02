@@ -1,7 +1,7 @@
 # Database Schema Documentation
 
-**Version:** 1.1  
-**Last Updated:** 2026/04/01  
+**Version:** 1.2  
+**Last Updated:** 2026/04/02  
 **Source Spec:** Migrations in `teamdev-2026-api/web/database/migrations/`  
 **Domain Models:** `docs/diagrams/domain-models/`
 
@@ -166,6 +166,28 @@ See migration files directly for exact column definitions, defaults, and constra
 
 **TeamMemberProjectPerformanceDaily Table** (Entity)
 - Similar to above, with `team_member_id` instead of `team_id`
+
+---
+
+### AI Analysis Context
+
+**AiAnalysisResults Table** (Entity)
+- `id: UUID`
+- `project_id: UUID FK`
+- `requested_by: UUID FK`
+- `scope: String(20)`
+- `target_id: UUID?`
+- `status: String(20)`
+- `context_summary: JSON?`
+- `prompt_tokens: Int?`
+- `completion_tokens: Int?`
+- `result: JSON?`
+- `error_message: Text?`
+- `created_at: Timestamp with time zone` - Defaults to current timestamp
+- `completed_at: Timestamp with time zone?`
+- Index: `(project_id, created_at)`
+- Foreign key: `project_id` → `projects.id` with cascade delete
+- Foreign key: `requested_by` → `users.id` with cascade delete
 
 ---
 
@@ -383,6 +405,7 @@ See migration files directly for exact column definitions, defaults, and constra
 User (1) ← (0..*) Profile
 User (1) ← (0..*) ProfileExternalLink
 User (1) ← (0..*) OAuthAccount
+User (1) ← (0..*) AiAnalysisResult (requested_by)
 
 Team (1) ← (0..*) TeamMember
 Team (1) ← (0..*) RoleDefinition
@@ -393,6 +416,7 @@ Project (1) ← (0..*) ProjectTeam
 Project (1) ← (0..*) Issue
 Project (1) ← (0..*) ProjectRoleAssignment
 Project (1) ← (0..*) Alert
+Project (1) ← (0..*) AiAnalysisResult
 
 Issue (1) ← (0..*) IssueAssignee
 Issue (1) ← (0..*) IssueDefinitionOfDone
@@ -421,6 +445,7 @@ Survey (1) ← (0..*) SurveyAnswer
 - `issues (project_id, status)` - Issue filtering by project and status
 - `issue_work_logs (issue_id, created_at)` - Work log time-series
 - `alerts (project_id, is_resolved)` - Alert listing
+- `ai_analysis_results (project_id, created_at)` - Analysis history lookups by project
 - `survey_answers (survey_id, survey_question_id)` - Survey response lookups
 - `team_project_performance_daily (snapshot_date, project_id)` - Metrics queries
 
