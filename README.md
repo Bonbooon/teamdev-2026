@@ -140,6 +140,20 @@ mise run submodule-update
 
 ## デモマネージャーでデモデータにアクセスする手順
 
+### デモ用共有Googleアカウント運用メモ
+
+最終発表までは、デモマネージャー用途として 1 つの共有 Google アカウントを利用する。
+
+- デモ用Googleアカウント: `<DEMO_MANAGER_EMAIL_PLACEHOLDER>`
+- パスワード管理担当: `<PASSWORD_OWNER_NAME>`
+
+セキュリティのため、パスワードはこのリポジトリには記載しない。
+パスワードが必要な場合は `<PASSWORD_OWNER_NAME>` に直接連絡すること。
+
+詳細なチェックリストと運用手順は `docs/development/demo-manager-shared-account-runbook.md` を参照すること。
+
+この運用は、最終発表までの暫定対応である。
+
 Google OAuth の実装上、デモマネージャー用ユーザーは先に Google ログインで作成されている必要があります。そのため `migrate:fresh --seed` ではなく、以下の順序で実行してください。
 
 1. `teamdev-2026-api/web/.env` の `DEMO_MANAGER_EMAIL` に、デモで使う Google アカウントのメールアドレスを設定する
