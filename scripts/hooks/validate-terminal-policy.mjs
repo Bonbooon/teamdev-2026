@@ -76,7 +76,7 @@ const isFrontContainerQualityGateCommand = (command) => {
   const mentionsPnpm = /\bpnpm\b/i.test(command);
   const targetsFront = /(?:^|[\s'"`])front(?:[\s'"`]|$)|-front-\d+|teamdev-2026-front|\bcd\s+\/app\b/i.test(command);
 
-  return isDockerExec && mentionsPnpm && targetsFront && isExplicitQualityGateCommand(command);
+  return isDockerExec && targetsFront && (mentionsPnpm || isExplicitQualityGateCommand(command));
 };
 
 const isQualityGateInstallCommand = (command, explanation, goal) => {
