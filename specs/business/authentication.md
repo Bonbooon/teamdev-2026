@@ -446,8 +446,8 @@ See `specs/api/openapi-contracts.md` for detailed schema definitions.
 **Environment Variables Required:**
 - `GOOGLE_OAUTH_CLIENT_ID` - Google OAuth client ID
 - `GOOGLE_OAUTH_CLIENT_SECRET` - Google OAuth client secret
-- `GOOGLE_OAUTH_REDIRECT_URI` - Full Google OAuth callback URL registered with Google for server-side code exchange. In the popup flow the frontend should still send its own popup page origin via `redirectUri`; the backend only reuses this callback URL's origin as a legacy `redirectUri = "postmessage"` fallback when `FRONTEND_URL` is unavailable and that origin is intentionally compatible with the deployed popup origin.
-- `FRONTEND_URL` - Preferred popup page origin for the current environment. The frontend should send this origin (or the equivalent runtime origin) as `redirectUri`, and the backend uses it first when normalizing legacy `redirectUri = "postmessage"` requests. It should also be included in the allowed frontend origins configuration.
+- `GOOGLE_OAUTH_REDIRECT_URI` - Registered Google OAuth redirect URI used during token exchange. In the current popup flow this must be the deployed popup page origin itself (for example, `https://app.example.com`), not a separate callback page. The frontend sends the same origin via `redirectUri`, and the backend may reuse this configured value as a legacy `redirectUri = "postmessage"` fallback when `FRONTEND_URL` is unavailable.
+- `FRONTEND_URL` - Preferred popup page origin for the current environment. The frontend should send this origin (or the equivalent runtime origin) as `redirectUri`, and the backend uses it first when normalizing legacy `redirectUri = "postmessage"` requests. It should match `GOOGLE_OAUTH_REDIRECT_URI` in the current popup flow and be included in the allowed frontend origins configuration.
 - `GOOGLE_OAUTH_SCOPES` - Optional, default `openid profile email`
 - `SANCTUM_EXPIRATION_HOURS` - Token lifetime (default: 720 = 30 days)
 

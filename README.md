@@ -148,9 +148,14 @@ mise run submodule-update
 2. クライアント種別は `Web application` を選ぶ
 3. `Authorized JavaScript origins` に本番フロントエンドの origin を登録する  
    例: `https://app.example.com`
+<<<<<<< HEAD
 4. `Authorized redirect URIs` にも、上記と同じ本番フロントエンドの origin を登録する  
    例: `https://app.example.com`  
    （この値はフロントエンドから指定する `redirect_uri` と完全に一致している必要があります）
+=======
+4. `Authorized redirect URIs` にも同じ origin を登録する
+   例: `https://app.example.com`
+>>>>>>> 3331277 (docs(auth): clarify popup oauth redirect registration)
 5. OAuth consent screen の Branding / Audience / Data Access を設定する
 6. アプリが `Testing` のままだとテストユーザーしかログインできないため、公開前に `In Production` に切り替える
 7. 外部公開アプリとして運用する場合は、アプリ名、サポート連絡先、ホームページ、プライバシーポリシー、利用規約を設定する
@@ -180,6 +185,7 @@ GOOGLE_OAUTH_REDIRECT_URI=https://app.example.com
 
 - `NEXT_PUBLIC_GOOGLE_CLIENT_ID` と `GOOGLE_OAUTH_CLIENT_ID` は同じ値にしてください
 - `FRONTEND_URL`、`NEXT_PUBLIC_APP_URL`、`GOOGLE_OAUTH_REDIRECT_URI` は同じ本番フロントエンド origin にしてください
+- Google Cloud 側でも、上記と同じ origin を `Authorized JavaScript origins` と `Authorized redirect URIs` の両方に登録してください
 - 現在の実装では `GOOGLE_OAUTH_REDIRECT_URI` に callback パスではなくフロントエンド origin を設定してください
 - API 側は `FRONTEND_URL` を CORS と Google popup origin の許可判定に使うため、URL がずれるとログインできません
 
