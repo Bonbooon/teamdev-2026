@@ -1981,15 +1981,23 @@
         "tags": [
           "Alerts"
         ],
-        "operationId": "GetAlertsBoard",
-        "description": "複数PJ横断アラート一覧ボード",
+        "operationId": "ListAllAlerts",
+        "description": "参加中プロジェクトを横断してアラート一覧を取得する。",
         "parameters": [
           {
-            "name": "isResolved",
+            "name": "teamId",
             "in": "query",
             "required": false,
             "schema": {
-              "type": "boolean"
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
             }
           },
           {
@@ -1999,6 +2007,18 @@
             "schema": {
               "$ref": "#/components/schemas/AlertLevel"
             }
+          },
+          {
+            "name": "isResolved",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
           }
         ],
         "responses": {
@@ -2007,10 +2027,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AlertListResponse"
+                  "$ref": "#/components/schemas/GlobalAlertListResponse"
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       }
@@ -2057,7 +2080,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AlertResponse"
+                  "$ref": "#/components/schemas/AlertMutationResponse"
                 }
               }
             }
@@ -2082,32 +2105,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AlertResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/alerts/{alertId}/action-plans": {
-      "get": {
-        "tags": [
-          "Alerts"
-        ],
-        "operationId": "GetAlertActionPlans",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/AlertId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "取得成功",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AlertActionPlanSuggestionListResponse"
+                  "$ref": "#/components/schemas/AlertMutationResponse"
                 }
               }
             }
@@ -4705,6 +4703,102 @@
           "suggestedAt"
         ]
       },
+      "AlertSuggestedAction": {
+        "type": "object",
+        "properties": {
+          "actionPlanId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "description": "Phase 1 seed data is localized in Japanese."
+          },
+          "description": {
+            "type": "string",
+            "description": "Phase 1 seed data is localized in Japanese."
+          },
+          "priority": {
+            "type": "integer"
+          },
+          "rationale": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "actionPlanId",
+          "code",
+          "title",
+          "description",
+          "priority"
+        ]
+      },
+      "GlobalAlertListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "projectName": {
+            "type": "string",
+            "description": "Project title when available; otherwise falls back to Project {projectId}."
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/AlertCategory"
+          },
+          "level": {
+            "$ref": "#/components/schemas/AlertLevel"
+          },
+          "isResolved": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "suggestedActions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertSuggestedAction"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "projectName",
+          "description",
+          "category",
+          "level",
+          "isResolved",
+          "createdAt",
+          "suggestedActions"
+        ]
+      },
+      "GlobalAlertListResponse": {
+        "type": "object",
+        "properties": {
+          "alerts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GlobalAlertListItem"
+            }
+          }
+        },
+        "required": [
+          "alerts"
+        ]
+      },
       "Alert": {
         "type": "object",
         "properties": {
@@ -4730,10 +4824,10 @@
             "type": "string",
             "format": "date-time"
           },
-          "suggestedActionPlans": {
+          "suggestedActions": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AlertActionPlanSuggestion"
+              "$ref": "#/components/schemas/AlertSuggestedAction"
             }
           }
         },
@@ -4745,24 +4839,99 @@
           "level",
           "isResolved",
           "createdAt",
-          "suggestedActionPlans"
+          "suggestedActions"
+        ]
+      },
+      "AlertLog": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "alertId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "triggeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resolvedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "alertId",
+          "triggeredAt"
+        ]
+      },
+      "AlertDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/AlertCategory"
+          },
+          "level": {
+            "$ref": "#/components/schemas/AlertLevel"
+          },
+          "isResolved": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "logs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertLog"
+            }
+          },
+          "suggestedActions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertSuggestedAction"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "description",
+          "category",
+          "level",
+          "isResolved",
+          "createdAt",
+          "logs",
+          "suggestedActions"
         ]
       },
       "AlertResponse": {
         "type": "object",
         "properties": {
-          "data": {
-            "$ref": "#/components/schemas/Alert"
+          "alert": {
+            "$ref": "#/components/schemas/AlertDetail"
           }
         },
         "required": [
-          "data"
+          "alert"
         ]
       },
       "AlertListResponse": {
         "type": "object",
         "properties": {
-          "data": {
+          "alerts": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Alert"
@@ -4770,7 +4939,30 @@
           }
         },
         "required": [
-          "data"
+          "alerts"
+        ]
+      },
+      "AlertMutationResponse": {
+        "type": "object",
+        "properties": {
+          "alert": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/Uuid"
+              },
+              "isResolved": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "isResolved"
+            ]
+          }
+        },
+        "required": [
+          "alert"
         ]
       },
       "AlertActionPlanSuggestionListResponse": {

@@ -1,7 +1,7 @@
 # UI設計 / 仕様書 — Motivation Cloud Teamwork
 
 **バージョン:** 1.0  
-**最終更新:** 2026/04/01  
+**最終更新:** 2026/04/02  
 **対象:** フェーズ1 MVP
 
 ---
@@ -38,10 +38,10 @@
 | `/teams` | チーム一覧 | S-04-01, S-04-02 | 必要 | 全員 | マネージャー: 管轄チーム / メンバー: 所属チーム | ✅ Phase 1A |
 | `/teams/[teamId]` | チーム詳細 | S-04-03 | 必要 | 全員 | タブ: プロジェクト一覧, メンバー一覧 | ✅ Phase 1A |
 | `/projects` | プロジェクト一覧 | — | 必要 | 全員 | 参加中プロジェクト一覧 | ✅ Phase 1B |
-| `/projects/[projectId]` | プロジェクト詳細 | S-05-04 | 必要 | 全員 | 進捗ボード, ガントチャート, アラート | ✅ Phase 1B |
+| `/projects/[projectId]` | プロジェクト詳細 | S-05-04 | 必要 | 全員 | 進捗ボード, ガントチャート, アラート, インサイト, アンケート結果 | ✅ Phase 1B |
 | `/projects/[projectId]/issues/new` | Issue作成 | S-03-01 | 必要 | 全員 | 動的テンプレート項目付きIssue作成 | ✅ Phase 1C |
-| `/issues/[issueId]` | Issue詳細 | S-03-05, S-03-06 | 必要 | 全員 | サブタスク, 進捗, ステータス管理 | ✅ Phase 1C |
-| `/alerts` | アラート一覧 | S-02-01, S-02-02 | 必要 | 全員 | 横断的アラート一覧 | ⬜ Phase 2B |
+| `/issues/[issueId]` | Issue詳細 | S-03-05, S-03-06 | 必要 | 全員 | サブタスク, 作業ログ, 進捗, ステータス管理 | ✅ Phase 1C |
+| `/alerts` | アラート一覧 | S-02-01, S-02-02 | 必要 | 全員 | 横断的アラート一覧 | ✅ 実装済み（category / project filter は後続） |
 | `/surveys` | サーベイ | S-05-01 | 必要 | 全員 | パルスサーベイ回答 | ⬜ Phase 3A |
 | `/users/[userId]` | プロフィール閲覧 | S-06-02 | 必要 | 全員 | 他メンバーのプロフィール表示 | ⬜ Phase 3B |
 
@@ -563,14 +563,18 @@ react-toastify を使用（既存導入済み）。
 
 | prop | 型 | 説明 |
 |------|-----|------|
+| `id` | `string` | アラートID |
 | `level` | `"yellow" \| "red"` | アラートレベル |
 | `category` | `string` | カテゴリ名 |
-| `title` | `string` | アラートタイトル |
 | `description` | `string` | 説明 |
-| `suggestedActions` | `Array<{ actionPlanId?: string; code?: string; title?: string; description?: string; rationale?: string; priority?: number }>` | 推奨アクション（API の `suggestedActionPlans` をフラット化して受ける, S-02-10, MVP内） |
+| `projectName` | `string` | 関連 project 名。存在する場合にカード内へ表示 |
+| `isResolved` | `boolean` | 解決済み表示用 |
+| `suggestedActions` | `Array<{ actionPlanId: string; code: string; title: string; description: string; priority: number }>` | 推奨アクション（UI では API の `suggestedActions` を表示に使う, S-02-10, MVP内） |
 | `createdAt` | `string` | 発生日時 |
-| `projectName` | `string` | 関連プロジェクト名 |
-| `canResolve` | `boolean` | 解決ボタン表示可否（フロント判定: `alert.assigneeId === currentUser.id`） |
+| `canResolve` | `boolean` | 解決ボタン表示可否（フロントエンドで計算：`alert.assigneeId === currentUser.id`） |
+| `canReopen` | `boolean` | 再開ボタン表示可否（フロントエンドで計算：`alert.assigneeId === currentUser.id`） |
+
+**Note:** `AlertCard` は `GET /alerts` の既存 `projectName` を表示に使う。Phase 2 では alert response contract の追加変更は行わない。
 
 **スタイル:**
 - Yellow: `border-l-4 border-warning-500 bg-warning-50`
@@ -835,13 +839,19 @@ ProjectDetailPage
     │   │   │       ├── Column (未着手)
     │   │   │       │   └── IssueCard[] (ドラッグ可能)
     │   │   │       │       ├── IssueTitle
-    │   │   │       │       ├── AssigneeAvatars (アサイン者アバター)
+    │   │   │       │       ├── AssigneeChips (担当者名チップ)
     │   │   │       │       ├── StoryPointsBadge
     │   │   │       │       ├── DueDate
-    │   │   │       │       └── ProgressBar
     │   │   │       ├── Column (進行中)
     │   │   │       ├── Column (レビュー中)
     │   │   │       └── Column (完了)
+    │   │   ├── MemberAssignmentPanel
+    │   │   │   └── MemberAssignmentRow[]
+    │   │   │       ├── MemberName / UnassignedLabel
+    │   │   │       ├── AssignedIssueCount
+    │   │   │       └── AssignedIssueSummary[]
+    │   │   │           ├── IssueTitle
+    │   │   │           └── IssueMeta (status, story points)
     │   │   └── [ガントビュー]
     │   │       └── GanttChart
     │   │           ├── GroupBySelector (グルーピング切替フィルター — デフォルト: ステータス別)
@@ -858,6 +868,16 @@ ProjectDetailPage
     │   │                   └── ProgressIndicator
     │   ├── AlertsTab
     │   │   └── AlertCard[]
+    │   ├── SurveyResultsTab
+    │   │   ├── SummaryCard
+    │   │   ├── SurveyScoreChart
+    │   │   └── MemberBreakdown[]
+    │   ├── InsightsTab
+    │   │   ├── ChartFilterBar
+    │   │   ├── DueDateWarning
+    │   │   ├── DeviationAlertBanner
+    │   │   ├── ProgressChart
+    │   │   └── [Manager] AIAnalysisSection
     │   └── SettingsTab
     │       ├── ProjectInfo (読み取り専用表示)
     │       ├── TeamAssignment (S-05-03)
@@ -886,6 +906,10 @@ ProjectDetailPage
 > - データソースは `GET /projects/{projectId}/issues` の単一APIを共有する
 > - SWRの同一キーを参照し、ビュー切替時にAPIを重複して叩かない
 > - カンバンでのDnDステータス変更はガントビューにもリアルタイム反映される（同一SWRキャッシュ）
+> - カンバンDnD失敗時はSWRキャッシュをロールバックし、APIレスポンスの `message` があればその文言を Toast(error) に表示する
+> - InsightsTab は loading 中でも filter bar と chart skeleton を表示し、タブ内に blank area を作らない
+> - SurveyResultsTab は loading 中でも summary / chart / member breakdown placeholder を表示し、レイアウト高さを維持する
+> - SurveyScoreChart は measurable container を検知してから `ResponsiveContainer` を mount し、サイズ未確定時は fallback skeleton を表示する
 
 ### 5.8 Issue作成 (`/projects/[projectId]/issues/new`)
 
@@ -936,14 +960,15 @@ IssueDetailPage
       │  エンティティ: IssueWorkLog（手動記録 + GitHub連携による自動記録）
       │  出典: specs/business/issue-management.md,
       │        specs/database/table-schema-plan.sql (issue_work_logs),
-      │        specs/api/openapi-contracts.md (GET/POST /issues/{issueId}/work-logs, PATCH/DELETE /issues/{issueId}/work-logs/{workLogId})
+      │        specs/api/openapi-contracts.md (GET /issues/{issueId}, GET/POST /issues/{issueId}/work-logs, PATCH/DELETE /issues/{issueId}/work-logs/{workLogId})
+      │  capability: issue.capabilities.canMutateWorkLogs
       ├── EmptyState (ログ0件時)
       ├── WorkLogEntry[]
       │   ├── Minutes
       │   ├── Description
       │   ├── LoggedAt
-      │   ├── Button (編集)
-      │   └── Button (削除)
+      │   ├── Button (編集, 非許可時は disabled)
+      │   └── Button (削除, 非許可時は disabled)
       ├── WorkLogInlineEditForm (編集中のみ)
       │   ├── Input[type=number] (minutes)
       │   ├── Textarea (description)
@@ -951,6 +976,7 @@ IssueDetailPage
       │   ├── Button (保存)
       │   └── Button (キャンセル)
       ├── WorkLogCreateForm
+      │   ├── PermissionGuard / HelperText
       │   ├── Input[type=number] (minutes)
       │   ├── Textarea (description)
       │   ├── Input[type=date] (logged_at)
@@ -962,28 +988,29 @@ IssueDetailPage
 
 ```
 AlertListPage
-└── AppLayout
-    ├── PageHeader
-    │   └── Title ("アラート")
+└── AppLayout (title="アラート")
     ├── AlertSummary
-    │   ├── StatCard (赤アラート数)
-    │   └── StatCard (黄アラート数)
+  │   ├── Badge (全て)
+  │   ├── Badge (Yellow)
+  │   ├── Badge (Red)
+  │   ├── Badge (活動中)
+  │   └── Badge (解決済み)
     ├── FilterBar
     │   ├── Select (レベル: yellow/red)
-    │   ├── Select (カテゴリ)
-    │   ├── Select (プロジェクト)
     │   └── Select (ステータス: active/resolved)
-    └── AlertCard[]
-        ├── AlertLevel (yellow/red)
-        ├── Category
-        ├── Title
-        ├── Description
-        ├── ProjectName
-        ├── SuggestedActions[] (S-02-10: アクションサジェスト — MVP内)
-        ├── CreatedAt
-        └── Actions (解決, 再開)
-            ※ 「解決」「再開」はアラートの通知先として指定されたユーザー本人のみ操作可能
+  ├── AlertCard[]
+  │   ├── AlertLevel (yellow/red)
+  │   ├── Category
+  │   ├── Description
+  │   ├── ProjectName?
+  │   ├── SuggestedActions[] (S-02-10: アクションサジェスト — MVP内)
+  │   ├── CreatedAt
+  │   ├── ResolvedBadge? (解決済み)
+  │   └── Actions (解決, 再開)
+  └── Pagination
 ```
+
+> **Current Sync:** `/alerts` は既存 contract の `projectName` と日本語 `suggestedActions` をそのまま利用し、`AlertCard` に project 名を表示する。filter 変更時は SWR `keepPreviousData` で前回の summary / list を維持したまま再取得し、resolve / reopen 失敗時は API `message` を優先して toast 表示する。category / project filter は後続フェーズに残している。
 
 ### 5.11 サーベイ (`/surveys`)
 
@@ -1215,7 +1242,7 @@ const canResolve = alert.assigneeId === currentUser.id;
 
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
-| アラート一覧 | `GET /alerts?status=active` | スケルトンカード | リトライ |
+| アラート一覧 | `GET /alerts?team_id={teamId}` | スケルトンカード | リトライ |
 | 管轄チーム | `GET /teams` | スケルトンカード | リトライ |
 | PJ進捗サマリー | `GET /projects` | スケルトンカード | リトライ |
 | 不調検知 (S-05-02) | `GET /teams/{teamId}/condition-summary` | スケルトンカード | リトライ |
@@ -1255,10 +1282,16 @@ const canResolve = alert.assigneeId === currentUser.id;
 | データ | エンドポイント | loading | error | 備考 |
 |--------|--------------|---------|-------|------|
 | PJ情報 | `GET /projects/{projectId}` | ヘッダースケルトン | リトライ | |
-| Issue一覧 (**カンバン+ガント共有**) | `GET /projects/{projectId}/issues` | ボードスケルトン | リトライ | カンバンビューとガントビューで同一データを共有。SWRキー1つで管理し重複リクエストしない |
+| Issue一覧 (**カンバン+ガント+担当一覧共有**) | `GET /projects/{projectId}/issues` | ボードスケルトン | リトライ | カンバンビュー、ガントビュー、member assignment panel で同一データを共有。SWRキー1つで管理し重複リクエストしない |
 | アラート | `GET /projects/{projectId}/alerts` | リストスケルトン | リトライ | |
+| 予実チャート | `GET /projects/{projectId}/progress-chart` | フィルターバー + チャートスケルトン | リトライ | インサイトタブ。期限未設定時は warning を残したまま empty を表示 |
+| アンケート結果 | `GET /projects/{projectId}/survey-results` | サマリー + チャート + メンバー内訳スケルトン | リトライ | アンケート結果タブ。chart は measurable container 確定まで fallback skeleton を表示 |
 
 > **Note:** `progress-board` と `gantt` の個別エンドポイントは使用しない。`issues` エンドポイントから取得したデータをフロント側でカンバン表示・ガント表示に変換する。
+>
+> **Phase 3 Note:** assignee可視化と担当一覧パネルも既存の `issues[].assignees` を利用し、新しいバックエンド契約は追加しない。
+>
+> **Phase 4 Note:** survey-results タブはアクティブ時に mount される前提でも、再オープン時に chart が blank にならないよう container 計測後に描画する。
 
 ### 7.6 Issue作成 (`/projects/[projectId]/issues/new`)
 
@@ -1283,22 +1316,33 @@ const canResolve = alert.assigneeId === currentUser.id;
 
 | データ | エンドポイント | loading | error | 備考 |
 |--------|--------------|---------|-------|------|
-| Issue情報 | `GET /issues/{issueId}` | セクションスケルトン | リトライ | |
+| Issue情報 | `GET /issues/{issueId}` | セクションスケルトン | リトライ | `issue.capabilities.canMutateWorkLogs` を含む |
 | サブタスク | `GET /issues/{issueId}/subtasks` | リストスケルトン | リトライ | |
 | 作業ログ | `GET /issues/{issueId}/work-logs` | カード内ローディング表示 | カード内エラー表示 | エンティティ: IssueWorkLog |
-| mutation: 作業ログ追加 | `POST /issues/{issueId}/work-logs` | 専用の送信中表示なし | 専用の mutation エラー表示なし | フォーム送信後に一覧再取得 |
-| mutation: 作業ログ更新 | `PATCH /issues/{issueId}/work-logs/{workLogId}` | 専用の送信中表示なし | 専用の mutation エラー表示なし | インライン編集で更新 |
-| mutation: 作業ログ削除 | `DELETE /issues/{issueId}/work-logs/{workLogId}` | ConfirmDialog 表示 | 専用の mutation エラー表示なし | 確認後に一覧再取得 |
+| mutation: 作業ログ追加 | `POST /issues/{issueId}/work-logs` | 専用の送信中表示なし | Toast(error: API `message` 優先) | フォーム送信後に一覧再取得 |
+| mutation: 作業ログ更新 | `PATCH /issues/{issueId}/work-logs/{workLogId}` | 専用の送信中表示なし | Toast(error: API `message` 優先) | インライン編集で更新 |
+| mutation: 作業ログ削除 | `DELETE /issues/{issueId}/work-logs/{workLogId}` | ConfirmDialog 表示 | Toast(error: API `message` 優先) | 確認後に一覧再取得 |
 | **mutation: ステータス** | `PATCH /issues/{issueId}/status` | バッジスピナー | Toast(error) | |
 | **mutation: DoD** | `PATCH /issues/{issueId}/definition-of-done/{doneItemId}` | チェック切替 | Toast(error) + ロールバック | |
+
+**Current sync note:**
+- WorkLogSection は `issue.capabilities.canMutateWorkLogs` を参照して、ログ0件時の helper text、追加フォーム、編集 / 削除ボタン活性を切り替える。
 
 ### 7.8 アラート一覧 (`/alerts`)
 
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
-| アラート一覧 | `GET /alerts` | スケルトンカード×6 | リトライ |
-| **mutation: 解決** | `POST /alerts/{alertId}/resolve` | ボタンスピナー | Toast(error) | ※ アラート通知先ユーザー本人のみ操作可 |
-| **mutation: 再開** | `POST /alerts/{alertId}/reopen` | ボタンスピナー | Toast(error) | ※ アラート通知先ユーザー本人のみ操作可 |
+| アラート一覧 | `GET /alerts` | スケルトンカード×3 | リトライ |
+| **mutation: 解決** | `PATCH /alerts/{alertId}/resolve` | ボタンスピナー | Toast(error: API `message` 優先、未提供時は固定 fallback) | ※ 権限判定は API 側 |
+| **mutation: 再開** | `POST /alerts/{alertId}/reopen` | ボタンスピナー | Toast(error: API `message` 優先、未提供時は固定 fallback) | ※ 権限判定は API 側 |
+
+**Current sync note:**
+- `GET /alerts` のレスポンスには `alerts[].projectName` が含まれ、project relation が欠損した場合は `Project {projectId}` にフォールバックする。
+- `suggestedActions` の shape は維持され、seed 済み title / description は日本語で返る。
+- `/alerts` は既存 `projectName` を `AlertCard` で表示し、このフェーズで backend contract 変更は発生していない。
+- global alert の filter 変更時は SWR `keepPreviousData` により前回の summary / list を維持したまま再取得する。
+- resolve / reopen failure toast は API `message` を優先し、未提供時のみ既存 fallback を使う。
+- category / project filter は後続フェーズに残している。
 
 ### 7.9 サーベイ (`/surveys`)
 
@@ -1369,7 +1413,7 @@ SWRキー設計:
 |------|---------------|--------|
 | Issueステータス変更 | ステータスバッジ即時更新 | ロールバック + Toast(error) |
 | DoD チェック切替 | チェック即時反映 | ロールバック + Toast(error) |
-| カンバンドラッグ&ドロップ | カード位置即時移動 | ロールバック + Toast(error) |
+| カンバンドラッグ&ドロップ | カード位置即時移動 | ロールバック + Toast(error: API `message` 優先) |
 
 ### 8.4 グローバル状態は使わない
 
@@ -1443,10 +1487,14 @@ src/
 │   │   │   ├── ProjectCard.tsx
 │   │   │   ├── ProjectHeader.tsx
 │   │   │   ├── ProgressBoard/
-│   │   │   │   ├── index.tsx          # ViewToggle + カンバン/ガント切替
+│   │   │   │   ├── index.tsx          # ViewToggle + member assignment panel + カンバン/ガント切替
 │   │   │   │   ├── KanbanBoard.tsx
+│   │   │   │   ├── KanbanColumn.tsx
+│   │   │   │   ├── KanbanIssueCard.tsx
 │   │   │   │   ├── GanttChart.tsx
-│   │   │   │   └── ViewToggle.tsx
+│   │   │   │   ├── MemberAssignmentPanel.tsx
+│   │   │   │   ├── ViewToggle.tsx
+│   │   │   │   └── errorHandling.ts
 │   │   │   ├── CreateProjectModal.tsx
 │   │   │   ├── EditProjectModal.tsx
 │   │   │   ├── AssignTeamModal.tsx

@@ -1,5 +1,7 @@
 # Page: プロジェクト詳細
 
+**Related Feature Specs:** `specs/features/project-insights-chart.md`, `specs/features/project-insights-ai-analysis.md`, `specs/features/manual-testing-ux-followups.md` (Scope C)
+
 ## Purpose
 プロジェクトの進捗ボード（カンバン/ガント統合）、アラート、設定を管理する。
 
@@ -33,13 +35,19 @@ ProjectDetailPage
     │   │   │       ├── Column (未着手)
     │   │   │       │   └── IssueCard[] (ドラッグ可能)
     │   │   │       │       ├── IssueTitle
-    │   │   │       │       ├── AssigneeAvatars
+    │   │   │       │       ├── AssigneeChips (担当者名チップ)
     │   │   │       │       ├── StoryPointsBadge
     │   │   │       │       ├── DueDate
-    │   │   │       │       └── ProgressBar
     │   │   │       ├── Column (進行中)
     │   │   │       ├── Column (レビュー中)
     │   │   │       └── Column (完了)
+    │   │   ├── MemberAssignmentPanel
+    │   │   │   └── MemberAssignmentRow[]
+    │   │   │       ├── MemberName / UnassignedLabel
+    │   │   │       ├── AssignedIssueCount
+    │   │   │       └── AssignedIssueSummary[]
+    │   │   │           ├── IssueTitle
+    │   │   │           └── IssueMeta (status, story points)
     │   │   └── [ガントビュー]
     │   │       └── GanttChart
     │   │           ├── GroupBySelector (デフォルト: ステータス別)
@@ -56,6 +64,16 @@ ProjectDetailPage
     │   │                   └── ProgressIndicator
     │   ├── AlertsTab
     │   │   └── AlertCard[]
+    │   ├── SurveyResultsTab
+    │   │   ├── SummaryCard
+    │   │   ├── SurveyScoreChart
+    │   │   └── MemberBreakdown[]
+    │   ├── InsightsTab
+    │   │   ├── ChartFilterBar
+    │   │   ├── DueDateWarning
+    │   │   ├── DeviationAlertBanner
+    │   │   ├── ProgressChart
+    │   │   └── [Manager] AIAnalysisSection
     │   └── SettingsTab
     │       ├── ProjectInfo (読み取り専用表示)
     │       ├── TeamAssignment (S-05-03)
@@ -81,8 +99,10 @@ ProjectDetailPage
 | データ | エンドポイント | loading | error | 備考 |
 |--------|--------------|---------|-------|------|
 | PJ情報 | `GET /projects/{projectId}` | ヘッダースケルトン | リトライ | |
-| Issue一覧 | `GET /projects/{projectId}/issues` | ボードスケルトン | リトライ | カンバン+ガント共有 |
+| Issue一覧 | `GET /projects/{projectId}/issues` | ボードスケルトン | リトライ | カンバン+ガント+担当一覧パネル共有 |
 | アラート | `GET /projects/{projectId}/alerts` | リストスケルトン | リトライ | |
+| 予実チャート | `GET /projects/{projectId}/progress-chart` | フィルターバー + チャートスケルトン | リトライ | インサイトタブ |
+| アンケート結果 | `GET /projects/{projectId}/survey-results` | サマリー + チャート + メンバー内訳スケルトン | リトライ | アンケート結果タブ |
 
 カンバンとガントは同一APIデータ (`GET /projects/{projectId}/issues`) を共有。SWRキー1つで管理。
 
@@ -90,6 +110,7 @@ ProjectDetailPage
 | 状態 | 表現 |
 |------|------|
 | loading | ボードスケルトン |
+| tab-loading | インサイトはフィルターバー + チャート、アンケート結果はサマリー + チャート + メンバー内訳のスケルトンを表示し、空白にしない |
 | empty | EmptyState: "Issueがありません" + Issue作成ボタン |
 | error | ErrorState + リトライ |
 | success | ProgressBoardTab表示 |
@@ -98,13 +119,14 @@ ProjectDetailPage
 - ViewToggle → ガント/カンバン切替（localStorage記憶）
 - Issue作成ボタン → `/projects/[projectId]/issues/new` に遷移
 - カンバンDnD → ステータス変更（楽観的更新）
+- カンバンDnD が business rule で reject された場合はロールバックし、API `message` を Toast 表示
 - IssueCard/GanttRowクリック → `/issues/[issueId]` に遷移
 - GroupBySelector → グルーピング切替（ステータス別/アサイン者別/フラット）
 
 ## Mutations
 | 操作 | エンドポイント | 成功時 | 失敗時 |
 |------|--------------|--------|--------|
-| Issueステータス変更 (DnD) | `PATCH /issues/{issueId}/status` | 楽観的更新 | ロールバック + Toast(error) |
+| Issueステータス変更 (DnD) | `PATCH /issues/{issueId}/status` | 楽観的更新 | ロールバック + Toast(error: API `message` 優先) |
 | PJ編集 | `PATCH /projects/{projectId}` | Toast(success) + モーダル閉じ | Toast(error) |
 | チームアサイン | `POST /projects/{projectId}/teams` | Toast(success) + 再取得 | Toast(error) |
 | チーム解除 | `DELETE /projects/{projectId}/teams/{teamId}` | Toast(success) + 再取得 | Toast(error) |
@@ -113,3 +135,10 @@ ProjectDetailPage
 - ガントの色分け: expectedProgress対比でgreen/yellow/red
 - Issue一覧は1つのSWRキーで管理し、ビュー切替時にAPIを重複して叩かない
 - カンバンDnDの楽観的更新はSWRキャッシュ直接操作
+- Kanban card は assignee が存在する場合に担当者名チップを表示する
+- ProgressBoard の member assignment panel は assignee ごとに issue title / status / story points を grouped 表示し、未割り当て issue は「未割り当て」にまとめる
+- Issue が 0件のとき、member assignment panel は EmptyState を表示する
+- member assignment panel の issue 行は現在、読み取り専用の要約表示であり issue detail へのリンクではない（リンク化は今後の改善候補）
+- InsightsTab の loading は filter bar と chart の skeleton を先に描画し、blank area を出さない
+- SurveyResultsTab の loading は summary card / chart / member breakdown の skeleton を順に描画する
+- SurveyScoreChart は measurable container 上でのみ描画し、サイズ未確定時は blank chart ではなく fallback skeleton を表示する
