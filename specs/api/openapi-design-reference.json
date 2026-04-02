@@ -1985,7 +1985,7 @@
         "description": "参加中プロジェクトを横断してアラート一覧を取得する。",
         "parameters": [
           {
-            "name": "team_id",
+            "name": "teamId",
             "in": "query",
             "required": false,
             "schema": {
@@ -1993,7 +1993,7 @@
             }
           },
           {
-            "name": "project_id",
+            "name": "projectId",
             "in": "query",
             "required": false,
             "schema": {
@@ -2009,7 +2009,7 @@
             }
           },
           {
-            "name": "is_resolved",
+            "name": "isResolved",
             "in": "query",
             "required": false,
             "schema": {
