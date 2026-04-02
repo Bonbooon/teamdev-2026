@@ -30,7 +30,7 @@ const QUALITY_GATE_COMMAND_PATTERNS = [
   /\bpnpm\s+format(?::check)?\b/i,
   /\bpnpm\s+lint(?::fix)?\b/i,
   /\bpnpm\s+typecheck\b/i,
-  /\bpnpm\s+test(?:[:\w-]+)?\b/i,
+  /\bpnpm\s+test(?::[\w-]+)?\b/i,
   /\bpnpm\s+exec\s+jest\b/i,
   /\bpnpm\s+openapi(?::(?:pull|gen))?\b/i,
   /\bpnpm\s+biome\b/i,
