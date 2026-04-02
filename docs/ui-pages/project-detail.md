@@ -62,6 +62,16 @@ ProjectDetailPage
     │   │                   └── ProgressIndicator
     │   ├── AlertsTab
     │   │   └── AlertCard[]
+    │   ├── SurveyResultsTab
+    │   │   ├── SummaryCard
+    │   │   ├── SurveyScoreChart
+    │   │   └── MemberBreakdown[]
+    │   ├── InsightsTab
+    │   │   ├── ChartFilterBar
+    │   │   ├── DueDateWarning
+    │   │   ├── DeviationAlertBanner
+    │   │   ├── ProgressChart
+    │   │   └── [Manager] AIAnalysisSection
     │   └── SettingsTab
     │       ├── ProjectInfo (読み取り専用表示)
     │       ├── TeamAssignment (S-05-03)
@@ -89,6 +99,8 @@ ProjectDetailPage
 | PJ情報 | `GET /projects/{projectId}` | ヘッダースケルトン | リトライ | |
 | Issue一覧 | `GET /projects/{projectId}/issues` | ボードスケルトン | リトライ | カンバン+ガント+担当一覧パネル共有 |
 | アラート | `GET /projects/{projectId}/alerts` | リストスケルトン | リトライ | |
+| 予実チャート | `GET /projects/{projectId}/progress-chart` | フィルターバー + チャートスケルトン | リトライ | インサイトタブ |
+| アンケート結果 | `GET /projects/{projectId}/survey-results` | サマリー + チャート + メンバー内訳スケルトン | リトライ | アンケート結果タブ |
 
 カンバンとガントは同一APIデータ (`GET /projects/{projectId}/issues`) を共有。SWRキー1つで管理。
 
@@ -96,6 +108,7 @@ ProjectDetailPage
 | 状態 | 表現 |
 |------|------|
 | loading | ボードスケルトン |
+| tab-loading | インサイトはフィルターバー + チャート、アンケート結果はサマリー + チャート + メンバー内訳のスケルトンを表示し、空白にしない |
 | empty | EmptyState: "Issueがありません" + Issue作成ボタン |
 | error | ErrorState + リトライ |
 | success | ProgressBoardTab表示 |
@@ -124,3 +137,6 @@ ProjectDetailPage
 - ProgressBoard の member assignment panel は assignee ごとに issue title / status / story points を grouped 表示し、未割り当て issue は「未割り当て」にまとめる
 - Issue が 0件のとき、member assignment panel は EmptyState を表示する
 - member assignment panel の issue 行は現時点では issue detail へのリンクではなく、読み取り専用の要約表示
+- InsightsTab の loading は filter bar と chart の skeleton を先に描画し、blank area を出さない
+- SurveyResultsTab の loading は summary card / chart / member breakdown の skeleton を順に描画する
+- SurveyScoreChart は measurable container 上でのみ描画し、サイズ未確定時は blank chart ではなく fallback skeleton を表示する

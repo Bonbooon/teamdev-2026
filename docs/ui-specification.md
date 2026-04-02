@@ -38,7 +38,7 @@
 | `/teams` | チーム一覧 | S-04-01, S-04-02 | 必要 | 全員 | マネージャー: 管轄チーム / メンバー: 所属チーム | ✅ Phase 1A |
 | `/teams/[teamId]` | チーム詳細 | S-04-03 | 必要 | 全員 | タブ: プロジェクト一覧, メンバー一覧 | ✅ Phase 1A |
 | `/projects` | プロジェクト一覧 | — | 必要 | 全員 | 参加中プロジェクト一覧 | ✅ Phase 1B |
-| `/projects/[projectId]` | プロジェクト詳細 | S-05-04 | 必要 | 全員 | 進捗ボード, ガントチャート, アラート | ✅ Phase 1B |
+| `/projects/[projectId]` | プロジェクト詳細 | S-05-04 | 必要 | 全員 | 進捗ボード, ガントチャート, アラート, インサイト, アンケート結果 | ✅ Phase 1B |
 | `/projects/[projectId]/issues/new` | Issue作成 | S-03-01 | 必要 | 全員 | 動的テンプレート項目付きIssue作成 | ✅ Phase 1C |
 | `/issues/[issueId]` | Issue詳細 | S-03-05, S-03-06 | 必要 | 全員 | サブタスク, 進捗, ステータス管理 | ✅ Phase 1C |
 | `/alerts` | アラート一覧 | S-02-01, S-02-02 | 必要 | 全員 | 横断的アラート一覧 | ✅ 実装済み（category / project filter は後続） |
@@ -868,6 +868,16 @@ ProjectDetailPage
     │   │                   └── ProgressIndicator
     │   ├── AlertsTab
     │   │   └── AlertCard[]
+    │   ├── SurveyResultsTab
+    │   │   ├── SummaryCard
+    │   │   ├── SurveyScoreChart
+    │   │   └── MemberBreakdown[]
+    │   ├── InsightsTab
+    │   │   ├── ChartFilterBar
+    │   │   ├── DueDateWarning
+    │   │   ├── DeviationAlertBanner
+    │   │   ├── ProgressChart
+    │   │   └── [Manager] AIAnalysisSection
     │   └── SettingsTab
     │       ├── ProjectInfo (読み取り専用表示)
     │       ├── TeamAssignment (S-05-03)
@@ -897,6 +907,9 @@ ProjectDetailPage
 > - SWRの同一キーを参照し、ビュー切替時にAPIを重複して叩かない
 > - カンバンでのDnDステータス変更はガントビューにもリアルタイム反映される（同一SWRキャッシュ）
 > - カンバンDnD失敗時はSWRキャッシュをロールバックし、APIレスポンスの `message` があればその文言を Toast(error) に表示する
+> - InsightsTab は loading 中でも filter bar と chart skeleton を表示し、タブ内に blank area を作らない
+> - SurveyResultsTab は loading 中でも summary / chart / member breakdown placeholder を表示し、レイアウト高さを維持する
+> - SurveyScoreChart は measurable container を検知してから `ResponsiveContainer` を mount し、サイズ未確定時は fallback skeleton を表示する
 
 ### 5.8 Issue作成 (`/projects/[projectId]/issues/new`)
 
@@ -1269,10 +1282,14 @@ const canResolve = alert.assigneeId === currentUser.id;
 | PJ情報 | `GET /projects/{projectId}` | ヘッダースケルトン | リトライ | |
 | Issue一覧 (**カンバン+ガント+担当一覧共有**) | `GET /projects/{projectId}/issues` | ボードスケルトン | リトライ | カンバンビュー、ガントビュー、member assignment panel で同一データを共有。SWRキー1つで管理し重複リクエストしない |
 | アラート | `GET /projects/{projectId}/alerts` | リストスケルトン | リトライ | |
+| 予実チャート | `GET /projects/{projectId}/progress-chart` | フィルターバー + チャートスケルトン | リトライ | インサイトタブ。期限未設定時は warning を残したまま empty を表示 |
+| アンケート結果 | `GET /projects/{projectId}/survey-results` | サマリー + チャート + メンバー内訳スケルトン | リトライ | アンケート結果タブ。chart は measurable container 確定まで fallback skeleton を表示 |
 
 > **Note:** `progress-board` と `gantt` の個別エンドポイントは使用しない。`issues` エンドポイントから取得したデータをフロント側でカンバン表示・ガント表示に変換する。
 >
 > **Phase 3 Note:** assignee可視化と担当一覧パネルも既存の `issues[].assignees` を利用し、新しいバックエンド契約は追加しない。
+>
+> **Phase 4 Note:** survey-results タブはアクティブ時に mount される前提でも、再オープン時に chart が blank にならないよう container 計測後に描画する。
 
 ### 7.6 Issue作成 (`/projects/[projectId]/issues/new`)
 
