@@ -4,7 +4,7 @@
 **Last Updated:** 2026/04/02
 **Parent Specs:** `specs/business/issue-management.md`, `specs/business/alert-system.md`, `specs/business/project-management.md`, `specs/business/visualization.md`
 **Related UI Docs:** `docs/ui-pages/issue-detail.md`, `docs/ui-pages/alerts-list.md`, `docs/ui-pages/project-detail.md`
-**Source Notes:** `debug-repot.md`
+**Source Notes:** 手動テストセッションのデバッグメモと観察結果に基づく
 
 ---
 

@@ -1,6 +1,6 @@
 # Page: Issue詳細
 
-**Related Feature Spec:** `specs/features/manual-testing-ux-followups.md` (Scope A)
+**Related Feature Spec:** `specs/business/issue-management.md`
 
 ## Purpose
 Issueの詳細情報、Definition of Done、サブタスク、作業ログを表示・管理する。

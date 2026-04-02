@@ -1,6 +1,6 @@
 # Page: アラート一覧
 
-**Related Feature Spec:** `specs/features/manual-testing-ux-followups.md` (Scope B)
+**Related Feature Spec:** `specs/business/alert-system.md`
 
 ## Current Sync Status
 - `GET /alerts` の各 alert には `projectName` が含まれる
@@ -73,7 +73,7 @@ AlertListPage
 - URL クエリパラメータ同期は未実装
 - 解決ボタン → API
 - 再開ボタン → API
-- ページネーション: クライアント側で 10 件ごとに分割
+- ページネーション: グローバル規約に従い `?page=1&per_page=20` で管理
 
 ## Mutations
 | 操作 | エンドポイント | 成功時 | 失敗時 |

@@ -138,7 +138,7 @@ ProjectDetailPage
 - Kanban card は assignee が存在する場合に担当者名チップを表示する
 - ProgressBoard の member assignment panel は assignee ごとに issue title / status / story points を grouped 表示し、未割り当て issue は「未割り当て」にまとめる
 - Issue が 0件のとき、member assignment panel は EmptyState を表示する
-- member assignment panel の issue 行は現時点では issue detail へのリンクではなく、読み取り専用の要約表示
+- member assignment panel の issue 行は現在、読み取り専用の要約表示であり issue detail へのリンクではない（リンク化は今後の改善候補）
 - InsightsTab の loading は filter bar と chart の skeleton を先に描画し、blank area を出さない
 - SurveyResultsTab の loading は summary card / chart / member breakdown の skeleton を順に描画する
 - SurveyScoreChart は measurable container 上でのみ描画し、サイズ未確定時は blank chart ではなく fallback skeleton を表示する

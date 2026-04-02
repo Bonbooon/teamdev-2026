@@ -569,10 +569,10 @@ react-toastify を使用（既存導入済み）。
 | `description` | `string` | 説明 |
 | `projectName` | `string` | 関連 project 名。存在する場合にカード内へ表示 |
 | `isResolved` | `boolean` | 解決済み表示用 |
-| `suggestedActions` | `Array<{ actionPlanId?: string; code?: string; title?: string; description?: string; priority?: number }>` | 推奨アクション（UI では API の `suggestedActions` を表示に使う, S-02-10, MVP内） |
+| `suggestedActions` | `Array<{ actionPlanId: string; code: string; title: string; description: string; priority: number }>` | 推奨アクション（UI では API の `suggestedActions` を表示に使う, S-02-10, MVP内） |
 | `createdAt` | `string` | 発生日時 |
-| `canResolve` | `boolean` | 解決ボタン表示可否 |
-| `canReopen` | `boolean` | 再開ボタン表示可否 |
+| `canResolve` | `boolean` | 解決ボタン表示可否（フロントエンドで計算：`alert.assigneeId === currentUser.id`） |
+| `canReopen` | `boolean` | 再開ボタン表示可否（フロントエンドで計算：`alert.assigneeId === currentUser.id`） |
 
 **Note:** `AlertCard` は `GET /alerts` の既存 `projectName` を表示に使う。Phase 2 では alert response contract の追加変更は行わない。
 
