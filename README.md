@@ -146,11 +146,14 @@ mise run submodule-update
 
 1. Google Cloud の Google Auth Platform で OAuth クライアントを作成する
 2. クライアント種別は `Web application` を選ぶ
-3. `Authorized JavaScript origins` に本番フロントエンドの origin を登録する
+3. `Authorized JavaScript origins` に本番フロントエンドの origin を登録する  
    例: `https://app.example.com`
-4. OAuth consent screen の Branding / Audience / Data Access を設定する
-5. アプリが `Testing` のままだとテストユーザーしかログインできないため、公開前に `In Production` に切り替える
-6. 外部公開アプリとして運用する場合は、アプリ名、サポート連絡先、ホームページ、プライバシーポリシー、利用規約を設定する
+4. `Authorized redirect URIs` にも、上記と同じ本番フロントエンドの origin を登録する  
+   例: `https://app.example.com`  
+   （この値はフロントエンドから指定する `redirect_uri` と完全に一致している必要があります）
+5. OAuth consent screen の Branding / Audience / Data Access を設定する
+6. アプリが `Testing` のままだとテストユーザーしかログインできないため、公開前に `In Production` に切り替える
+7. 外部公開アプリとして運用する場合は、アプリ名、サポート連絡先、ホームページ、プライバシーポリシー、利用規約を設定する
 
 ### 2. フロントエンドの環境変数
 
