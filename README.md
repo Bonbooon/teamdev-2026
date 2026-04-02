@@ -172,6 +172,7 @@ GOOGLE_OAUTH_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxxxxxxxxxxxxx
 GOOGLE_OAUTH_REDIRECT_URI=https://app.example.com
 ```
 
+> 注意: `GOOGLE_OAUTH_CLIENT_SECRET` は機密情報です。`.env` などの設定ファイルをリポジトリにコミットせず、GitHub Actions の Secrets や Secret Manager 等の仕組みを用いて安全に管理してください。
 ### 4. 設定時の注意
 
 - `NEXT_PUBLIC_GOOGLE_CLIENT_ID` と `GOOGLE_OAUTH_CLIENT_ID` は同じ値にしてください
