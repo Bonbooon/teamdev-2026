@@ -1,5 +1,7 @@
 # Page: Issue詳細
 
+**Related Feature Spec:** `specs/features/manual-testing-ux-followups.md` (Scope A)
+
 ## Purpose
 Issueの詳細情報、Definition of Done、サブタスク、作業ログを表示・管理する。
 
@@ -38,6 +40,7 @@ IssueDetailPage
             │   ├── Button (編集)
             │   └── Button (削除)
             ├── WorkLogCreateForm
+            │   ├── PermissionGuard / HelperText
             │   ├── Input[type=number] (分数)
             │   ├── Textarea (説明)
             │   ├── Input[type=date] (作業日)
@@ -67,6 +70,7 @@ IssueDetailPage
 - ステータス選択 → API経由で更新
 - DoDチェック切替 → 楽観的更新 → API
 - DoD追加ボタン → 入力欄を表示して API 経由で追加
+- 権限のないユーザーには、作業ログの追加 / 編集 / 削除 UI を有効状態で表示しない
 - 作業ログ追加フォーム送信 → API経由で作業ログを追加し、一覧を再取得
 - 作業ログの編集ボタン → 対象行をインライン編集フォームに切り替え、保存後に一覧を再取得
 - 作業ログの削除ボタン → ConfirmDialog 表示 → 確認後に API 経由で削除し、一覧を再取得
@@ -77,12 +81,14 @@ IssueDetailPage
 |------|--------------|--------|--------|
 | ステータス変更 | `PATCH /issues/{issueId}/status` | バッジ即時更新 | Toast(error) |
 | DoD切替 | `PATCH /issues/{issueId}/definition-of-done/{doneItemId}` | チェック即時反映 | ロールバック + Toast(error) |
-| 作業ログ追加 | `POST /issues/{issueId}/work-logs` | フォームをリセットし、一覧を再取得 | 専用の mutation エラー表示は未実装 |
-| 作業ログ更新 | `PATCH /issues/{issueId}/work-logs/{workLogId}` | インライン編集を閉じ、一覧を再取得 | 専用の mutation エラー表示は未実装 |
-| 作業ログ削除 | `DELETE /issues/{issueId}/work-logs/{workLogId}` | 確認ダイアログを閉じ、一覧を再取得 | 専用の mutation エラー表示は未実装 |
+| 作業ログ追加 | `POST /issues/{issueId}/work-logs` | フォームをリセットし、一覧を再取得 | Toast(error: API `message` 優先) |
+| 作業ログ更新 | `PATCH /issues/{issueId}/work-logs/{workLogId}` | インライン編集を閉じ、一覧を再取得 | Toast(error: API `message` 優先) |
+| 作業ログ削除 | `DELETE /issues/{issueId}/work-logs/{workLogId}` | 確認ダイアログを閉じ、一覧を再取得 | Toast(error: API `message` 優先) |
 
 ## Notes
 - WorkLogSection は空状態、一覧表示、新規追加、インライン編集、削除確認まで接続済み
+- `GET /issues/{issueId}` の `issue.capabilities.canMutateWorkLogs` を参照して、WorkLogSection の追加 / 編集 / 削除 affordance を切り替える
+- WorkLogSection は current viewer の capability に応じて追加 / 編集 / 削除 affordance を制御する
 - 作業ログの追加・編集フォームは `logged_at` を日付入力で扱い、既存ログの `loggedAt` を編集フォームへ初期表示する
 - 現状の作業ログ UI は `minutes`、`description`、`loggedAt` を表示し、API の `source` は画面表示していない
 - `GET /issues/{issueId}/work-logs` は対象Issueが存在しない場合でも空配列を返す

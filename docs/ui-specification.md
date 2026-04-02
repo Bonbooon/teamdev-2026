@@ -40,7 +40,7 @@
 | `/projects` | プロジェクト一覧 | — | 必要 | 全員 | 参加中プロジェクト一覧 | ✅ Phase 1B |
 | `/projects/[projectId]` | プロジェクト詳細 | S-05-04 | 必要 | 全員 | 進捗ボード, ガントチャート, アラート, インサイト, アンケート結果 | ✅ Phase 1B |
 | `/projects/[projectId]/issues/new` | Issue作成 | S-03-01 | 必要 | 全員 | 動的テンプレート項目付きIssue作成 | ✅ Phase 1C |
-| `/issues/[issueId]` | Issue詳細 | S-03-05, S-03-06 | 必要 | 全員 | サブタスク, 進捗, ステータス管理 | ✅ Phase 1C |
+| `/issues/[issueId]` | Issue詳細 | S-03-05, S-03-06 | 必要 | 全員 | サブタスク, 作業ログ, 進捗, ステータス管理 | ✅ Phase 1C |
 | `/alerts` | アラート一覧 | S-02-01, S-02-02 | 必要 | 全員 | 横断的アラート一覧 | ✅ 実装済み（category / project filter は後続） |
 | `/surveys` | サーベイ | S-05-01 | 必要 | 全員 | パルスサーベイ回答 | ⬜ Phase 3A |
 | `/users/[userId]` | プロフィール閲覧 | S-06-02 | 必要 | 全員 | 他メンバーのプロフィール表示 | ⬜ Phase 3B |
@@ -960,14 +960,15 @@ IssueDetailPage
       │  エンティティ: IssueWorkLog（手動記録 + GitHub連携による自動記録）
       │  出典: specs/business/issue-management.md,
       │        specs/database/table-schema-plan.sql (issue_work_logs),
-      │        specs/api/openapi-contracts.md (GET/POST /issues/{issueId}/work-logs, PATCH/DELETE /issues/{issueId}/work-logs/{workLogId})
+      │        specs/api/openapi-contracts.md (GET /issues/{issueId}, GET/POST /issues/{issueId}/work-logs, PATCH/DELETE /issues/{issueId}/work-logs/{workLogId})
+      │  capability: issue.capabilities.canMutateWorkLogs
       ├── EmptyState (ログ0件時)
       ├── WorkLogEntry[]
       │   ├── Minutes
       │   ├── Description
       │   ├── LoggedAt
-      │   ├── Button (編集)
-      │   └── Button (削除)
+      │   ├── Button (編集, 非許可時は disabled)
+      │   └── Button (削除, 非許可時は disabled)
       ├── WorkLogInlineEditForm (編集中のみ)
       │   ├── Input[type=number] (minutes)
       │   ├── Textarea (description)
@@ -975,6 +976,7 @@ IssueDetailPage
       │   ├── Button (保存)
       │   └── Button (キャンセル)
       ├── WorkLogCreateForm
+      │   ├── PermissionGuard / HelperText
       │   ├── Input[type=number] (minutes)
       │   ├── Textarea (description)
       │   ├── Input[type=date] (logged_at)
@@ -1314,14 +1316,17 @@ const canResolve = alert.assigneeId === currentUser.id;
 
 | データ | エンドポイント | loading | error | 備考 |
 |--------|--------------|---------|-------|------|
-| Issue情報 | `GET /issues/{issueId}` | セクションスケルトン | リトライ | |
+| Issue情報 | `GET /issues/{issueId}` | セクションスケルトン | リトライ | `issue.capabilities.canMutateWorkLogs` を含む |
 | サブタスク | `GET /issues/{issueId}/subtasks` | リストスケルトン | リトライ | |
 | 作業ログ | `GET /issues/{issueId}/work-logs` | カード内ローディング表示 | カード内エラー表示 | エンティティ: IssueWorkLog |
-| mutation: 作業ログ追加 | `POST /issues/{issueId}/work-logs` | 専用の送信中表示なし | 専用の mutation エラー表示なし | フォーム送信後に一覧再取得 |
-| mutation: 作業ログ更新 | `PATCH /issues/{issueId}/work-logs/{workLogId}` | 専用の送信中表示なし | 専用の mutation エラー表示なし | インライン編集で更新 |
-| mutation: 作業ログ削除 | `DELETE /issues/{issueId}/work-logs/{workLogId}` | ConfirmDialog 表示 | 専用の mutation エラー表示なし | 確認後に一覧再取得 |
+| mutation: 作業ログ追加 | `POST /issues/{issueId}/work-logs` | 専用の送信中表示なし | Toast(error: API `message` 優先) | フォーム送信後に一覧再取得 |
+| mutation: 作業ログ更新 | `PATCH /issues/{issueId}/work-logs/{workLogId}` | 専用の送信中表示なし | Toast(error: API `message` 優先) | インライン編集で更新 |
+| mutation: 作業ログ削除 | `DELETE /issues/{issueId}/work-logs/{workLogId}` | ConfirmDialog 表示 | Toast(error: API `message` 優先) | 確認後に一覧再取得 |
 | **mutation: ステータス** | `PATCH /issues/{issueId}/status` | バッジスピナー | Toast(error) | |
 | **mutation: DoD** | `PATCH /issues/{issueId}/definition-of-done/{doneItemId}` | チェック切替 | Toast(error) + ロールバック | |
+
+**Current sync note:**
+- WorkLogSection は `issue.capabilities.canMutateWorkLogs` を参照して、ログ0件時の helper text、追加フォーム、編集 / 削除ボタン活性を切り替える。
 
 ### 7.8 アラート一覧 (`/alerts`)
 
