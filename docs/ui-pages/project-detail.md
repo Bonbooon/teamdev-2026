@@ -1,5 +1,7 @@
 # Page: プロジェクト詳細
 
+**Related Feature Specs:** `specs/features/project-insights-chart.md`, `specs/features/project-insights-ai-analysis.md`, `specs/features/manual-testing-ux-followups.md` (Scope C)
+
 ## Purpose
 プロジェクトの進捗ボード（カンバン/ガント統合）、アラート、設定を管理する。
 
