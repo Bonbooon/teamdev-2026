@@ -138,6 +138,54 @@ mise run submodule-checkout
 mise run submodule-update
 ```
 
+## 本番環境で Google OAuth を有効化する
+
+このアプリの Google ログインは、フロントエンドで認可コードを受け取り、API がそのコードを Google に交換する popup ベースの OAuth フローです。現在の実装では専用の `/auth/callback` ページを使わず、フロントエンドの origin を `redirect_uri` として扱います。
+
+### 1. Google Cloud 側で行うこと
+
+1. Google Cloud の Google Auth Platform で OAuth クライアントを作成する
+2. クライアント種別は `Web application` を選ぶ
+3. `Authorized JavaScript origins` に本番フロントエンドの origin を登録する
+   例: `https://app.example.com`
+4. OAuth consent screen の Branding / Audience / Data Access を設定する
+5. アプリが `Testing` のままだとテストユーザーしかログインできないため、公開前に `In Production` に切り替える
+6. 外部公開アプリとして運用する場合は、アプリ名、サポート連絡先、ホームページ、プライバシーポリシー、利用規約を設定する
+
+### 2. フロントエンドの環境変数
+
+`teamdev-2026-front` 側では、以下を設定してください。
+
+```bash
+NEXT_PUBLIC_APP_URL=https://app.example.com
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
+```
+
+### 3. API の環境変数
+
+`teamdev-2026-api/web` 側では、以下を設定してください。
+
+```bash
+FRONTEND_URL=https://app.example.com
+GOOGLE_OAUTH_CLIENT_ID=xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
+GOOGLE_OAUTH_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxxxxxxxxxxxxx
+GOOGLE_OAUTH_REDIRECT_URI=https://app.example.com
+```
+
+### 4. 設定時の注意
+
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID` と `GOOGLE_OAUTH_CLIENT_ID` は同じ値にしてください
+- `FRONTEND_URL`、`NEXT_PUBLIC_APP_URL`、`GOOGLE_OAUTH_REDIRECT_URI` は同じ本番フロントエンド origin にしてください
+- 現在の実装では `GOOGLE_OAUTH_REDIRECT_URI` に callback パスではなくフロントエンド origin を設定してください
+- API 側は `FRONTEND_URL` を CORS と Google popup origin の許可判定に使うため、URL がずれるとログインできません
+
+### 5. 動作確認
+
+1. 本番フロントエンドにアクセスする
+2. `Google でログイン` を押す
+3. 新規ユーザーならプロフィール設定画面に遷移する
+4. 既存ユーザーならトップページに遷移する
+
 ## デモマネージャーでデモデータにアクセスする手順
 
 Google OAuth の実装上、デモマネージャー用ユーザーは先に Google ログインで作成されている必要があります。そのため `migrate:fresh --seed` ではなく、以下の順序で実行してください。
