@@ -1,7 +1,7 @@
 # UI設計 / 仕様書 — Motivation Cloud Teamwork
 
 **バージョン:** 1.0  
-**最終更新:** 2026/04/01  
+**最終更新:** 2026/04/02  
 **対象:** フェーズ1 MVP
 
 ---
@@ -41,7 +41,7 @@
 | `/projects/[projectId]` | プロジェクト詳細 | S-05-04 | 必要 | 全員 | 進捗ボード, ガントチャート, アラート | ✅ Phase 1B |
 | `/projects/[projectId]/issues/new` | Issue作成 | S-03-01 | 必要 | 全員 | 動的テンプレート項目付きIssue作成 | ✅ Phase 1C |
 | `/issues/[issueId]` | Issue詳細 | S-03-05, S-03-06 | 必要 | 全員 | サブタスク, 進捗, ステータス管理 | ✅ Phase 1C |
-| `/alerts` | アラート一覧 | S-02-01, S-02-02 | 必要 | 全員 | 横断的アラート一覧 | ⬜ Phase 2B |
+| `/alerts` | アラート一覧 | S-02-01, S-02-02 | 必要 | 全員 | 横断的アラート一覧 | ✅ 実装済み（追加 UX は Phase 2+） |
 | `/surveys` | サーベイ | S-05-01 | 必要 | 全員 | パルスサーベイ回答 | ⬜ Phase 3A |
 | `/users/[userId]` | プロフィール閲覧 | S-06-02 | 必要 | 全員 | 他メンバーのプロフィール表示 | ⬜ Phase 3B |
 
@@ -563,14 +563,17 @@ react-toastify を使用（既存導入済み）。
 
 | prop | 型 | 説明 |
 |------|-----|------|
+| `id` | `string` | アラートID |
 | `level` | `"yellow" \| "red"` | アラートレベル |
 | `category` | `string` | カテゴリ名 |
-| `title` | `string` | アラートタイトル |
 | `description` | `string` | 説明 |
-| `suggestedActions` | `Array<{ actionPlanId?: string; code?: string; title?: string; description?: string; rationale?: string; priority?: number }>` | 推奨アクション（API の `suggestedActionPlans` をフラット化して受ける, S-02-10, MVP内） |
+| `isResolved` | `boolean` | 解決済み表示用 |
+| `suggestedActions` | `Array<{ actionPlanId?: string; code?: string; title?: string; description?: string; priority?: number }>` | 推奨アクション（UI では API の `suggestedActions` を表示に使う, S-02-10, MVP内） |
 | `createdAt` | `string` | 発生日時 |
-| `projectName` | `string` | 関連プロジェクト名 |
-| `canResolve` | `boolean` | 解決ボタン表示可否（フロント判定: `alert.assigneeId === currentUser.id`） |
+| `canResolve` | `boolean` | 解決ボタン表示可否 |
+| `canReopen` | `boolean` | 再開ボタン表示可否 |
+
+**Note:** `GET /alerts` の契約には `projectName` が含まれるが、現行の `AlertCard` 実装では未表示。Phase 2+ で利用予定。
 
 **スタイル:**
 - Yellow: `border-l-4 border-warning-500 bg-warning-50`
@@ -962,28 +965,28 @@ IssueDetailPage
 
 ```
 AlertListPage
-└── AppLayout
-    ├── PageHeader
-    │   └── Title ("アラート")
+└── AppLayout (title="アラート")
     ├── AlertSummary
-    │   ├── StatCard (赤アラート数)
-    │   └── StatCard (黄アラート数)
+  │   ├── Badge (全て)
+  │   ├── Badge (Yellow)
+  │   ├── Badge (Red)
+  │   ├── Badge (活動中)
+  │   └── Badge (解決済み)
     ├── FilterBar
     │   ├── Select (レベル: yellow/red)
-    │   ├── Select (カテゴリ)
-    │   ├── Select (プロジェクト)
     │   └── Select (ステータス: active/resolved)
-    └── AlertCard[]
-        ├── AlertLevel (yellow/red)
-        ├── Category
-        ├── Title
-        ├── Description
-        ├── ProjectName
-        ├── SuggestedActions[] (S-02-10: アクションサジェスト — MVP内)
-        ├── CreatedAt
-        └── Actions (解決, 再開)
-            ※ 「解決」「再開」はアラートの通知先として指定されたユーザー本人のみ操作可能
+  ├── AlertCard[]
+  │   ├── AlertLevel (yellow/red)
+  │   ├── Category
+  │   ├── Description
+  │   ├── SuggestedActions[] (S-02-10: アクションサジェスト — MVP内)
+  │   ├── CreatedAt
+  │   ├── ResolvedBadge? (解決済み)
+  │   └── Actions (解決, 再開)
+  └── Pagination
 ```
+
+> **Phase 1 Sync:** `GET /alerts` は `projectName` と日本語の `suggestedActions` を返すが、現在の `/alerts` UI での `projectName` 表示、category / project filter、refetch 中の既存表示維持、API `message` 優先 toast は未実装で、後続フェーズに残している。
 
 ### 5.11 サーベイ (`/surveys`)
 
@@ -1215,7 +1218,7 @@ const canResolve = alert.assigneeId === currentUser.id;
 
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
-| アラート一覧 | `GET /alerts?status=active` | スケルトンカード | リトライ |
+| アラート一覧 | `GET /alerts?team_id={teamId}` | スケルトンカード | リトライ |
 | 管轄チーム | `GET /teams` | スケルトンカード | リトライ |
 | PJ進捗サマリー | `GET /projects` | スケルトンカード | リトライ |
 | 不調検知 (S-05-02) | `GET /teams/{teamId}/condition-summary` | スケルトンカード | リトライ |
@@ -1296,9 +1299,14 @@ const canResolve = alert.assigneeId === currentUser.id;
 
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
-| アラート一覧 | `GET /alerts` | スケルトンカード×6 | リトライ |
-| **mutation: 解決** | `POST /alerts/{alertId}/resolve` | ボタンスピナー | Toast(error) | ※ アラート通知先ユーザー本人のみ操作可 |
-| **mutation: 再開** | `POST /alerts/{alertId}/reopen` | ボタンスピナー | Toast(error) | ※ アラート通知先ユーザー本人のみ操作可 |
+| アラート一覧 | `GET /alerts` | スケルトンカード×3 | リトライ |
+| **mutation: 解決** | `PATCH /alerts/{alertId}/resolve` | ボタンスピナー | Toast(error: 固定メッセージ) | ※ 権限判定は API 側 |
+| **mutation: 再開** | `POST /alerts/{alertId}/reopen` | ボタンスピナー | Toast(error: 固定メッセージ) | ※ 権限判定は API 側 |
+
+**Phase 1 contract note:**
+- `GET /alerts` のレスポンスには `alerts[].projectName` が含まれ、project relation が欠損した場合は `Project {projectId}` にフォールバックする。
+- `suggestedActions` の shape は維持され、seed 済み title / description は日本語で返る。
+- `projectName` の UI 表示、non-blank refetch、API `message` 優先 toast、category / project filter は Phase 2+ に残している。
 
 ### 7.9 サーベイ (`/surveys`)
 
