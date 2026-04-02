@@ -839,13 +839,19 @@ ProjectDetailPage
     │   │   │       ├── Column (未着手)
     │   │   │       │   └── IssueCard[] (ドラッグ可能)
     │   │   │       │       ├── IssueTitle
-    │   │   │       │       ├── AssigneeAvatars (アサイン者アバター)
+    │   │   │       │       ├── AssigneeChips (担当者名チップ)
     │   │   │       │       ├── StoryPointsBadge
     │   │   │       │       ├── DueDate
-    │   │   │       │       └── ProgressBar
     │   │   │       ├── Column (進行中)
     │   │   │       ├── Column (レビュー中)
     │   │   │       └── Column (完了)
+    │   │   ├── MemberAssignmentPanel
+    │   │   │   └── MemberAssignmentRow[]
+    │   │   │       ├── MemberName / UnassignedLabel
+    │   │   │       ├── AssignedIssueCount
+    │   │   │       └── AssignedIssueSummary[]
+    │   │   │           ├── IssueTitle
+    │   │   │           └── IssueMeta (status, story points)
     │   │   └── [ガントビュー]
     │   │       └── GanttChart
     │   │           ├── GroupBySelector (グルーピング切替フィルター — デフォルト: ステータス別)
@@ -890,6 +896,7 @@ ProjectDetailPage
 > - データソースは `GET /projects/{projectId}/issues` の単一APIを共有する
 > - SWRの同一キーを参照し、ビュー切替時にAPIを重複して叩かない
 > - カンバンでのDnDステータス変更はガントビューにもリアルタイム反映される（同一SWRキャッシュ）
+> - カンバンDnD失敗時はSWRキャッシュをロールバックし、APIレスポンスの `message` があればその文言を Toast(error) に表示する
 
 ### 5.8 Issue作成 (`/projects/[projectId]/issues/new`)
 
@@ -1260,10 +1267,12 @@ const canResolve = alert.assigneeId === currentUser.id;
 | データ | エンドポイント | loading | error | 備考 |
 |--------|--------------|---------|-------|------|
 | PJ情報 | `GET /projects/{projectId}` | ヘッダースケルトン | リトライ | |
-| Issue一覧 (**カンバン+ガント共有**) | `GET /projects/{projectId}/issues` | ボードスケルトン | リトライ | カンバンビューとガントビューで同一データを共有。SWRキー1つで管理し重複リクエストしない |
+| Issue一覧 (**カンバン+ガント+担当一覧共有**) | `GET /projects/{projectId}/issues` | ボードスケルトン | リトライ | カンバンビュー、ガントビュー、member assignment panel で同一データを共有。SWRキー1つで管理し重複リクエストしない |
 | アラート | `GET /projects/{projectId}/alerts` | リストスケルトン | リトライ | |
 
 > **Note:** `progress-board` と `gantt` の個別エンドポイントは使用しない。`issues` エンドポイントから取得したデータをフロント側でカンバン表示・ガント表示に変換する。
+>
+> **Phase 3 Note:** assignee可視化と担当一覧パネルも既存の `issues[].assignees` を利用し、新しいバックエンド契約は追加しない。
 
 ### 7.6 Issue作成 (`/projects/[projectId]/issues/new`)
 
@@ -1382,7 +1391,7 @@ SWRキー設計:
 |------|---------------|--------|
 | Issueステータス変更 | ステータスバッジ即時更新 | ロールバック + Toast(error) |
 | DoD チェック切替 | チェック即時反映 | ロールバック + Toast(error) |
-| カンバンドラッグ&ドロップ | カード位置即時移動 | ロールバック + Toast(error) |
+| カンバンドラッグ&ドロップ | カード位置即時移動 | ロールバック + Toast(error: API `message` 優先) |
 
 ### 8.4 グローバル状態は使わない
 
@@ -1456,10 +1465,14 @@ src/
 │   │   │   ├── ProjectCard.tsx
 │   │   │   ├── ProjectHeader.tsx
 │   │   │   ├── ProgressBoard/
-│   │   │   │   ├── index.tsx          # ViewToggle + カンバン/ガント切替
+│   │   │   │   ├── index.tsx          # ViewToggle + member assignment panel + カンバン/ガント切替
 │   │   │   │   ├── KanbanBoard.tsx
+│   │   │   │   ├── KanbanColumn.tsx
+│   │   │   │   ├── KanbanIssueCard.tsx
 │   │   │   │   ├── GanttChart.tsx
-│   │   │   │   └── ViewToggle.tsx
+│   │   │   │   ├── MemberAssignmentPanel.tsx
+│   │   │   │   ├── ViewToggle.tsx
+│   │   │   │   └── errorHandling.ts
 │   │   │   ├── CreateProjectModal.tsx
 │   │   │   ├── EditProjectModal.tsx
 │   │   │   ├── AssignTeamModal.tsx

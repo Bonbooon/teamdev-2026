@@ -33,13 +33,19 @@ ProjectDetailPage
     │   │   │       ├── Column (未着手)
     │   │   │       │   └── IssueCard[] (ドラッグ可能)
     │   │   │       │       ├── IssueTitle
-    │   │   │       │       ├── AssigneeAvatars
+    │   │   │       │       ├── AssigneeChips (担当者名チップ)
     │   │   │       │       ├── StoryPointsBadge
     │   │   │       │       ├── DueDate
-    │   │   │       │       └── ProgressBar
     │   │   │       ├── Column (進行中)
     │   │   │       ├── Column (レビュー中)
     │   │   │       └── Column (完了)
+    │   │   ├── MemberAssignmentPanel
+    │   │   │   └── MemberAssignmentRow[]
+    │   │   │       ├── MemberName / UnassignedLabel
+    │   │   │       ├── AssignedIssueCount
+    │   │   │       └── AssignedIssueSummary[]
+    │   │   │           ├── IssueTitle
+    │   │   │           └── IssueMeta (status, story points)
     │   │   └── [ガントビュー]
     │   │       └── GanttChart
     │   │           ├── GroupBySelector (デフォルト: ステータス別)
@@ -81,7 +87,7 @@ ProjectDetailPage
 | データ | エンドポイント | loading | error | 備考 |
 |--------|--------------|---------|-------|------|
 | PJ情報 | `GET /projects/{projectId}` | ヘッダースケルトン | リトライ | |
-| Issue一覧 | `GET /projects/{projectId}/issues` | ボードスケルトン | リトライ | カンバン+ガント共有 |
+| Issue一覧 | `GET /projects/{projectId}/issues` | ボードスケルトン | リトライ | カンバン+ガント+担当一覧パネル共有 |
 | アラート | `GET /projects/{projectId}/alerts` | リストスケルトン | リトライ | |
 
 カンバンとガントは同一APIデータ (`GET /projects/{projectId}/issues`) を共有。SWRキー1つで管理。
@@ -98,13 +104,14 @@ ProjectDetailPage
 - ViewToggle → ガント/カンバン切替（localStorage記憶）
 - Issue作成ボタン → `/projects/[projectId]/issues/new` に遷移
 - カンバンDnD → ステータス変更（楽観的更新）
+- カンバンDnD が business rule で reject された場合はロールバックし、API `message` を Toast 表示
 - IssueCard/GanttRowクリック → `/issues/[issueId]` に遷移
 - GroupBySelector → グルーピング切替（ステータス別/アサイン者別/フラット）
 
 ## Mutations
 | 操作 | エンドポイント | 成功時 | 失敗時 |
 |------|--------------|--------|--------|
-| Issueステータス変更 (DnD) | `PATCH /issues/{issueId}/status` | 楽観的更新 | ロールバック + Toast(error) |
+| Issueステータス変更 (DnD) | `PATCH /issues/{issueId}/status` | 楽観的更新 | ロールバック + Toast(error: API `message` 優先) |
 | PJ編集 | `PATCH /projects/{projectId}` | Toast(success) + モーダル閉じ | Toast(error) |
 | チームアサイン | `POST /projects/{projectId}/teams` | Toast(success) + 再取得 | Toast(error) |
 | チーム解除 | `DELETE /projects/{projectId}/teams/{teamId}` | Toast(success) + 再取得 | Toast(error) |
@@ -113,3 +120,7 @@ ProjectDetailPage
 - ガントの色分け: expectedProgress対比でgreen/yellow/red
 - Issue一覧は1つのSWRキーで管理し、ビュー切替時にAPIを重複して叩かない
 - カンバンDnDの楽観的更新はSWRキャッシュ直接操作
+- Kanban card は assignee が存在する場合に担当者名チップを表示する
+- ProgressBoard の member assignment panel は assignee ごとに issue title / status / story points を grouped 表示し、未割り当て issue は「未割り当て」にまとめる
+- Issue が 0件のとき、member assignment panel は EmptyState を表示する
+- member assignment panel の issue 行は現時点では issue detail へのリンクではなく、読み取り専用の要約表示
