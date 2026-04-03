@@ -22,7 +22,7 @@ IssueCreatePage
     └── IssueForm
         ├── Select (テンプレート選択)
         ├── Input (タイトル)
-        ├── Select (ストーリーポイント — 必須, 1-21)
+        ├── Select (ストーリーポイント — 必須, 1 / 2 / 3 / 5 / 8 / 13)
         ├── Input (見積時間 — 必須, 分単位)
         ├── DatePicker (期限)
         ├── Select (ステータス)
@@ -76,7 +76,7 @@ IssueCreatePage
 | Issue作成 | `POST /projects/{projectId}/issues` | Toast(success) + `/projects/[projectId]` に遷移 + SWRキャッシュ再検証 | Toast(error) + フィールドエラー |
 
 ## Notes
-- storyPoints: 必須、1-21の整数
+- storyPoints: 必須、1 / 2 / 3 / 5 / 8 / 13 から選択
 - estimatedMinutes: 必須、分単位の整数
 - DynamicTemplateFields は `template.items` を `position` 順に描画する
 - 対応する `valueType` は `boolean`, `integer`, `number`, `date`, `datetime`, `string`, `json`

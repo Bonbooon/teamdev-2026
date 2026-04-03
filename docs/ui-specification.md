@@ -921,7 +921,7 @@ IssueCreatePage
     └── IssueForm
       ├── Select (テンプレート選択)
       ├── Input (タイトル)
-      ├── Select (ストーリーポイント — 必須, 1-21)
+  ├── Select (ストーリーポイント — 必須, 1 / 2 / 3 / 5 / 8 / 13)
       ├── Input (見積時間 — 必須, 分単位)
       ├── DatePicker (期限)
       ├── Select (ステータス)
