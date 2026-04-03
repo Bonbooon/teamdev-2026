@@ -22,7 +22,7 @@ IssueCreatePage
     └── IssueForm
         ├── Select (テンプレート選択)
         ├── Input (タイトル)
-        ├── Select (ストーリーポイント — 必須, 1-21)
+        ├── Select (ストーリーポイント — 必須, 1 / 2 / 3 / 5 / 8 / 13)
         ├── Input (見積時間 — 必須, 分単位)
         ├── DatePicker (期限)
         ├── Select (ステータス)
@@ -65,6 +65,7 @@ IssueCreatePage
 ## Interactions
 - テンプレート選択 → `GET /issue-templates/{templateId}` を取得し、`template.items` から動的項目を描画する
 - テンプレート切り替え → `templateItemValues` を再初期化する
+- サーバー側でも `templateItemValues` のキーを再検証し、未知のキーは `templateItemValues.{itemKey}` のフィールドエラーとして返す
 - DefinitionOfDone → 項目の動的追加/削除
 - フォーム送信 → React Hook Form + Zod バリデーション + テンプレート必須項目チェック
 - テンプレート必須チェック → `false` と `0` は有効値として扱う（`itemKey` はスキーマ上必須だが、UIは欠損時にも安全にスキップする）
@@ -75,9 +76,10 @@ IssueCreatePage
 | Issue作成 | `POST /projects/{projectId}/issues` | Toast(success) + `/projects/[projectId]` に遷移 + SWRキャッシュ再検証 | Toast(error) + フィールドエラー |
 
 ## Notes
-- storyPoints: 必須、1-21の整数
+- storyPoints: 必須、1 / 2 / 3 / 5 / 8 / 13 から選択
 - estimatedMinutes: 必須、分単位の整数
 - DynamicTemplateFields は `template.items` を `position` 順に描画する
 - 対応する `valueType` は `boolean`, `integer`, `number`, `date`, `datetime`, `string`, `json`
 - 動的項目の入力値は `templateItemValues` として送信される
+- `issue_template_id` はサーバー側でも存在確認され、無効または削除済みテンプレートIDは `issue_template_id` のフィールドエラーになる
 - アサインUIは現状プレースホルダー表示のみ
