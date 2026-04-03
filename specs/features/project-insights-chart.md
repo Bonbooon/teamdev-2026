@@ -177,7 +177,7 @@
 | `buckets[].actualCumulative` | `int` | 実績累計ストーリーポイント |
 | `totalPlannedPoints` | `int` | 予定合計SP（deadline付きIssuのSP合計） |
 | `totalActualPoints` | `int` | 実績合計SP（完了IssueのSP合計） |
-| `deviationPercent` | `float` | 現時点の乖離率。`(planned - actual) / planned * 100`。planned=0 なら 0 |
+| `deviationPercent` | `float` | 現時点の乖離率。evaluationAt = min(now()->endOfDay(), project.due_at) 時点でのcumulativeを使用: `(planned - actual) / planned * 100`。planned=0 なら 0 |
 
 **エラーレスポンス:**
 
@@ -275,10 +275,12 @@ plan_vs_actual_deviation - 予実乖離
    - `status = 'done'` かつ `closed_at` が当該バケットの終了日以前の Issue の `story_points` を累計
    - 例: バケット `2026-01-12` では、`closed_at <= 2026-01-18` の完了 Issue の SP 合計
 
-5. **乖離率計算:**
-   - 現在日付が属するバケットの `plannedCumulative` と `actualCumulative` を使用
-   - `deviationPercent = (plannedCumulative - actualCumulative) / plannedCumulative * 100`
-   - `plannedCumulative = 0` の場合は `0`
+5. **乖離率計算（End-of-Day Semantics）:**
+   - 評価時刻: `evaluationAt = min(now()->endOfDay(), project.due_at)`
+   - 計画累計: 評価時刻までに `deadline <= evaluationAt` となるIssueのSP累計
+   - 実績累計: 評価時刻までに `closed_at <= evaluationAt` となる完了IssueのSP累計
+   - `deviationPercent = (plan - actual) / plan * 100`
+   - 計画が0の場合は0
 
 ---
 
