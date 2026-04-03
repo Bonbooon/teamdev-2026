@@ -273,6 +273,8 @@ responses:
 
 **POST /api/projects/{projectId}/issues**
 - Create issue (S-03-01, requires auth)
+- `issue_template_id` must be a UUID for an existing issue template; invalid or non-existent values return `ValidationError`
+- Unknown `templateItemValues` keys return 422 field-level errors at `errors["templateItemValues.{key}"]`
 
 **GET /api/issues/{issueId}**
 - Get issue detail (requires auth)

@@ -144,12 +144,16 @@ Each template defines additional required fields. See S-03-03.
 - Deadline must be ≥ today
 - Story points: 1-21 (Fibonacci scale)
 - Estimated minutes must be entered as a positive integer
+- `issue_template_id` must reference an existing issue template
 - Dynamic template item values are submitted as `templateItemValues`, keyed by each item's `itemKey`
+- `templateItemValues` may only contain `itemKey` values defined on the selected template
 
 **Error Cases:**
 - Missing required field → 422 Unprocessable Entity
 - Invalid assignee (not in selected project team) → 422 error
 - Deadline in past → 422 error
+- Invalid or non-existent `issue_template_id` → 422 error on `issue_template_id`
+- Unknown `templateItemValues` key → 422 error on `templateItemValues.{key}`
 - Project not found → 404 Not Found
 
 **Acceptance Criteria:**
@@ -169,7 +173,8 @@ Each template defines additional required fields. See S-03-03.
 - TC-03-01-03: Create without assignees → validation error
 - TC-03-01-04: Create without Definition of Done items → validation error
 - TC-03-01-05: Deadline in past → validation error
-- TC-03-01-06: Invalid template → validation error
+- TC-03-01-06: Invalid or non-existent template ID → validation error on `issue_template_id`
+- TC-03-01-07: Unknown `templateItemValues` key → field-level validation error on `templateItemValues.{key}`
 
 **API Endpoint:**
 ```
@@ -202,6 +207,10 @@ Response (201 Created):
   "issue": { ...Issue object... }
 }
 ```
+
+Validation Notes:
+- `issue_template_id` is validated at the request layer and must reference an existing template record
+- Unknown keys under `templateItemValues` are rejected at validation time and returned as field-level errors under `errors["templateItemValues.{key}"]`
 
 ---
 

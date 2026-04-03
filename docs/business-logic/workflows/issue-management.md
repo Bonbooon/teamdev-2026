@@ -10,6 +10,8 @@ A team member or project manager creates an issue within a project scope:
 
 - **Required**: title, template, at least one team, at least one assignee, at least one Definition of Done item, story points, estimated minutes, deadline
 - Initial status: `not_in_progress`
+- `issue_template_id` must reference an existing template record
+- `templateItemValues` keys must match the selected template's `item_key` values; unknown keys are rejected before issue creation with field-level validation errors
 
 ### 2. Assignee Management (S-03-02)
 
