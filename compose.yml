@@ -1,3 +1,14 @@
+x-app-service-base: &app-service-base
+  build: ./docker/php
+  image: teamdev-2026-app:latest
+  environment:
+    TZ: UTC
+  volumes:
+    - ./teamdev-2026-api/web:/work/web
+    - ./scripts:/usr/local/bin/scripts
+  networks:
+    - teamdev-2026-shared
+
 services:
   front:
     build: 
@@ -11,16 +22,16 @@ services:
     working_dir: /app
     
   app:
-    build: ./docker/php
-    image: teamdev-2026-app:latest
-    environment:
-      TZ: UTC
-    volumes:
-      - ./teamdev-2026-api/web:/work/web
-      - ./scripts:/usr/local/bin/scripts
+    <<: *app-service-base
     command: ["/bin/sh", "-c", "chmod -R +x /usr/local/bin/scripts && exec php-fpm"]
-    networks:
-      - teamdev-2026-shared
+
+  queue-worker:
+    <<: *app-service-base
+    working_dir: /work/web
+    command: ["/bin/sh", "-c", "chmod -R +x /usr/local/bin/scripts && exec php artisan queue:work --queue=default,emails --sleep=3 --tries=3"]
+    depends_on:
+      - app
+    restart: on-failure
 
   web:
     image: nginx
