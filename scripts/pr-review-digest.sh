@@ -96,7 +96,8 @@ COPILOT_SUMMARY_REVIEWS_JSON="$(echo "$REVIEWS_JSON" | jq '
   | sort_by(.submittedAt)
 ')"
 
-FETCHED_COMMENTS_JSON="$(jq -n --argjson threads "$UNRESOLVED_THREADS_JSON" '
+FETCHED_COMMENTS_JSON="$(echo "$UNRESOLVED_THREADS_JSON" | jq '
+  . as $threads |
   [
     $threads[]? as $thread
     | $thread.comments.nodes[]?
