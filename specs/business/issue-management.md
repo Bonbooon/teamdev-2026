@@ -504,15 +504,21 @@ Response:
 **Main Flow - Create Subtask:**
 1. Open parent issue detail
 2. Click "Add Subtask" button
-3. Enter subtask title, estimate, deadline
-4. Assign to team member
+3. Enter subtask title
+4. Submit with the parent issue's assignee and estimate defaults
 5. Subtask created as child of parent
 
 **Main Flow - Update Subtask:**
 1. Subtask appears as row in subtask list
-2. Click row to open subtask detail
-3. Edit title, estimate, deadline, status
+2. Click edit on the subtask row
+3. Edit title and story points inline
 4. Changes saved
+
+**Main Flow - Delete Subtask:**
+1. Subtask appears as row in subtask list
+2. Click delete on the subtask row
+3. Confirm deletion
+4. Subtask removed from parent issue
 
 **Main Flow - Complete Subtask:**
 1. Mark subtask status as done
@@ -529,7 +535,7 @@ Issue {
 
 **Business Rules:**
 - Subtask is still an Issue (same model, different parent_id)
-- Active members of teams assigned to the parent issue, including assigned-team managers, can create subtasks
+- Active members of teams assigned to the parent issue, including assigned-team managers, can create, update, and delete subtasks
 - Subtask deadline cannot exceed parent deadline
 - Subtask story points rolled up to parent (estimated minutes sum)
 - Cannot delete parent issue while subtasks exist (must delete subtasks first or move to backlog)
@@ -542,10 +548,13 @@ Issue {
 - Parent issue not found → 404 Not Found
 - Subtask deadline in past → 422 error
 - Outsider tries to create subtask → 403 Forbidden
+- Outsider tries to update subtask → 403 Forbidden
+- Outsider tries to delete subtask → 403 Forbidden
 
 **Acceptance Criteria:**
 - ✅ Create subtasks under parent issue
 - ✅ Edit subtask details
+- ✅ Delete subtasks from parent issue
 - ✅ Subtask status tracked independently
 - ✅ Parent progress updated when subtasks complete
 - ✅ Cannot exceed parent deadline
@@ -556,6 +565,9 @@ Issue {
 - TC-03-06-03: Complete 2/3 subtasks → parent progress 67%
 - TC-03-06-04: Complete all subtasks → parent eligible for done
 - TC-03-06-05: Outsider creates subtask → 403 error
+- TC-03-06-06: Edit subtask inline → updated values persist
+- TC-03-06-07: Delete subtask → subtask removed from parent
+- TC-03-06-08: Outsider updates or deletes subtask → 403 error
 
 **API Endpoint:**
 ```
@@ -563,15 +575,19 @@ POST /api/issues/{parentIssueId}/subtasks
 Request:
 {
   "title": "string",
-  "estimatedMinutes": 120,
+  "story_points": 3,
+  "estimated_minutes": 120,
   "deadline": "2026-03-12T17:00:00Z",
-  "teamMemberId": "uuid"
+  "assigneeIds": ["uuid"]
 }
 
 GET /api/issues/{parentIssueId}/subtasks
 
 PATCH /api/issues/{subtaskId}
 // Update subtask (same as regular issue)
+
+DELETE /api/issues/{issueId}/subtasks/{subtaskId}
+// Delete subtask under the parent issue
 ```
 
 ---
@@ -784,6 +800,7 @@ IssueWorkLog {
 | `PATCH /api/issues/{issueId}/definition-of-done/{doneItemId}` | PATCH | Update criterion completion |
 | `POST /api/issues/{parentIssueId}/subtasks` | POST | Create subtask |
 | `GET /api/issues/{parentIssueId}/subtasks` | GET | List subtasks |
+| `DELETE /api/issues/{issueId}/subtasks/{subtaskId}` | DELETE | Delete subtask |
 | `POST /api/issues/{issueId}/work-logs` | POST | Log work (manual) |
 | `GET /api/issues/{issueId}/work-logs` | GET | List work logs (returns an empty collection when the issue does not exist) |
 | `PATCH /api/issues/{issueId}/work-logs/{workLogId}` | PATCH | Update a work log (not owner-only) |
@@ -811,7 +828,7 @@ IssueWorkLog {
 - Issue IDs not user-facing in Phase 1; feature IDs (S-03-01) used for linking
 - Story points optional, defaults to 5 if not set
 - Subtasks inherit project/team from parent
-- Issue update, status update, DoD create/update, subtask create, and work log update/delete are limited to active members of teams assigned to the issue; assigned-team managers are allowed via active membership
+- Issue update, status update, DoD create/update, subtask create/update/delete, and work log update/delete are limited to active members of teams assigned to the issue; assigned-team managers are allowed via active membership
 - Outsiders receive 403 for those issue mutations
 - All timestamps in UTC
 - Progress auto-updates on subtask/DoD completion
