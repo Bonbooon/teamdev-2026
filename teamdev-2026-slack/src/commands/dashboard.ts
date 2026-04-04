@@ -1,14 +1,9 @@
 import type { SlashCommand, RespondFn } from "@slack/bolt";
 import { MOCK_PROJECT, MOCK_ALERTS, MOCK_TEAM_HEALTH } from "../mockData";
+import { progressBar } from "../format";
 
 function alertEmoji(level: "red" | "yellow"): string {
   return level === "red" ? ":red_circle:" : ":large_yellow_circle:";
-}
-
-function progressBar(percent: number): string {
-  const filled = Math.round(percent / 10);
-  const empty = 10 - filled;
-  return "█".repeat(filled) + "░".repeat(empty) + ` ${percent}%`;
 }
 
 export async function handleDashboard(

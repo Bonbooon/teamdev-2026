@@ -19,7 +19,7 @@ export function progressBar(percent: number): string {
   const safePercent = Math.max(0, Math.min(100, percent));
   const filled = Math.round(safePercent / 10);
   const empty = 10 - filled;
-  return "█".repeat(filled) + "░".repeat(empty) + ` ${percent}%`;
+  return "█".repeat(filled) + "░".repeat(empty) + ` ${Math.round(safePercent)}%`;
 }
 
 export function formatIssueLine(issue: Issue, index: number): string {

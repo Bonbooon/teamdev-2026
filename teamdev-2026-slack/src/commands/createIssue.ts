@@ -84,6 +84,13 @@ export async function handleCreateIssue(
     return;
   }
 
+  if (!DEFAULT_TEMPLATE_ID) {
+    await respond(
+      "❌ IssueテンプレートIDが未設定です。`.env` に `DEFAULT_TEMPLATE_ID` を設定してください。"
+    );
+    return;
+  }
+
   // Ensure deadline is after today
   const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]!;
   if (!parsed.deadline || parsed.deadline <= new Date().toISOString().split("T")[0]!) {
@@ -98,7 +105,7 @@ export async function handleCreateIssue(
         title: parsed.title,
         story_points: parsed.storyPoints,
         estimated_minutes: parsed.estimatedMinutes,
-        deadline: `${parsed.deadline}T23:59:59Z`,
+        deadline: parsed.deadline,
         status: "not_in_progress",
         assigneeIds: DEFAULT_ASSIGNEE_ID ? [DEFAULT_ASSIGNEE_ID] : [],
         teamIds: DEFAULT_TEAM_ID ? [DEFAULT_TEAM_ID] : [],

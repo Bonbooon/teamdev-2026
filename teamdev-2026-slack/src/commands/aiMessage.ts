@@ -135,7 +135,7 @@ async function sendCreateIssue(say: SayFn, args: Record<string, string | number 
         title,
         story_points: validSp,
         estimated_minutes: estimatedMinutes,
-        deadline: `${deadline}T23:59:59Z`,
+        deadline,
         status: "not_in_progress",
         assigneeIds: DEFAULT_ASSIGNEE_ID ? [DEFAULT_ASSIGNEE_ID] : [],
         teamIds: DEFAULT_TEAM_ID ? [DEFAULT_TEAM_ID] : [],
