@@ -91,6 +91,13 @@ export async function handleCreateIssue(
     return;
   }
 
+  if (!DEFAULT_TEAM_ID || !DEFAULT_ASSIGNEE_ID) {
+    await respond(
+      "❌ チームIDまたは担当者IDが未設定です。`.env` に `DEFAULT_TEAM_ID` と `DEFAULT_ASSIGNEE_ID` を設定してください。"
+    );
+    return;
+  }
+
   // Ensure deadline is after today
   const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]!;
   if (!parsed.deadline || parsed.deadline <= new Date().toISOString().split("T")[0]!) {

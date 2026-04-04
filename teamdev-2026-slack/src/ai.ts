@@ -139,10 +139,19 @@ export async function routeWithAi(
   const toolCall = choice.message.tool_calls?.[0];
 
   if (toolCall && "function" in toolCall) {
-    const args = JSON.parse(toolCall.function.arguments) as Record<
-      string,
-      string | number | undefined
-    >;
+    let args: Record<string, string | number | undefined>;
+    try {
+      args = JSON.parse(toolCall.function.arguments) as Record<
+        string,
+        string | number | undefined
+      >;
+    } catch {
+      return {
+        type: "text" as const,
+        args: {},
+        textReply: "ツールの引数解析に失敗しました。もう一度お試しください。",
+      };
+    }
     switch (toolCall.function.name) {
       case "show_dashboard":
         return { type: "dashboard", args };

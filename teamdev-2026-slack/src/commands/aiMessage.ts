@@ -123,6 +123,11 @@ async function sendCreateIssue(say: SayFn, args: Record<string, string | number 
     return;
   }
 
+  if (!DEFAULT_TEMPLATE_ID || !DEFAULT_TEAM_ID || !DEFAULT_ASSIGNEE_ID) {
+    await say("❌ Issue作成に必要な環境変数が未設定です（DEFAULT_TEMPLATE_ID, DEFAULT_TEAM_ID, DEFAULT_ASSIGNEE_ID）。");
+    return;
+  }
+
   const validSp = (VALID_STORY_POINTS as readonly number[]).includes(storyPoints)
     ? storyPoints
     : 3;
