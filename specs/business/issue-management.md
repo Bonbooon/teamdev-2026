@@ -1,7 +1,7 @@
 # Issue Management Specification
 
 **Version:** 1.0  
-**Last Updated:** 2026/04/01  
+**Last Updated:** 2026/04/05  
 **Human Documentation:** `docs/business-logic/workflows/issue-management.md`  
 **Domain Model:** `docs/diagrams/domain-models/issue-aggregate.puml`
 
@@ -331,14 +331,14 @@ IssueTemplateItem {
 
 **Requirement ID:** S-03-04  
 **Type:** MUST (Phase 1)  
-**Actor:** Issue creator, assignee, reviewer  
-**Precondition:** Issue created  
+**Actor:** Assigned team member, assigned team manager  
+**Precondition:** Issue created, user authenticated  
 
 **Main Flow:**
 1. During issue creation: PM fills "How will we know it's complete?" field
 2. System parses input as acceptance criteria items
 3. Each item becomes an `IssueDefinitionOfDone` entry
-4. Assignee can check off items as complete
+4. Assigned issue-team member can check off items as complete
 5. Issue cannot be marked "done" until all items checked
 
 **Criteria Format:**
@@ -373,12 +373,14 @@ Used in alert triggers (S-02-04, see alert-system-implementation.md).
 **Business Rules:**
 - Minimum 1 acceptance criterion required
 - Cannot mark issue "done" if any criterion unchecked
+- Active members of teams assigned to the issue, including assigned-team managers, can create and update DoD items
 - Criteria can be updated before issue started; after started, editing requires PM approval
 - Completing all criteria is necessary but not sufficient for "done" status (assignee must explicitly mark done)
 
 **Error Cases:**
 - No criteria provided → validation error
 - Attempt to mark done with incomplete criteria → 422 error
+- Outsider tries to add or update a criterion → 403 error
 
 **Acceptance Criteria:**
 - ✅ Definition of Done items required
@@ -391,6 +393,7 @@ Used in alert triggers (S-02-04, see alert-system-implementation.md).
 - TC-03-04-02: Complete 3/5 criteria → progress shows 60%
 - TC-03-04-03: Attempt to mark done with incomplete → 422 error
 - TC-03-04-04: Complete all criteria → can mark done
+- TC-03-04-05: Outsider adds or updates criterion → 403 error
 
 **API Endpoint:**
 ```
@@ -415,8 +418,8 @@ Request:
 
 **Requirement ID:** S-03-05  
 **Type:** MUST (Phase 1)  
-**Actor:** Issue assignee, Project Manager  
-**Precondition:** Issue exists, user is assignee or PM  
+**Actor:** Assigned team member, assigned team manager  
+**Precondition:** Issue exists, user authenticated  
 
 **Main Flow:**
 1. Open issue detail
@@ -448,14 +451,15 @@ not_in_progress
 - Any → `not_in_progress`: Back to original state (revert)
 
 **Business Rules:**
-- Only assignees or PM can change status
+- Active members of teams assigned to the issue can change status
+- Assigned-team managers are allowed via active membership
 - `startedAt` immutable once set
 - `closedAt` set when moved to done
 - Invalid transitions blocked (e.g., `not_in_progress` → `in_review`)
 
 **Error Cases:**
 - Invalid transition → 422 Unprocessable Entity
-- Permission denied (not assignee/PM) → 403 Forbidden
+- Permission denied (user is not in an assigned issue team) → 403 Forbidden
 - Issue not found → 404 Not Found
 
 **Acceptance Criteria:**
@@ -470,11 +474,11 @@ not_in_progress
 - TC-03-05-02: Mark in_review → status updated
 - TC-03-05-03: Mark done → closedAt set
 - TC-03-05-04: Invalid transition (not_in_progress → done) → 422 error
-- TC-03-05-05: Non-assignee changes status → 403 error
+- TC-03-05-05: Outsider changes status → 403 error
 
 **API Endpoint:**
 ```
-PATCH /api/issues/{issueId}
+PATCH /api/issues/{issueId}/status
 Authorization: Bearer {token}
 Request:
 {
@@ -494,7 +498,7 @@ Response:
 
 **Requirement ID:** S-03-06  
 **Type:** MUST (Phase 1)  
-**Actor:** Issue assignee, Project Manager  
+**Actor:** Assigned team member, assigned team manager  
 **Precondition:** Parent issue exists  
 
 **Main Flow - Create Subtask:**
@@ -525,6 +529,7 @@ Issue {
 
 **Business Rules:**
 - Subtask is still an Issue (same model, different parent_id)
+- Active members of teams assigned to the parent issue, including assigned-team managers, can create subtasks
 - Subtask deadline cannot exceed parent deadline
 - Subtask story points rolled up to parent (estimated minutes sum)
 - Cannot delete parent issue while subtasks exist (must delete subtasks first or move to backlog)
@@ -536,6 +541,7 @@ Issue {
 - Subtask deadline > parent deadline → 422 error
 - Parent issue not found → 404 Not Found
 - Subtask deadline in past → 422 error
+- Outsider tries to create subtask → 403 Forbidden
 
 **Acceptance Criteria:**
 - ✅ Create subtasks under parent issue
@@ -549,6 +555,7 @@ Issue {
 - TC-03-06-02: Subtask deadline > parent → validation error
 - TC-03-06-03: Complete 2/3 subtasks → parent progress 67%
 - TC-03-06-04: Complete all subtasks → parent eligible for done
+- TC-03-06-05: Outsider creates subtask → 403 error
 
 **API Endpoint:**
 ```
@@ -768,17 +775,19 @@ IssueWorkLog {
 | `POST /api/projects/{projectId}/issues` | POST | Create issue |
 | `GET /api/projects/{projectId}/issues` | GET | List project issues |
 | `GET /api/issues/{issueId}` | GET | Get issue detail |
-| `PATCH /api/issues/{issueId}` | PATCH | Update issue (status, deadline, etc.) |
+| `PATCH /api/issues/{issueId}` | PATCH | Update issue fields (title, estimate, deadline, etc.) |
+| `PATCH /api/issues/{issueId}/status` | PATCH | Update issue status |
 | `POST /api/issues/{issueId}/assignees` | POST | Add assignee |
 | `DELETE /api/issues/{issueId}/assignees/{teamMemberId}` | DELETE | Remove assignee |
 | `GET /api/issues/{issueId}/definition-of-done` | GET | List acceptance criteria |
+| `POST /api/issues/{issueId}/definition-of-done` | POST | Add acceptance criterion |
 | `PATCH /api/issues/{issueId}/definition-of-done/{doneItemId}` | PATCH | Update criterion completion |
 | `POST /api/issues/{parentIssueId}/subtasks` | POST | Create subtask |
 | `GET /api/issues/{parentIssueId}/subtasks` | GET | List subtasks |
 | `POST /api/issues/{issueId}/work-logs` | POST | Log work (manual) |
 | `GET /api/issues/{issueId}/work-logs` | GET | List work logs (returns an empty collection when the issue does not exist) |
-| `PATCH /api/issues/{issueId}/work-logs/{workLogId}` | PATCH | Update a work log |
-| `DELETE /api/issues/{issueId}/work-logs/{workLogId}` | DELETE | Delete a work log |
+| `PATCH /api/issues/{issueId}/work-logs/{workLogId}` | PATCH | Update a work log (not owner-only) |
+| `DELETE /api/issues/{issueId}/work-logs/{workLogId}` | DELETE | Delete a work log (not owner-only) |
 | `GET /api/issue-templates` | GET | List active templates for issue creation |
 | `GET /api/issue-templates/{templateId}` | GET | Get a selected template with item definitions |
 
@@ -802,5 +811,7 @@ IssueWorkLog {
 - Issue IDs not user-facing in Phase 1; feature IDs (S-03-01) used for linking
 - Story points optional, defaults to 5 if not set
 - Subtasks inherit project/team from parent
+- Issue update, status update, DoD create/update, subtask create, and work log update/delete are limited to active members of teams assigned to the issue; assigned-team managers are allowed via active membership
+- Outsiders receive 403 for those issue mutations
 - All timestamps in UTC
 - Progress auto-updates on subtask/DoD completion

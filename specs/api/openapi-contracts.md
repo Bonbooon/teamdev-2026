@@ -1,7 +1,7 @@
 # OpenAPI Contract Specification
 
 **Version:** 1.0  
-**Last Updated:** 2026/03/06  
+**Last Updated:** 2026/04/05  
 **Human Documentation:** `docs/api/endpoints.md`  
 **Generated File:** `teamdev-2026-api/docs/openapi/openapi.json`
 
@@ -273,6 +273,9 @@ responses:
 
 ### Issue Endpoints
 
+- Mutation endpoints that change issue fields, issue status, DoD items, subtasks, or existing work logs return `403` unless the caller is an active member of a team assigned to the issue.
+- Managers of assigned teams are allowed via active membership. Work log update/delete are issue-team scoped, not owner-only.
+
 **POST /api/projects/{projectId}/issues**
 - Create issue (S-03-01, requires auth)
 - `issue_template_id` must be a UUID for an existing issue template; invalid or non-existent values return `ValidationError`
@@ -295,6 +298,9 @@ responses:
 
 **GET /api/issues/{issueId}/definition-of-done**
 - List DoD items (S-03-04, requires auth)
+
+**POST /api/issues/{issueId}/definition-of-done**
+- Create DoD item (S-03-04, requires auth)
 
 **PATCH /api/issues/{issueId}/definition-of-done/{doneItemId}**
 - Update DoD item (S-03-04, requires auth)
