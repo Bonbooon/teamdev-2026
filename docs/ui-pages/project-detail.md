@@ -10,7 +10,7 @@
 
 ## Access Control
 - 認証: 必要
-- ロール: 全員（Manager: 編集・アサイン操作可能）
+- ロール: プロジェクトメンバー全員（`project.canManage` が true の場合のみ編集・アサイン・ステータス変更を表示）
 
 ## Layout
 AppLayout
@@ -23,7 +23,7 @@ ProjectDetailPage
     │   ├── ProjectName
     │   ├── StatusBadge
     │   ├── ProgressBar (全体進捗)
-    │   └── Actions (編集, ステータス変更)
+    │   └── Actions ([Manager] 編集, [Manager] ステータス変更)
     ├── Tabs
     │   ├── ProgressBoardTab (S-05-02 + S-07-02, デフォルト)
     │   │   ├── ViewToggle (ガント / カンバン 表示切替)
@@ -98,7 +98,7 @@ ProjectDetailPage
 ## Data Requirements
 | データ | エンドポイント | loading | error | 備考 |
 |--------|--------------|---------|-------|------|
-| PJ情報 | `GET /projects/{projectId}` | ヘッダースケルトン | リトライ | |
+| PJ情報 | `GET /projects/{projectId}` | ヘッダースケルトン | リトライ | `project.canManage` で manager-only controls の表示を切り替える |
 | Issue一覧 | `GET /projects/{projectId}/issues` | ボードスケルトン | リトライ | カンバン+ガント+担当一覧パネル共有 |
 | アラート | `GET /projects/{projectId}/alerts` | リストスケルトン | リトライ | |
 | 予実チャート | `GET /projects/{projectId}/progress-chart` | フィルターバー + チャートスケルトン | リトライ | インサイトタブ |
@@ -116,6 +116,8 @@ ProjectDetailPage
 | success | ProgressBoardTab表示 |
 
 ## Interactions
+- [Manager] ProjectHeader のステータス操作 → プロジェクトステータス変更
+- PJステータス変更失敗時は API `message` を優先して Toast 表示
 - ViewToggle → ガント/カンバン切替（localStorage記憶）
 - Issue作成ボタン → `/projects/[projectId]/issues/new` に遷移
 - カンバンDnD → ステータス変更（楽観的更新）
@@ -126,6 +128,7 @@ ProjectDetailPage
 ## Mutations
 | 操作 | エンドポイント | 成功時 | 失敗時 |
 |------|--------------|--------|--------|
+| PJステータス変更 | `PATCH /projects/{projectId}/status` | Toast(success) + 再取得 | Toast(error: API `message` 優先) |
 | Issueステータス変更 (DnD) | `PATCH /issues/{issueId}/status` | 楽観的更新 | ロールバック + Toast(error: API `message` 優先) |
 | PJ編集 | `PATCH /projects/{projectId}` | Toast(success) + モーダル閉じ | Toast(error) |
 | チームアサイン | `POST /projects/{projectId}/teams` | Toast(success) + 再取得 | Toast(error) |

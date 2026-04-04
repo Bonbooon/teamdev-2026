@@ -322,7 +322,8 @@ Request:
 
 **Main Flow:**
 1. User opens Project Detail page
-2. Overview section displays:
+2. API returns project detail, including `project.canManage`
+3. Overview section displays:
    - Project title
    - Description
    - Status
@@ -330,7 +331,7 @@ Request:
    - Progress % (overall)
    - Assigned teams
    - Member count
-3. Tabs:
+4. Tabs:
    - "Progress" → Gantt chart (S-05-02)
    - "Issues" → Issue list
    - "Alerts" → Alert list (S-02)
@@ -362,8 +363,9 @@ On Time: 35/40 completed issues
 ```
 
 **Business Rules:**
-- Read-only for team members
-- Managers can edit (via Edit modal)
+- Project detail is visible to all project members
+- Manager-only controls are hidden for non-managers
+- UI manager status is determined by `project.canManage`
 - Progress = overall completion across all issues
 - Alerts show unresolved only
 
@@ -376,13 +378,13 @@ On Time: 35/40 completed issues
 - ✅ Progress calculated correctly
 - ✅ Alerts shown if present
 - ✅ Tabs accessible
-- ✅ Edit button visible (managers only)
+- ✅ Manager-only controls visible only when `project.canManage = true`
 
 **Test Cases:**
 - TC-05-04-01: Open project detail → overview visible
 - TC-05-04-02: 40 issues complete, 60 total → 40% shown
 - TC-05-04-03: Unresolved alerts displayed
-- TC-05-04-04: Member can view, manager can edit
+- TC-05-04-04: Member can view, manager-only controls depend on `project.canManage`
 
 **API Endpoint:**
 ```
@@ -391,14 +393,16 @@ Authorization: Bearer {token}
 
 Response (200 OK):
 {
-  "project": { ...Project object... },
-  "overview": {
+  "project": {
+    "id": "uuid",
+    "title": "string",
+    "description": "string?",
+    "dueAt": "2026-04-15T17:00:00Z",
+    "status": "in_progress",
     "progress": 40,
-    "totalIssues": 100,
-    "completedIssues": 40,
-    "onTimeCompletionRate": 87.5,
-    "alerts": [
-      { "level": "yellow", "description": "..." }
+    "canManage": true,
+    "teams": [
+      { "id": "uuid", "name": "Backend" }
     ]
   }
 }
@@ -501,6 +505,7 @@ not_in_progress
 - Completed projects are archived (no new issues)
 - Idle projects can be resumed
 - Status changes logged in audit trail
+- Failure toast prefers API `message` when present
 
 **Error Cases:**
 - Invalid transition → 422 Unprocessable Entity
@@ -513,6 +518,7 @@ not_in_progress
 - ✅ Teams notified of status change
 - ✅ Completed projects immutable
 - ✅ Success toast
+- ✅ Failure toast prefers backend `message` when available
 
 **Test Cases:**
 - TC-05-06-01: Start project → status = in_progress

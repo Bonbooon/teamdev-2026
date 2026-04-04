@@ -250,12 +250,14 @@ responses:
 
 **GET /api/projects/{projectId}**
 - Get project detail (S-05-04, requires auth)
+- Visible to project members; response includes `project.canManage` for manager-only UI gating
 
 **PATCH /api/projects/{projectId}**
 - Update project (S-05-05, requires auth, manager only)
 
 **PATCH /api/projects/{projectId}/status**
 - Update project status (S-05-06, requires auth, manager only)
+- Error responses may include `message`; project detail failure toasts should prefer it when present
 
 **GET /api/projects/{projectId}/progress**
 - Get Gantt data (S-05-02, requires auth)
