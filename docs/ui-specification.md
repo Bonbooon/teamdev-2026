@@ -868,10 +868,7 @@ ProjectDetailPage
     │   │                   └── ProgressIndicator
     │   ├── AlertsTab
     │   │   └── AlertCard[]
-    │   ├── SurveyResultsTab
-    │   │   ├── SummaryCard
-    │   │   ├── SurveyScoreChart
-    │   │   └── MemberBreakdown[]
+    [SurveyResultsTab] SummaryCard / SurveyScoreChart / MemberBreakdown[]
     │   ├── InsightsTab
     │   │   ├── ChartFilterBar
     │   │   ├── DueDateWarning
@@ -909,6 +906,7 @@ ProjectDetailPage
 > - カンバンDnD失敗時はSWRキャッシュをロールバックし、APIレスポンスの `message` があればその文言を Toast(error) に表示する
 > - InsightsTab は loading 中でも filter bar と chart skeleton を表示し、タブ内に blank area を作らない
 > - SurveyResultsTab は loading 中でも summary / chart / member breakdown placeholder を表示し、レイアウト高さを維持する
+> - SurveyResultsTab の summary card は質問数・回答者数・チーム平均スコアを表示し、チーム平均スコアは `surveyResults.questions[].averageScore` の平均値を小数第2位まで表示する
 > - SurveyScoreChart は measurable container を検知してから `ResponsiveContainer` を mount し、サイズ未確定時は fallback skeleton を表示する
 
 ### 5.8 Issue作成 (`/projects/[projectId]/issues/new`)

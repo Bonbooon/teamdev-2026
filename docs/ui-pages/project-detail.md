@@ -64,10 +64,7 @@ ProjectDetailPage
     │   │                   └── ProgressIndicator
     │   ├── AlertsTab
     │   │   └── AlertCard[]
-    │   ├── SurveyResultsTab
-    │   │   ├── SummaryCard
-    │   │   ├── SurveyScoreChart
-    │   │   └── MemberBreakdown[]
+    [SurveyResultsTab] SummaryCard / SurveyScoreChart / MemberBreakdown[]
     │   ├── InsightsTab
     │   │   ├── ChartFilterBar
     │   │   ├── DueDateWarning
@@ -141,4 +138,5 @@ ProjectDetailPage
 - member assignment panel の issue 行は現在、読み取り専用の要約表示であり issue detail へのリンクではない（リンク化は今後の改善候補）
 - InsightsTab の loading は filter bar と chart の skeleton を先に描画し、blank area を出さない
 - SurveyResultsTab の loading は summary card / chart / member breakdown の skeleton を順に描画する
+- SurveyResultsTab の summary card は質問数・回答者数・チーム平均スコアを表示し、チーム平均スコアは `surveyResults.questions[].averageScore` の平均値を小数第2位まで表示する
 - SurveyScoreChart は measurable container 上でのみ描画し、サイズ未確定時は blank chart ではなく fallback skeleton を表示する
