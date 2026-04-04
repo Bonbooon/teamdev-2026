@@ -64,10 +64,7 @@ ProjectDetailPage
     │   │                   └── ProgressIndicator
     │   ├── AlertsTab
     │   │   └── AlertCard[]
-    │   ├── SurveyResultsTab
-    │   │   ├── SummaryCard
-    │   │   ├── SurveyScoreChart
-    │   │   └── MemberBreakdown[]
+    [SurveyResultsTab] SummaryCard / SurveyScoreChart / MemberBreakdown[]
     │   ├── InsightsTab
     │   │   ├── ChartFilterBar
     │   │   ├── DueDateWarning
@@ -141,4 +138,6 @@ ProjectDetailPage
 - member assignment panel の issue 行は現在、読み取り専用の要約表示であり issue detail へのリンクではない（リンク化は今後の改善候補）
 - InsightsTab の loading は filter bar と chart の skeleton を先に描画し、blank area を出さない
 - SurveyResultsTab の loading は summary card / chart / member breakdown の skeleton を順に描画する
-- SurveyScoreChart は measurable container 上でのみ描画し、サイズ未確定時は blank chart ではなく fallback skeleton を表示する
+- SurveyResultsTab の summary card は質問数・回答者数・チーム平均スコアを表示し、チーム平均スコアは `surveyResults.questions[].averageScore` の平均値を小数第2位まで表示する
+- SurveyResultsTab の member breakdown 行は各メンバーの平均スコア badge に加えてチーム平均との差分 badge を表示する。差分は `member.answers[].selectedOptionScore` の平均値とチーム平均との差を小数第2位まで表示し、正/負/`0.00` をそのまま出し分ける。有効な scored answer がないメンバーは差分に中立プレースホルダ `--` を表示する
+- SurveyScoreChart は 24rem の明示的な高さを持つ container 内で即時描画し、初回表示でも blank chart にならないようにする
