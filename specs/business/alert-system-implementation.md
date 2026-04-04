@@ -344,7 +344,7 @@ Recommended Next Steps:
 
 View Details: [Link to Project Dashboard]
 
--- Motivation Cloud Teamwork
+-- Propass
 ```
 
 **For Red Alerts:**
@@ -367,7 +367,7 @@ Critical Actions Needed:
 
 Immediate Action Required: [Link to Project]
 
--- Motivation Cloud Teamwork
+-- Propass
 ```
 
 ### SendGrid Configuration

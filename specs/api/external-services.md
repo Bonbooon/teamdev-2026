@@ -26,7 +26,7 @@ Send alert notifications, survey invitations, team invitations, and system notif
 ```
 SENDGRID_API_KEY=your_api_key_here
 SENDGRID_FROM_EMAIL=alerts@motiv.cloud
-SENDGRID_FROM_NAME="Motivation Cloud Teamwork"
+SENDGRID_FROM_NAME="Propass"
 SENDGRID_ALERT_TEMPLATE_YELLOW=d-template_id_yellow
 SENDGRID_ALERT_TEMPLATE_RED=d-template_id_red
 SENDGRID_SURVEY_TEMPLATE=d-survey_template_id

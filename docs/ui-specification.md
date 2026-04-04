@@ -1,4 +1,4 @@
-# UI設計 / 仕様書 — Motivation Cloud Teamwork
+# UI設計 / 仕様書 — Propass
 
 **バージョン:** 1.0  
 **最終更新:** 2026/04/02  
@@ -156,7 +156,7 @@ Sidebarにはアクション系のみを配置する。アラートはSidebarに
 
 ```
 Sidebar
-├── Logo (POSSE)
+├── Logo (Propass)
 ├── Quick Actions
 │   ├── Button (PJ作成) [Manager — いずれかのチームでmanagerの場合表示]
 │   └── Button (チーム作成) [Manager — いずれかのチームでmanagerの場合表示]
@@ -908,7 +908,7 @@ ProjectDetailPage
 > - SurveyResultsTab は loading 中でも summary / chart / member breakdown placeholder を表示し、レイアウト高さを維持する
 > - SurveyResultsTab の summary card は質問数・回答者数・チーム平均スコアを表示し、チーム平均スコアは `surveyResults.questions[].averageScore` の平均値を小数第2位まで表示する
 > - SurveyResultsTab の member breakdown 行は各メンバーの平均スコア badge に加えてチーム平均との差分 badge を表示する。差分は `member.answers[].selectedOptionScore` の平均値とチーム平均との差を小数第2位まで表示し、正/負/`0.00` をそのまま出し分ける。有効な scored answer がないメンバーは差分に中立プレースホルダ `--` を表示する
-> - SurveyScoreChart は measurable container を検知してから `ResponsiveContainer` を mount し、サイズ未確定時は fallback skeleton を表示する
+> - SurveyScoreChart は 24rem の明示的な高さを持つ container 内で `ResponsiveContainer` を即時描画し、初回表示でも blank chart にならないようにする
 
 ### 5.8 Issue作成 (`/projects/[projectId]/issues/new`)
 
@@ -1284,13 +1284,13 @@ const canResolve = alert.assigneeId === currentUser.id;
 | Issue一覧 (**カンバン+ガント+担当一覧共有**) | `GET /projects/{projectId}/issues` | ボードスケルトン | リトライ | カンバンビュー、ガントビュー、member assignment panel で同一データを共有。SWRキー1つで管理し重複リクエストしない |
 | アラート | `GET /projects/{projectId}/alerts` | リストスケルトン | リトライ | |
 | 予実チャート | `GET /projects/{projectId}/progress-chart` | フィルターバー + チャートスケルトン | リトライ | インサイトタブ。期限未設定時は warning を残したまま empty を表示 |
-| アンケート結果 | `GET /projects/{projectId}/survey-results` | サマリー + チャート + メンバー内訳スケルトン | リトライ | アンケート結果タブ。chart は measurable container 確定まで fallback skeleton を表示 |
+| アンケート結果 | `GET /projects/{projectId}/survey-results` | サマリー + チャート + メンバー内訳スケルトン | リトライ | アンケート結果タブ。chart は固定高さコンテナで即時描画し、ローディング中のみ skeleton を表示 |
 
 > **Note:** `progress-board` と `gantt` の個別エンドポイントは使用しない。`issues` エンドポイントから取得したデータをフロント側でカンバン表示・ガント表示に変換する。
 >
 > **Phase 3 Note:** assignee可視化と担当一覧パネルも既存の `issues[].assignees` を利用し、新しいバックエンド契約は追加しない。
 >
-> **Phase 4 Note:** survey-results タブはアクティブ時に mount される前提でも、再オープン時に chart が blank にならないよう container 計測後に描画する。
+> **Phase 4 Note:** survey-results タブはアクティブ時に mount される前提でも、chart は固定高さコンテナ内で初回から描画され、再オープン時も blank にならない。
 
 ### 7.6 Issue作成 (`/projects/[projectId]/issues/new`)
 
@@ -1848,7 +1848,7 @@ theme: {
 |--------|------|
 | フォーマット | SVGを優先。写真はWebP/PNG |
 | アバター | Google OAuth画像 + `/user-default.svg` フォールバック（既存） |
-| ロゴ | `/posselogo.svg`（既存） |
+| ロゴ | `/logo.png`（既存） |
 | Next.js Image | `<Image>` コンポーネントで最適化 |
 
 ---
