@@ -1,4 +1,4 @@
-# UI設計 / 仕様書 — Motivation Cloud Teamwork
+# UI設計 / 仕様書 — Propass
 
 **バージョン:** 1.0  
 **最終更新:** 2026/04/02  
@@ -156,7 +156,7 @@ Sidebarにはアクション系のみを配置する。アラートはSidebarに
 
 ```
 Sidebar
-├── Logo (POSSE)
+├── Logo (Propass)
 ├── Quick Actions
 │   ├── Button (PJ作成) [Manager — いずれかのチームでmanagerの場合表示]
 │   └── Button (チーム作成) [Manager — いずれかのチームでmanagerの場合表示]
@@ -1849,7 +1849,7 @@ theme: {
 |--------|------|
 | フォーマット | SVGを優先。写真はWebP/PNG |
 | アバター | Google OAuth画像 + `/user-default.svg` フォールバック（既存） |
-| ロゴ | `/posselogo.svg`（既存） |
+| ロゴ | `/logo.png`（既存） |
 | Next.js Image | `<Image>` コンポーネントで最適化 |
 
 ---

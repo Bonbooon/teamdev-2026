@@ -1,4 +1,4 @@
-# Product Brief: Motivation Cloud Teamwork
+# Product Brief: Propass
 
 **Last Updated:** 2026/03/04
 
@@ -58,7 +58,7 @@
 
 ### Application Identity
 
-**Name:** Motivation Cloud Teamwork
+**Name:** Propass
 
 **Objective:** To develop an application that simultaneously enhances both a team's **Productivity** and **Motivation**.
 

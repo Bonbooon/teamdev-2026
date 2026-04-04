@@ -1,4 +1,4 @@
-# GitHub Copilot Instructions for Motivation Cloud Teamwork Project
+# GitHub Copilot Instructions for Propass Teamwork Project
 
 Welcome! This directory contains context and guidelines for GitHub Copilot to assist with development on this hackathon project.
 
@@ -67,7 +67,7 @@ Check if the answer exists in:
 
 ## Project Identity
 
-**Application Name**: TBD (Motivation Cloud products are the company's product line, but our app has its own identity)  
+**Application Name**: TBD (Propass products are the company's product line, but our app has its own identity)  
 **Client**: Link and Motivation Group  
 **Type**: Full-stack web application (Hackathon project)  
 **Timeline**: Development until 2026/04/05 23:59:00

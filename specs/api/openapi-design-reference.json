@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Motivation Cloud Teamwork API",
+    "title": "Propass Teamwork API",
     "version": "1.1.0",
     "description": "Phase 1 endpoint map based on feature plan, domain models, and schema plan."
   },
