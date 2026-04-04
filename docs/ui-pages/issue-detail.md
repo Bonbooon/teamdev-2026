@@ -93,4 +93,4 @@ IssueDetailPage
 - 作業ログの追加・編集フォームは `logged_at` を日付入力で扱い、既存ログの `loggedAt` を編集フォームへ初期表示する
 - 現状の作業ログ UI は `minutes`、`description`、`loggedAt` を表示し、API の `source` は画面表示していない
 - `GET /issues/{issueId}/work-logs` は対象Issueが存在しない場合でも空配列を返す
-- 現状の Issue詳細 / 編集UI ではテンプレート項目値を表示・編集しない
+- Issue 詳細 UI はテンプレート項目値をインライン表示・編集する（`GET /issues/{issueId}` の `templateItemValues` から取得）
