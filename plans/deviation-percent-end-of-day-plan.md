@@ -7,7 +7,7 @@ Change `deviationPercent` from whole-project totals to an end-of-day cumulative 
 **Phases (3 phases)**
 
 1. **Phase 1: Progress Chart End-of-Day Semantics**
-    - **Objective:** Update the project insights feature spec and the progress-chart backend so `deviationPercent` is calculated at `min(now()->endOfDay(), project due_at)` using cumulative planned and actual points up to that cutoff, independent of the selected chart interval.
+    - **Objective:** Update the project insights feature spec and the progress-chart backend so `deviationPercent` is calculated at `min(now()->endOfDay(), project.due_at)` using cumulative planned and actual points up to that cutoff, independent of the selected chart interval.
     - **Files/Functions to Modify/Create:**
         - `specs/features/project-insights-chart.md` — clarify `deviationPercent` semantics and examples
         - `teamdev-2026-api/web/app/Application/Project/UseCases/GetProgressChartUseCase.php` — update `execute()` and extract an end-of-day cumulative helper

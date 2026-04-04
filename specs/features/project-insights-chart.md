@@ -177,7 +177,7 @@
 | `buckets[].actualCumulative` | `int` | 実績累計ストーリーポイント |
 | `totalPlannedPoints` | `int` | 予定合計SP（deadline付きIssuのSP合計） |
 | `totalActualPoints` | `int` | 実績合計SP（完了IssueのSP合計） |
-| `deviationPercent` | `float` | 現時点の乖離率。evaluationAt = min(now()->endOfDay(), project.due_at) 時点でのcumulativeを使用: `(planned - actual) / planned * 100`。planned=0 なら 0 |
+| `deviationPercent` | `float` | 現時点の乖離率。`evaluationAt` は、評価日当日の終了時刻（サーバーのタイムゾーンにおける 23:59:59.999…）と `project.due_at` の早い方を使用する。`deadline` / `closed_at` が `evaluationAt` 以下（`<= evaluationAt`）のものを集計対象に含め、同時点の cumulative を用いて `(planned - actual) / planned * 100` で算出する。`planned = 0` の場合は `0`。負の値は `0` にクランプされる |
 
 **エラーレスポンス:**
 
@@ -281,6 +281,8 @@ plan_vs_actual_deviation - 予実乖離
    - 実績累計: 評価時刻までに `closed_at <= evaluationAt` となる完了IssueのSP累計
    - `deviationPercent = (plan - actual) / plan * 100`
    - 計画が0の場合は0
+   - 負の値は `0` にクランプされる
+   - **注意:** この `deviationPercent` は progress-chart 表示用の EOD 累計指標である。予実乖離アラートトリガーは独自のバケット基準で評価するため、本指標と一致しないことがある
 
 ---
 
