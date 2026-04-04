@@ -907,6 +907,7 @@ ProjectDetailPage
 > - InsightsTab は loading 中でも filter bar と chart skeleton を表示し、タブ内に blank area を作らない
 > - SurveyResultsTab は loading 中でも summary / chart / member breakdown placeholder を表示し、レイアウト高さを維持する
 > - SurveyResultsTab の summary card は質問数・回答者数・チーム平均スコアを表示し、チーム平均スコアは `surveyResults.questions[].averageScore` の平均値を小数第2位まで表示する
+> - SurveyResultsTab の member breakdown 行は各メンバーの平均スコア badge に加えてチーム平均との差分 badge を表示する。差分は `member.answers[].selectedOptionScore` の平均値とチーム平均との差を小数第2位まで表示し、正/負/`0.00` をそのまま出し分ける。有効な scored answer がないメンバーは差分に中立プレースホルダ `--` を表示する
 > - SurveyScoreChart は measurable container を検知してから `ResponsiveContainer` を mount し、サイズ未確定時は fallback skeleton を表示する
 
 ### 5.8 Issue作成 (`/projects/[projectId]/issues/new`)
