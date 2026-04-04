@@ -28,7 +28,7 @@ function buildSystemPrompt(): string {
 - deadlineは必ず明日(${isoToday}の翌日)以降にすること。今日や過去の日付は不可
 - 「金曜まで」→ 次の金曜日の日付を計算すること
 - 「来週」→ 来週月曜の日付を計算すること
-- 期限の指定がない場合 → deadlineパラメータを省略すること（推測しない）
+- 期限の指定がない場合 → deadlineパラメータを省略すること（推測しない）。省略された場合はシステム側でデフォルトの期限が設定される
 
 ユーザーのメッセージに基づいて、適切なツール（関数）を呼び出してください。
 - ダッシュボードや全体の状況を聞かれたら → show_dashboard
@@ -96,7 +96,7 @@ const tools: ChatCompletionTool[] = [
           },
           story_points: {
             type: "number",
-            enum: [1, 2, 3, 5, 8, 13, 21],
+            enum: [1, 2, 3, 5, 8, 13],
             description: "ストーリーポイント（デフォルト: 3）",
           },
           deadline: {

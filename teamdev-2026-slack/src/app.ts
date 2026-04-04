@@ -5,7 +5,13 @@ import { handleIssues } from "./commands/issues";
 import { handleCreateIssue } from "./commands/createIssue";
 import { handleMessage } from "./commands/aiMessage";
 
-const requiredEnvVars = ["SLACK_BOT_TOKEN", "SLACK_APP_TOKEN"] as const;
+const requiredEnvVars = [
+  "SLACK_BOT_TOKEN",
+  "SLACK_APP_TOKEN",
+  "OPENAI_API_KEY",
+  "API_TOKEN",
+  "API_BASE_URL",
+] as const;
 for (const v of requiredEnvVars) {
   if (!process.env[v]) {
     console.error(`❌ Missing required env var: ${v}`);
@@ -58,8 +64,8 @@ app.event("app_mention", async ({ event, say, client }) => {
     await say("何かお手伝いできることはありますか？ 例: 「プロジェクトの状況を教えて」");
     return;
   }
-  // Show typing indicator while AI processes
-  await client.reactions.add({ channel: event.channel, timestamp: event.ts, name: "hourglass_flowing_sand" });
+  // Show typing indicator while AI processes (best-effort)
+  await client.reactions.add({ channel: event.channel, timestamp: event.ts, name: "hourglass_flowing_sand" }).catch(() => {});
   try {
     await handleMessage(text, say);
   } finally {
@@ -71,7 +77,7 @@ app.message(async ({ message, say, client }) => {
   if (message.channel_type !== "im") return;
   if (message.subtype) return;
   if (!("text" in message) || !message.text) return;
-  await client.reactions.add({ channel: message.channel, timestamp: message.ts, name: "hourglass_flowing_sand" });
+  await client.reactions.add({ channel: message.channel, timestamp: message.ts, name: "hourglass_flowing_sand" }).catch(() => {});
   try {
     await handleMessage(message.text, say);
   } finally {

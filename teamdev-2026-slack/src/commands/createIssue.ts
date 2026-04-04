@@ -1,6 +1,7 @@
 import type { SlashCommand, RespondFn } from "@slack/bolt";
 import { AxiosError } from "axios";
 import { createIssue } from "../api";
+import { VALID_STORY_POINTS } from "../format";
 
 const API_TOKEN = process.env.API_TOKEN || "";
 const DEFAULT_PROJECT_ID = process.env.DEFAULT_PROJECT_ID || "";
@@ -72,6 +73,13 @@ export async function handleCreateIssue(
     await respond(
       "プロジェクトIDが不明です。`.env` に `DEFAULT_PROJECT_ID` を設定するか、" +
         "UUIDを先頭に指定してください。"
+    );
+    return;
+  }
+
+  if (!(VALID_STORY_POINTS as readonly number[]).includes(parsed.storyPoints)) {
+    await respond(
+      `❌ ストーリーポイントは ${VALID_STORY_POINTS.join(", ")} のいずれかを指定してください。`
     );
     return;
   }

@@ -1,50 +1,12 @@
 import type { SlashCommand, RespondFn } from "@slack/bolt";
 import { listIssues, type Issue } from "../api";
+import { statusEmoji, statusLabel, formatIssueLine } from "../format";
 
 const API_TOKEN = process.env.API_TOKEN || "";
 const DEFAULT_PROJECT_ID = process.env.DEFAULT_PROJECT_ID || "";
 
-function statusEmoji(status: string): string {
-  switch (status) {
-    case "done":
-      return "✅";
-    case "in_progress":
-      return "🔵";
-    case "in_review":
-      return "🟡";
-    case "not_in_progress":
-      return "⚪";
-    default:
-      return "❓";
-  }
-}
-
-function statusLabel(status: string): string {
-  switch (status) {
-    case "done":
-      return "完了";
-    case "in_progress":
-      return "進行中";
-    case "in_review":
-      return "レビュー中";
-    case "not_in_progress":
-      return "未着手";
-    default:
-      return status;
-  }
-}
-
 function formatIssue(issue: Issue, index: number): string {
-  const assignees =
-    issue.assignees.map((a) => a.userName).join(", ") || "未割当";
-  const deadline = issue.deadline
-    ? new Date(issue.deadline).toLocaleDateString("ja-JP")
-    : "なし";
-  return (
-    `*${index + 1}.* ${statusEmoji(issue.status)} *${issue.title}*\n` +
-    `      ステータス: ${statusLabel(issue.status)} | SP: ${issue.storyPoints} | 期限: ${deadline}\n` +
-    `      担当: ${assignees}`
-  );
+  return formatIssueLine(issue, index);
 }
 
 export async function handleIssues(
@@ -113,7 +75,7 @@ export async function handleIssues(
           type: "header",
           text: {
             type: "plain_text",
-            text: `📋 Issue一覧 (全${data.pagination.total}件)`,
+            text: `📋 Issue一覧 (${issues.length}件表示 / 全${data.pagination.total}件)`,
             emoji: true,
           },
         },

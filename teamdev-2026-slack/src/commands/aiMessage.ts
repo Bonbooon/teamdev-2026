@@ -3,38 +3,13 @@ import { AxiosError } from "axios";
 import { routeWithAi } from "../ai";
 import { MOCK_PROJECT, MOCK_ALERTS, MOCK_TEAM_HEALTH } from "../mockData";
 import { listIssues, createIssue, type Issue } from "../api";
+import { statusEmoji, statusLabel, progressBar, formatIssueLine, VALID_STORY_POINTS } from "../format";
 
 const API_TOKEN = process.env.API_TOKEN || "";
 const DEFAULT_PROJECT_ID = process.env.DEFAULT_PROJECT_ID || "";
 const DEFAULT_TEMPLATE_ID = process.env.DEFAULT_TEMPLATE_ID || "";
 const DEFAULT_TEAM_ID = process.env.DEFAULT_TEAM_ID || "";
 const DEFAULT_ASSIGNEE_ID = process.env.DEFAULT_ASSIGNEE_ID || "";
-
-function statusEmoji(status: string): string {
-  switch (status) {
-    case "done": return "✅";
-    case "in_progress": return "🔵";
-    case "in_review": return "🟡";
-    case "not_in_progress": return "⚪";
-    default: return "❓";
-  }
-}
-
-function statusLabel(status: string): string {
-  switch (status) {
-    case "done": return "完了";
-    case "in_progress": return "進行中";
-    case "in_review": return "レビュー中";
-    case "not_in_progress": return "未着手";
-    default: return status;
-  }
-}
-
-function progressBar(percent: number): string {
-  const filled = Math.round(percent / 10);
-  const empty = 10 - filled;
-  return "█".repeat(filled) + "░".repeat(empty) + ` ${percent}%`;
-}
 
 async function sendDashboard(say: SayFn) {
   const p = MOCK_PROJECT;
@@ -111,11 +86,7 @@ async function sendIssues(say: SayFn, args: Record<string, string | number | und
         text: {
           type: "mrkdwn" as const,
           text: items
-            .map((iss, i) => {
-              const assignees = iss.assignees.map((a) => a.userName).join(", ") || "未割当";
-              const deadline = iss.deadline ? new Date(iss.deadline).toLocaleDateString("ja-JP") : "なし";
-              return `*${i + 1}.* ${statusEmoji(iss.status)} *${iss.title}*\n      SP: ${iss.storyPoints} | 期限: ${deadline} | 担当: ${assignees}`;
-            })
+            .map((iss, i) => formatIssueLine(iss, i))
             .join("\n\n"),
         },
       },
@@ -124,7 +95,7 @@ async function sendIssues(say: SayFn, args: Record<string, string | number | und
 
     await say({
       blocks: [
-        { type: "header", text: { type: "plain_text", text: `📋 Issue一覧 (全${data.pagination.total}件)`, emoji: true } },
+        { type: "header", text: { type: "plain_text", text: `📋 Issue一覧 (${issues.length}件表示 / 全${data.pagination.total}件)`, emoji: true } },
         ...sections,
       ],
       text: "Issue一覧",
@@ -137,8 +108,8 @@ async function sendIssues(say: SayFn, args: Record<string, string | number | und
 
 async function sendCreateIssue(say: SayFn, args: Record<string, string | number | undefined>) {
   const title = (args.title as string) || "Untitled Issue";
-  const storyPoints = (args.story_points as number) || 3;
-  const estimatedMinutes = (args.estimated_minutes as number) || 60;
+  const storyPoints = Number(args.story_points) || 3;
+  const estimatedMinutes = Number(args.estimated_minutes) || 60;
   const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]!;
   let deadline = (args.deadline as string) ||
     new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]!;
@@ -152,13 +123,17 @@ async function sendCreateIssue(say: SayFn, args: Record<string, string | number 
     return;
   }
 
+  const validSp = (VALID_STORY_POINTS as readonly number[]).includes(storyPoints)
+    ? storyPoints
+    : 3;
+
   try {
     const result = await createIssue(
       DEFAULT_PROJECT_ID,
       {
         issue_template_id: DEFAULT_TEMPLATE_ID,
         title,
-        story_points: storyPoints,
+        story_points: validSp,
         estimated_minutes: estimatedMinutes,
         deadline: `${deadline}T23:59:59Z`,
         status: "not_in_progress",
@@ -182,7 +157,7 @@ async function sendCreateIssue(say: SayFn, args: Record<string, string | number 
         {
           type: "section",
           fields: [
-            { type: "mrkdwn", text: `*SP:*\n${storyPoints}` },
+            { type: "mrkdwn", text: `*SP:*\n${validSp}` },
             { type: "mrkdwn", text: `*期限:*\n${deadline}` },
           ],
         },
