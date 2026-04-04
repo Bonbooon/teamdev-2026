@@ -273,7 +273,7 @@ responses:
 
 ### Issue Endpoints
 
-- Mutation endpoints that change issue fields, issue status, DoD items, subtasks, or existing work logs return `403` unless the caller is an active member of a team assigned to the issue.
+- Mutation endpoints that change issue fields, delete issues, change issue status, change DoD items, change subtasks, or change existing work logs return `403` unless the caller is an active member of a team assigned to the issue.
 - Managers of assigned teams are allowed via active membership. Work log update/delete are issue-team scoped, not owner-only.
 
 **POST /api/projects/{projectId}/issues**
@@ -286,6 +286,11 @@ responses:
 
 **PATCH /api/issues/{issueId}**
 - Update issue fields: title, story_points, estimated_minutes, deadline (S-03-01, requires auth)
+
+**DELETE /api/issues/{issueId}**
+- Delete issue (requires auth, returns `204` on success)
+- Reuses the same issue-team mutation authorization as other issue mutations
+- Deleting a parent issue removes its direct child subtasks within the same transaction before deleting the parent issue
 
 **PATCH /api/issues/{issueId}/status**
 - Update issue status with transition validation (S-03-05, requires auth)

@@ -520,6 +520,13 @@ Response:
 3. Confirm deletion
 4. Subtask removed from parent issue
 
+**Main Flow - Delete Parent Issue:**
+1. Open parent issue detail
+2. Click delete on the parent issue
+3. Confirm deletion
+4. System deletes direct child subtasks and then the parent issue within the same transaction
+5. Parent issue and child subtasks are removed from the project
+
 **Main Flow - Complete Subtask:**
 1. Mark subtask status as done
 2. Progress bar updates on parent issue
@@ -536,9 +543,10 @@ Issue {
 **Business Rules:**
 - Subtask is still an Issue (same model, different parent_id)
 - Active members of teams assigned to the parent issue, including assigned-team managers, can create, update, and delete subtasks
+- The same active assigned-team membership rule applies to parent issue deletion
 - Subtask deadline cannot exceed parent deadline
 - Subtask story points rolled up to parent (estimated minutes sum)
-- Cannot delete parent issue while subtasks exist (must delete subtasks first or move to backlog)
+- Deleting a parent issue also deletes its direct child subtasks within the same transaction before deleting the parent issue
 - Subtask status changes cascade to parent progress calculation
 
 **Nesting Limit:** Subtasks cannot have sub-subtasks (max 1 level deep)
@@ -550,11 +558,13 @@ Issue {
 - Outsider tries to create subtask → 403 Forbidden
 - Outsider tries to update subtask → 403 Forbidden
 - Outsider tries to delete subtask → 403 Forbidden
+- Outsider tries to delete parent issue → 403 Forbidden
 
 **Acceptance Criteria:**
 - ✅ Create subtasks under parent issue
 - ✅ Edit subtask details
 - ✅ Delete subtasks from parent issue
+- ✅ Delete parent issue even when direct subtasks exist
 - ✅ Subtask status tracked independently
 - ✅ Parent progress updated when subtasks complete
 - ✅ Cannot exceed parent deadline
@@ -568,6 +578,8 @@ Issue {
 - TC-03-06-06: Edit subtask inline → updated values persist
 - TC-03-06-07: Delete subtask → subtask removed from parent
 - TC-03-06-08: Outsider updates or deletes subtask → 403 error
+- TC-03-06-09: Delete parent issue with subtasks → parent and direct subtasks removed together
+- TC-03-06-10: Outsider deletes parent issue → 403 error
 
 **API Endpoint:**
 ```
@@ -585,6 +597,9 @@ GET /api/issues/{parentIssueId}/subtasks
 
 PATCH /api/issues/{subtaskId}
 // Update subtask (same as regular issue)
+
+DELETE /api/issues/{issueId}
+// Delete issue; direct child subtasks are deleted in the same transaction
 
 DELETE /api/issues/{issueId}/subtasks/{subtaskId}
 // Delete subtask under the parent issue
@@ -792,6 +807,7 @@ IssueWorkLog {
 | `GET /api/projects/{projectId}/issues` | GET | List project issues |
 | `GET /api/issues/{issueId}` | GET | Get issue detail |
 | `PATCH /api/issues/{issueId}` | PATCH | Update issue fields (title, estimate, deadline, etc.) |
+| `DELETE /api/issues/{issueId}` | DELETE | Delete issue with cascading direct-subtask cleanup |
 | `PATCH /api/issues/{issueId}/status` | PATCH | Update issue status |
 | `POST /api/issues/{issueId}/assignees` | POST | Add assignee |
 | `DELETE /api/issues/{issueId}/assignees/{teamMemberId}` | DELETE | Remove assignee |

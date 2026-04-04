@@ -25,7 +25,9 @@ IssueDetailPage
     │   ├── StatusBadge
     │   ├── StoryPoints
     │   ├── MetaInfo (見積時間, 期限, 担当者リンク)
-    │   └── Select (ステータス変更)
+    │   ├── Select (ステータス変更)
+    │   ├── Button (削除)
+    │   └── ConfirmDialog (削除確認)
     └── IssueContent
         ├── DefinitionOfDone
         │   └── Checklist (完了のみ / Completion only)
@@ -57,7 +59,7 @@ IssueDetailPage
 ## Data Requirements
 | データ | エンドポイント | loading | error |
 |--------|--------------|---------|-------|
-| Issue情報 | `GET /issues/{issueId}` | セクションスケルトン | リトライ |
+| Issue情報 (`projectId`, capabilities を含む) | `GET /issues/{issueId}` | セクションスケルトン | リトライ |
 | Definition of Done | `GET /issues/{issueId}/definition-of-done` | セクションスケルトン | リトライ |
 | サブタスク | `GET /issues/{issueId}/subtasks` | リストスケルトン | リトライ |
 | 作業ログ | `GET /issues/{issueId}/work-logs` | カード内ローディング表示 | カード内エラー表示 |
@@ -70,12 +72,13 @@ IssueDetailPage
 | success(empty) | 作業ログ EmptyState + 新規作業ログフォーム |
 | success(with logs) | 作業ログ一覧 + 新規作業ログフォーム |
 | editing | 対象作業ログ行またはサブタスク行がインライン編集フォームに切り替わる |
-| confirmingDelete | 作業ログは ConfirmDialog、サブタスクは `confirm()` で削除確認を表示 |
+| confirmingDelete | イシューと作業ログは ConfirmDialog、サブタスクは `confirm()` で削除確認を表示 |
 
 ## Interactions
 - ステータス選択 → API経由で更新
 - DoDチェック切替 → 楽観的更新 → API（Issue詳細では完了のみ可能）
-- `issue.capabilities.canMutateWorkLogs = false` の場合、作業ログとサブタスクの追加 / 編集 / 削除 UI を有効状態で表示しない
+- `issue.capabilities.canMutateWorkLogs = false` の場合、作業ログとサブタスクの追加 / 編集 / 削除 UI、およびイシュー削除 affordance を有効状態で表示しない
+- ヘッダーの削除ボタン → ConfirmDialog 表示 → 確認後に API 経由で削除し、成功時は Toast を表示して `/projects/{issue.projectId}` へ遷移
 - サブタスク作成フォーム送信 → API経由でサブタスクを作成し、一覧を再取得
 - サブタスクの編集ボタン → 対象行をインライン編集フォームに切り替え、保存後に一覧を再取得
 - サブタスクの削除ボタン → `confirm()` 表示 → 確認後に API 経由で削除し、一覧を再取得
@@ -88,6 +91,7 @@ IssueDetailPage
 | 操作 | エンドポイント | 成功時 | 失敗時 |
 |------|--------------|--------|--------|
 | ステータス変更 | `PATCH /issues/{issueId}/status` | バッジ即時更新 | Toast(error: API `message` 優先) |
+| イシュー削除 | `DELETE /issues/{issueId}` | Success toast を表示し、`/projects/{issue.projectId}` へ遷移 | Toast(error: `extractIssueErrorMessage` で API `message` 優先) |
 | DoD切替 | `PATCH /issues/{issueId}/definition-of-done/{doneItemId}` | チェック即時反映 | ロールバック + Toast(error) |
 | サブタスク作成 | `POST /issues/{issueId}/subtasks` | フォームをリセットし、一覧を再取得 | Toast(error) |
 | サブタスク更新 | `PATCH /issues/{subtaskId}` | インライン編集を閉じ、一覧を再取得 | Toast(error) |
@@ -98,7 +102,8 @@ IssueDetailPage
 
 ## Notes
 - SubtaskEditor は一覧表示、新規追加、インライン編集、削除確認まで接続済み
-- Issue詳細では `issue.capabilities.canMutateWorkLogs` を SubtaskEditor の `canMutateSubtasks` に流用しており、同じ active-member 判定で作業ログとサブタスクの affordance を切り替える
+- IssueHeader / SubtaskEditor / WorkLogSection は `issue.capabilities.canMutateWorkLogs` を共有し、同じ active-member 判定で削除ボタンや mutation affordance を切り替える
+- `GET /issues/{issueId}` の `issue.projectId` は、イシュー削除成功後の `/projects/{projectId}` リダイレクトに使用する
 - サブタスク作成時は親Issueの assignees を `assigneeIds` に再利用し、見積時間は親Issueの `estimatedMinutes` を優先して送る
 - サブタスクの編集UIは現状 `title` と `story_points` のみをインライン更新する
 - サブタスク削除権限は作成者単位ではなく issue 単位で扱い、許可ユーザーは任意のサブタスクを削除できる
