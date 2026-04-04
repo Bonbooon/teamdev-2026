@@ -1,4 +1,4 @@
-# Prototype Strategy: Motivation Cloud Teamwork
+# Prototype Strategy: Propass
 
 **Last Updated:** 2026/03/04
 

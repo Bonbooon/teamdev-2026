@@ -74,7 +74,7 @@ const TABS = [
 
 ```
 Sidebar
-├── Logo (POSSE)
+├── Logo (Propass)
 ├── Quick Actions
 │   ├── Button (PJ作成) [Manager]
 │   └── Button (チーム作成) [Manager]

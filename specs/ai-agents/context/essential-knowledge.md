@@ -6,7 +6,7 @@
 
 ## Project Identity
 
-**Name**: Motivation Cloud Teamwork  
+**Name**: Propass
 **Type**: Full-stack web application (Long-term Hackathon project)  
 **Client**: Link and Motivation Group  
 **Purpose**: An application that simultaneously enhances both a team's **Productivity** and **Motivation**
@@ -269,7 +269,7 @@ Typical feature flow:
 - Despite having excellent tools (GitHub, Jira, Trello), teams still miss deadlines
 - "Working reluctantly" is the norm, causing widespread burnout and low productivity
 
-**Our Solution**: Motivation Cloud Teamwork - An app tackling BOTH productivity AND motivation while solving the delay prevention problem.
+**Our Solution**: Propass - An app tackling BOTH productivity AND motivation while solving the delay prevention problem.
 
 **Key Insight from PO**: WANT features (not MUST features) are what enable teams to actually avoid delays.
 

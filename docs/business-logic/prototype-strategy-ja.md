@@ -1,4 +1,4 @@
-# プロトタイプ戦略: Motivation Cloud Teamwork
+# プロトタイプ戦略: Propass
 
 **最終更新:** 2026/03/04
 
