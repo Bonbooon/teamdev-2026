@@ -276,7 +276,7 @@ plan_vs_actual_deviation - 予実乖離
    - 例: バケット `2026-01-12` では、`closed_at <= 2026-01-18` の完了 Issue の SP 合計
 
 5. **乖離率計算（End-of-Day Semantics）:**
-   - 評価時刻: `evaluationAt = min(サーバーTZにおける当日の end-of-day, project.due_at)` とする（`end-of-day` は当日 `23:59:59.999` を指す）
+   - 評価時刻: `evaluationAt = min(サーバーTZにおける当日の end-of-day, project.due_at)` とする（`end-of-day` は当日 `23:59:59.999…` を指す）
    - 計画累計: 評価時刻までに `deadline <= evaluationAt` となるIssueのSP累計
    - 実績累計: 評価時刻までに `closed_at <= evaluationAt` となる完了IssueのSP累計
    - `deviationPercent = (plan - actual) / plan * 100`
