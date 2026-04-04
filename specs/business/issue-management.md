@@ -445,7 +445,7 @@ not_in_progress
 
 **Status Logic:**
 - `not_in_progress` → `in_progress`: Sets `startedAt = NOW()`
-- `in_progress` → `in_review`: Requires at least some work logged
+- `in_progress` → `in_review`: Requires at least some work logged and, if any Definition of Done items exist, all items must be completed
 - `in_review` → `done`: Requires all Definition of Done items checked
 - `in_review` → `in_progress`: Reset if review rejected
 - Any → `not_in_progress`: Back to original state (revert)

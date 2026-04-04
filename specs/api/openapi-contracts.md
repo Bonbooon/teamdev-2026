@@ -289,6 +289,7 @@ responses:
 
 **PATCH /api/issues/{issueId}/status**
 - Update issue status with transition validation (S-03-05, requires auth)
+- `in_progress` → `in_review` additionally requires all Definition of Done items to be completed when any exist
 
 **POST /api/issues/{issueId}/assignees**
 - Add assignee (S-03-02, requires auth)
