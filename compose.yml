@@ -54,6 +54,23 @@ services:
     ports:
       - ${SWAGGER_PORT:-8080}:8080
 
+  slack-bot:
+    build:
+      context: ./teamdev-2026-slack
+      dockerfile: ../docker/slack/Dockerfile
+    image: teamdev-2026-slack:latest
+    env_file:
+      - path: ./teamdev-2026-slack/.env
+        required: false
+    environment:
+      API_BASE_URL: http://web:80/api
+    depends_on:
+      - app
+      - web
+    restart: always
+    networks:
+      - teamdev-2026-shared
+
 networks:
   teamdev-2026-shared:
     external: true
