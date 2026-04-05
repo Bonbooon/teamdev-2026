@@ -6,6 +6,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Source worktree detection to get COMPOSE_PROJECT_NAME for Docker isolation
+source "$SCRIPT_DIR/detect-worktree.sh"
 SLACK_DIR="$ROOT_DIR/teamdev-2026-slack"
 ENV_FILE="$SLACK_DIR/.env"
 
