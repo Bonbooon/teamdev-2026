@@ -1,7 +1,7 @@
 # OpenAPI Contract Specification
 
 **Version:** 1.0  
-**Last Updated:** 2026/03/06  
+**Last Updated:** 2026/04/05  
 **Human Documentation:** `docs/api/endpoints.md`  
 **Generated File:** `teamdev-2026-api/docs/openapi/openapi.json`
 
@@ -250,12 +250,14 @@ responses:
 
 **GET /api/projects/{projectId}**
 - Get project detail (S-05-04, requires auth)
+- Visible to project members; response includes `project.canManage` for manager-only UI gating
 
 **PATCH /api/projects/{projectId}**
 - Update project (S-05-05, requires auth, manager only)
 
 **PATCH /api/projects/{projectId}/status**
 - Update project status (S-05-06, requires auth, manager only)
+- Error responses may include `message`; project detail failure toasts should prefer it when present
 
 **GET /api/projects/{projectId}/progress**
 - Get Gantt data (S-05-02, requires auth)
@@ -271,6 +273,9 @@ responses:
 
 ### Issue Endpoints
 
+- Mutation endpoints that change issue fields, delete issues, change issue status, change DoD items, change subtasks, or change existing work logs return `403` unless the caller is an active member of a team assigned to the issue.
+- Managers of assigned teams are allowed via active membership. Work log update/delete are issue-team scoped, not owner-only.
+
 **POST /api/projects/{projectId}/issues**
 - Create issue (S-03-01, requires auth)
 - `issue_template_id` must be a UUID for an existing issue template; invalid or non-existent values return `ValidationError`
@@ -282,8 +287,14 @@ responses:
 **PATCH /api/issues/{issueId}**
 - Update issue fields: title, story_points, estimated_minutes, deadline (S-03-01, requires auth)
 
+**DELETE /api/issues/{issueId}**
+- Delete issue (requires auth, returns `204` on success)
+- Reuses the same issue-team mutation authorization as other issue mutations
+- Deleting a parent issue removes its direct child subtasks within the same transaction before deleting the parent issue
+
 **PATCH /api/issues/{issueId}/status**
 - Update issue status with transition validation (S-03-05, requires auth)
+- `in_progress` → `in_review` additionally requires all Definition of Done items to be completed when any exist
 
 **POST /api/issues/{issueId}/assignees**
 - Add assignee (S-03-02, requires auth)
@@ -294,6 +305,9 @@ responses:
 **GET /api/issues/{issueId}/definition-of-done**
 - List DoD items (S-03-04, requires auth)
 
+**POST /api/issues/{issueId}/definition-of-done**
+- Create DoD item (S-03-04, requires auth)
+
 **PATCH /api/issues/{issueId}/definition-of-done/{doneItemId}**
 - Update DoD item (S-03-04, requires auth)
 
@@ -302,6 +316,9 @@ responses:
 
 **GET /api/issues/{parentIssueId}/subtasks**
 - List subtasks (S-03-06, requires auth)
+
+**DELETE /api/issues/{parentIssueId}/subtasks/{subtaskId}**
+- Delete subtask (S-03-06, requires auth, returns `204` on success and `404` when the subtask is not found under the issue)
 
 **POST /api/issues/{issueId}/work-logs**
 - Log work (requires auth)
