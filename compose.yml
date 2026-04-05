@@ -56,11 +56,12 @@ services:
 
   slack-bot:
     build:
-      context: ./
-      dockerfile: ./docker/slack/Dockerfile
+      context: ./teamdev-2026-slack
+      dockerfile: ../docker/slack/Dockerfile
     image: teamdev-2026-slack:latest
     env_file:
-      - ./teamdev-2026-slack/.env
+      - path: ./teamdev-2026-slack/.env
+        required: false
     environment:
       API_BASE_URL: http://web:80/api
     depends_on:
