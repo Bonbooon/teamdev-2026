@@ -231,6 +231,55 @@ php artisan db:seed
 - `php artisan migrate:fresh --seed` だと、Google ログイン前にデモマネージャーのユーザーが未作成のため失敗します
 - デモ用シーダーは `DEMO_MANAGER_EMAIL` で既存ユーザーを検索し、その実ユーザーIDにチーム・プロジェクト・アラートを紐付けます
 
+## Slack ボットのセットアップ
+
+Slack ボットは Docker Compose の `slack-bot` サービスとして動作し、`restart: always` で 24/7 稼働します。Socket Mode（outbound WebSocket）を使用するため、公開 URL やポート開放は不要です。
+
+### 必要な環境変数
+
+`teamdev-2026-slack/.env` に以下を設定してください。
+
+#### 手動で設定が必要なもの（シークレット）
+
+| 変数名 | 取得元 |
+|--------|--------|
+| `SLACK_BOT_TOKEN` | Slack アプリ設定 → OAuth & Permissions → Bot User OAuth Token（`xoxb-...`） |
+| `SLACK_APP_TOKEN` | Slack アプリ設定 → Basic Information → App-Level Tokens（`xapp-...`） |
+| `OPENAI_API_KEY` | OpenAI ダッシュボード（`sk-...`） |
+
+#### `mise run slack-env-setup` で自動生成されるもの
+
+| 変数名 | 説明 |
+|--------|------|
+| `API_TOKEN` | デモマネージャーの Laravel Sanctum トークン |
+| `DEFAULT_PROJECT_ID` | シード済み DB から取得 |
+| `DEFAULT_TEMPLATE_ID` | シード済み DB から取得 |
+| `DEFAULT_TEAM_ID` | シード済み DB から取得 |
+| `DEFAULT_ASSIGNEE_ID` | シード済み DB から取得 |
+
+#### Docker Compose が自動設定するもの（設定不要）
+
+| 変数名 | 値 | 説明 |
+|--------|-----|------|
+| `API_BASE_URL` | `http://web:80/api` | Docker 内部 DNS で nginx コンテナに到達 |
+
+### セットアップ手順
+
+1. `teamdev-2026-slack/.env.example` を `.env` にコピーする
+2. `SLACK_BOT_TOKEN`、`SLACK_APP_TOKEN`、`OPENAI_API_KEY` を `.env` に記入する
+3. DB がシード済みであることを確認する（デモマネージャーのログイン＋ `db:seed` 完了後）
+4. `mise run slack-env-setup` を実行する（API トークンと各種 ID が自動設定される）
+5. `docker compose up -d` で `slack-bot` コンテナが自動起動する
+
+```bash
+cp teamdev-2026-slack/.env.example teamdev-2026-slack/.env
+# .env に SLACK_BOT_TOKEN, SLACK_APP_TOKEN, OPENAI_API_KEY を記入
+mise run slack-env-setup
+docker compose up -d
+```
+
+> **注意**: `.env` が存在しなくても `docker compose up -d` は失敗しません（`required: false` 設定済み）。ただし、Slack ボットは必要な環境変数がないと起動直後にクラッシュし、`restart: always` により再起動を繰り返します。
+
 ## 補足
 
 ### miseのインストール
