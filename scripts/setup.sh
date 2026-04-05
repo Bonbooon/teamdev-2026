@@ -37,6 +37,23 @@ echo ""
 echo "Setup completed successfully"
 echo ""
 
+# Prompt to set up Slack bot if the directory exists
+if [ -d "teamdev-2026-slack" ]; then
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "📡 Slack bot setup available!"
+  echo ""
+  echo "  To configure the Slack bot (requires SLACK_BOT_TOKEN,"
+  echo "  SLACK_APP_TOKEN, and OPENAI_API_KEY in teamdev-2026-slack/.env):"
+  echo ""
+  echo "    1. Copy teamdev-2026-slack/.env.example to .env"
+  echo "    2. Fill in SLACK_BOT_TOKEN, SLACK_APP_TOKEN, OPENAI_API_KEY"
+  echo "    3. Run:  mise run slack-env-setup"
+  echo ""
+  echo "  This will auto-populate project/team IDs and create an API token."
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+fi
+
 # Only show default ports for main worktree. Linked worktrees use different ports.
 if [ -f ".worktree.env" ]; then
   source .worktree.env

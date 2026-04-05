@@ -111,3 +111,5 @@ echo "Seeding database..."
 docker compose exec app php artisan db:seed
 
 echo "Laravel initialization completed"
+echo ""
+echo "💡 If you plan to use the Slack bot, run:  mise run slack-env-setup"
