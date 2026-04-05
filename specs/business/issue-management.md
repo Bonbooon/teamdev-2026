@@ -499,7 +499,7 @@ Response:
 **Requirement ID:** S-03-06  
 **Type:** MUST (Phase 1)  
 **Actor:** Assigned team member, assigned team manager  
-**Precondition:** Parent issue exists  
+**Precondition:** User authenticated, parent issue exists  
 
 **Main Flow - Create Subtask:**
 1. Open parent issue detail
@@ -545,7 +545,7 @@ Issue {
 - Active members of teams assigned to the parent issue, including assigned-team managers, can create, update, and delete subtasks
 - The same active assigned-team membership rule applies to parent issue deletion
 - Subtask deadline cannot exceed parent deadline
-- Subtask story points rolled up to parent (estimated minutes sum)
+- Subtask story points rolled up to parent (story points sum)
 - Deleting a parent issue also deletes its direct child subtasks within the same transaction before deleting the parent issue
 - Subtask status changes cascade to parent progress calculation
 
@@ -590,18 +590,18 @@ Request:
   "story_points": 3,
   "estimated_minutes": 120,
   "deadline": "2026-03-12T17:00:00Z",
-  "assigneeIds": ["uuid"]
+  "assignee_ids": ["uuid"]
 }
 
 GET /api/issues/{parentIssueId}/subtasks
 
-PATCH /api/issues/{subtaskId}
-// Update subtask (same as regular issue)
+PATCH /api/issues/{issueId}
+// Update issue or subtask through the standard issue update contract
 
 DELETE /api/issues/{issueId}
 // Delete issue; direct child subtasks are deleted in the same transaction
 
-DELETE /api/issues/{issueId}/subtasks/{subtaskId}
+DELETE /api/issues/{parentIssueId}/subtasks/{subtaskId}
 // Delete subtask under the parent issue
 ```
 

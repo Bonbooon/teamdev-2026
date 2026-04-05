@@ -72,7 +72,7 @@ IssueDetailPage
 | success(empty) | 作業ログ EmptyState + 新規作業ログフォーム |
 | success(with logs) | 作業ログ一覧 + 新規作業ログフォーム |
 | editing | 対象作業ログ行またはサブタスク行がインライン編集フォームに切り替わる |
-| confirmingDelete | イシューと作業ログは ConfirmDialog、サブタスクは `confirm()` で削除確認を表示 |
+| confirmingDelete | イシュー、サブタスク、作業ログはすべて ConfirmDialog で削除確認を表示 |
 
 ## Interactions
 - ステータス選択 → API経由で更新
@@ -81,7 +81,7 @@ IssueDetailPage
 - ヘッダーの削除ボタン → ConfirmDialog 表示 → 確認後に API 経由で削除し、成功時は Toast を表示して `/projects/{issue.projectId}` へ遷移
 - サブタスク作成フォーム送信 → API経由でサブタスクを作成し、一覧を再取得
 - サブタスクの編集ボタン → 対象行をインライン編集フォームに切り替え、保存後に一覧を再取得
-- サブタスクの削除ボタン → `confirm()` 表示 → 確認後に API 経由で削除し、一覧を再取得
+- サブタスクの削除ボタン → ConfirmDialog 表示 → 確認後に API 経由で削除し、一覧を再取得
 - 作業ログ追加フォーム送信 → API経由で作業ログを追加し、一覧を再取得
 - 作業ログの編集ボタン → 対象行をインライン編集フォームに切り替え、保存後に一覧を再取得
 - 作業ログの削除ボタン → ConfirmDialog 表示 → 確認後に API 経由で削除し、一覧を再取得
@@ -93,9 +93,9 @@ IssueDetailPage
 | ステータス変更 | `PATCH /issues/{issueId}/status` | バッジ即時更新 | Toast(error: API `message` 優先) |
 | イシュー削除 | `DELETE /issues/{issueId}` | Success toast を表示し、`/projects/{issue.projectId}` へ遷移 | Toast(error: `extractIssueErrorMessage` で API `message` 優先) |
 | DoD切替 | `PATCH /issues/{issueId}/definition-of-done/{doneItemId}` | チェック即時反映 | ロールバック + Toast(error) |
-| サブタスク作成 | `POST /issues/{issueId}/subtasks` | フォームをリセットし、一覧を再取得 | Toast(error) |
-| サブタスク更新 | `PATCH /issues/{subtaskId}` | インライン編集を閉じ、一覧を再取得 | Toast(error) |
-| サブタスク削除 | `DELETE /issues/{issueId}/subtasks/{subtaskId}` | 一覧を再取得 | Toast(error) |
+| サブタスク作成 | `POST /issues/{parentIssueId}/subtasks` | フォームをリセットし、一覧を再取得 | Toast(error) |
+| サブタスク更新 | `PATCH /issues/{issueId}` | インライン編集を閉じ、一覧を再取得 | Toast(error) |
+| サブタスク削除 | `DELETE /issues/{parentIssueId}/subtasks/{subtaskId}` | 一覧を再取得 | Toast(error) |
 | 作業ログ追加 | `POST /issues/{issueId}/work-logs` | フォームをリセットし、一覧を再取得 | Toast(error: API `message` 優先) |
 | 作業ログ更新 | `PATCH /issues/{issueId}/work-logs/{workLogId}` | インライン編集を閉じ、一覧を再取得 | Toast(error: API `message` 優先) |
 | 作業ログ削除 | `DELETE /issues/{issueId}/work-logs/{workLogId}` | 確認ダイアログを閉じ、一覧を再取得 | Toast(error: API `message` 優先) |

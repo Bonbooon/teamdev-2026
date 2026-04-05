@@ -317,10 +317,7 @@ responses:
 **GET /api/issues/{parentIssueId}/subtasks**
 - List subtasks (S-03-06, requires auth)
 
-**PATCH /api/issues/{subtaskId}**
-- Update subtask through the shared issue update contract (S-03-06, requires auth)
-
-**DELETE /api/issues/{issueId}/subtasks/{subtaskId}**
+**DELETE /api/issues/{parentIssueId}/subtasks/{subtaskId}**
 - Delete subtask (S-03-06, requires auth, returns `204` on success and `404` when the subtask is not found under the issue)
 
 **POST /api/issues/{issueId}/work-logs**
