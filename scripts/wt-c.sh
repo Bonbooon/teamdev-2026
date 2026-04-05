@@ -94,7 +94,7 @@ source .worktree.env
 set +a
 
 # Patch frontend .env.local to use this worktree's WEB_PORT
-FRONT_ENV="$WORKTREE_PATH/teamdev-2026-front/.env.local"
+FRONT_ENV="teamdev-2026-front/.env.local"
 if [ -f "$FRONT_ENV" ] && [ "$IS_MAIN_WORKTREE" = "false" ]; then
   sed -i "s|NEXT_PUBLIC_BACKEND_URL=.*|NEXT_PUBLIC_BACKEND_URL=\"http://localhost:${WEB_PORT}\"|" "$FRONT_ENV"
   sed -i "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=\"http://localhost:${WEB_PORT}\"|" "$FRONT_ENV"
