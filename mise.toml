@@ -171,3 +171,7 @@ run = "bash scripts/wt-r.sh {{ arg(pos=1) }}"
 [tasks.install-deps-local]
 description = "Install frontend dependencies locally (optional)"
 run = "bash scripts/install-deps-local.sh"
+
+[tasks.slack-env-setup]
+description = "Fetch seeded IDs from DB and create Sanctum token for Slack bot .env"
+run = "bash scripts/slack-env-setup.sh"
