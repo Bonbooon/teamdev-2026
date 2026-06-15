@@ -60,7 +60,8 @@ if [ -z "$DEMO_USER_EMAIL" ]; then
   exit 1
 fi
 
-USER_ID=$(db_query "SELECT id FROM users WHERE email = '$DEMO_USER_EMAIL' LIMIT 1")
+DEMO_USER_EMAIL_SQL=$(printf '%s' "$DEMO_USER_EMAIL" | sed "s/'/''/g")
+USER_ID=$(db_query "SELECT id FROM users WHERE email = '$DEMO_USER_EMAIL_SQL' LIMIT 1")
 if [ -z "$USER_ID" ]; then
   echo "❌ Seed user ($DEMO_USER_EMAIL) not found. Has the database been seeded?"
   exit 1
