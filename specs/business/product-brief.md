@@ -17,17 +17,15 @@
 
 ---
 
-## 1. Company Background & Core Philosophy
+## 1. Domain Background & Core Philosophy
 
-### Client: Link and Motivation Group
+This project is positioned in the domain of team development and organizational collaboration support.
 
-**Mission:** To realize a meaningful society by providing opportunities for transformation to organizations and individuals through "Motivation Engineering".
+**Definition of a "Good Team":** A team characterized by high **"Engagement"**.
 
-**Definition of a "Good Company":** A company characterized by high **"Engagement"**.
-
-- Engagement is the degree of "mutual love" (相思相愛) between the company and its employees
-- A state where employees empathize with the company's philosophy and goals
-- Employees have a proactive, voluntary desire to contribute to the company
+- Members understand and empathize with the team's goals
+- The team can coordinate work without losing visibility
+- Members can contribute proactively while maintaining healthy collaboration
 
 ---
 
@@ -64,8 +62,7 @@
 
 ### Role Structure
 
-- **Developers:** POSSE hackathon participants (us)
-- **Client/Requester:** Link and Motivation Group
+- **Developers:** Student team project members
 - **End-Users (Customers):** Companies and business leaders struggling with organizational and team management
 
 ---

@@ -26,7 +26,7 @@ This pattern emerged naturally during Phase 0 and Phase 1 implementation and was
 
 ### Positive
 
-- Fewer directories and files → faster feature delivery for hackathon timeline
+- Fewer directories and files → faster feature delivery during the MVP timeline
 - Components colocated with their data hooks → easier to navigate
 - Consistent pattern across all Phase 1 features
 - Still maintains feature-level boundaries (teams/, projects/, issues/)
@@ -51,4 +51,4 @@ This ADR supersedes ADR 0001 only for the frontend `features/` directory structu
 - See [Directory Structure](../directory-structure.md) for the updated frontend tree.
 - Data fetching uses SWR hooks (`useSWR`) with API path-based keys.
 - Forms use `react-hook-form` + `zod` as planned.
-- This decision can be revisited post-MVP if the codebase grows beyond hackathon scope.
+- This decision can be revisited post-MVP if the codebase grows beyond the current product scope.

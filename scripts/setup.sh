@@ -26,7 +26,7 @@ echo "5) Installing dependencies..."
 mise run install-deps
 
 echo ""
-echo "6) Initializing application (will pause for DEMO_MANAGER_EMAIL + Google login before seeding)..."
+echo "6) Initializing application (will pause for DEMO_USER_EMAIL + Google login before seeding)..."
 mise run laravel-init
 
 echo ""

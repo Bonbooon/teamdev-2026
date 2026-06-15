@@ -6,7 +6,6 @@ This directory defines how responsibilities are separated across layers and wher
 
 - [Directory Structure](./directory-structure.md)
 - [Architecture Decision Records (ADR)](./adr/)
-- [ADR 0010](./adr/0010-demo-manager-shared-google-account-until-final-presentation.md)
 
 ## Quick Start
 
@@ -35,10 +34,9 @@ Example use case: `CreateIssue`
 
 Frontend mapping for the same feature:
 
-- `src/features/issue/container/IssueListContainer.tsx` (fetch + orchestration)
-- `src/features/issue/presentation/IssueListPresentation.tsx` (pure UI)
-- `src/features/issue/index.ts` (feature export)
-- `src/pages/issues/index.tsx` (page receives feature component)
+- `src/features/issues/components/IssueDetailPage.tsx` (feature UI)
+- `src/features/issues/hooks/useIssue.ts` (data fetching)
+- `src/pages/issues/[issueId].tsx` (page entrypoint)
 
 ## Notes
 
@@ -51,5 +49,4 @@ Frontend mapping for the same feature:
 - User profile registration and edit currently share `POST /api/users/me/profile` as an upsert endpoint.
 - The rationale for the upsert response shape is documented in [ADR 0008](./adr/0008-profile-upsert-for-aspida-response-constraints.md).
 - Google avatar is currently persisted on `users.google_avatar_url` and returned from `GET /api/auth/me`.
-- The temporary decision to use one shared demo-manager Google account until the final presentation is documented in [ADR 0010](./adr/0010-demo-manager-shared-google-account-until-final-presentation.md).
 - Custom user-selected avatars and broader profile visibility flows remain planned, but they are not part of the current implementation.
