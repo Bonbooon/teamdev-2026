@@ -1459,8 +1459,7 @@ src/
 │   └── common/             # ドメイン横断の共通コンポーネント
 │       ├── AuthGuard.tsx
 │       ├── GoogleLoginButton.tsx
-│       ├── Loading.tsx
-│       └── UserSection.tsx
+│       └── Loading.tsx
 │
 ├── features/               # 機能別モジュール
 │   ├── dashboard/
@@ -1544,9 +1543,9 @@ src/
 │   │   ├── index.tsx       # タブナビゲーション
 │   │   └── TabNav.tsx
 │   └── Sidebar/
-│       ├── index.tsx       # アクション + ユーザー
+│       ├── index.tsx       # クイックアクション + ユーザーセクション
 │       ├── QuickActions.tsx
-│       └── UserSection.tsx
+│       └── UserSection.tsx # プロフィールリンク + ログアウト
 │
 ├── lib/                    # 外部ライブラリ設定
 │   └── axios.ts
