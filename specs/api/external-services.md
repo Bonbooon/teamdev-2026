@@ -176,7 +176,7 @@ SendGrid events webhook (optional Phase 1, recommended Phase 2):
 
 ### Purpose
 
-Link MCT issues to GitHub commits and CI/CD pipelines for:
+Link Propass issues to GitHub commits and CI/CD pipelines for:
 - Automatic work logging from commits
 - Issue status updates from CI/CD
 - Linking commits to issues
@@ -249,7 +249,7 @@ Closes #S-03-01
 1. Extract branch name: `feature/S-03-01-api-endpoint`
 2. Extract issue ID: `S-03-01` from branch
 3. Parse commit message for "Closes #S-03-01"
-4. Match to MCT Issue ID (stored in issue.external_id or mapping table)
+4. Match to Propass issue ID (stored in issue.external_id or mapping table)
 5. Create IssueWorkLog entry
 
 ### Work Logging from GitHub

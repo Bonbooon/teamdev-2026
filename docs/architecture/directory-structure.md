@@ -85,7 +85,7 @@ src/
 │       └── hooks/                 # useIssue, useIssueSubtasks, useIssueDod, useIssueTemplates
 ├── components/
 │   ├── ui/                        # Design system (Button, Input, Modal, Card, Badge, etc.)
-│   └── common/                    # AuthGuard, GoogleLoginButton, Loading, LogoutButton
+│   └── common/                    # AuthGuard, GoogleLoginButton, Loading
 ├── layouts/
 │   ├── AppLayout.tsx              # Sidebar + Header + content
 │   ├── AuthLayout.tsx             # Centered card layout

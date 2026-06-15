@@ -14,7 +14,7 @@ Through our first 2 inquiries to the Product Owner, we discovered:
 
 - **The Real Problem:** Despite having many excellent tools available (GitHub, Jira, Trello, etc.), most software teams cannot complete projects on time and face delays
 - **Competitive Opportunity:** Most existing tools focus on *productivity* or *motivation*, not both
-- **Our Unique Value:** MCT must help teams stay on schedule when other tools fail to
+- **Our Unique Value:** Propass must help teams stay on schedule when other tools fail to
 
 #### Paradigm: WANT Features are the Difference
 
@@ -102,11 +102,11 @@ Through our first 2 inquiries to the Product Owner, we discovered:
 **Purpose:** Automatically link issue progress to actual development work for real-time visibility.
 
 **Implementation Approach:**
-- Connect MCT to GitHub Actions
+- Connect Propass to GitHub Actions
 - Sync issue progress with commit logs from branches
 
 **Integration Flow:**
-1. Issue created with SMART template in MCT
+1. Issue created with SMART template in Propass
 2. Developer works on feature branch in GitHub
 3. Commits to branch automatically update issue status
 4. Commit logs reflect progress

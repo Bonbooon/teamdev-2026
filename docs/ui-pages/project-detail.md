@@ -33,7 +33,7 @@ ProjectDetailPage
     │   │   ├── [カンバンビュー]
     │   │   │   └── KanbanBoard
     │   │   │       ├── Column (未着手)
-    │   │   │       │   └── IssueCard[] (ドラッグ可能)
+    │   │   │       │   └── KanbanIssueCard[] (ドラッグ可能)
     │   │   │       │       ├── IssueTitle
     │   │   │       │       ├── AssigneeChips (担当者名チップ)
     │   │   │       │       ├── StoryPointsBadge
@@ -58,7 +58,7 @@ ProjectDetailPage
     │   │           ├── TodayLine (今日の縦線)
     │   │           └── GanttGroup[]
     │   │               ├── GroupLabel
-    │   │               └── GanttRow[]
+    │   │               └── GanttTaskRow[]
     │   │                   ├── IssueName
     │   │                   ├── GanttBar (予定+実績, green/yellow/red)
     │   │                   └── ProgressIndicator
@@ -119,7 +119,7 @@ ProjectDetailPage
 - Issue作成ボタン → `/projects/[projectId]/issues/new` に遷移
 - カンバンDnD → ステータス変更（楽観的更新）
 - カンバンDnD が business rule で reject された場合はロールバックし、API `message` を Toast 表示
-- IssueCard/GanttRowクリック → `/issues/[issueId]` に遷移
+- KanbanIssueCard / Gantt task row クリック → `/issues/[issueId]` に遷移
 - GroupBySelector → グルーピング切替（ステータス別/アサイン者別/フラット）
 
 ## Mutations

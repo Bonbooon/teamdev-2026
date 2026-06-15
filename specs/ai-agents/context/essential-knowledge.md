@@ -7,23 +7,14 @@
 ## Project Identity
 
 **Name**: Propass
-**Type**: Full-stack web application (Long-term Hackathon project)  
-**Client**: Link and Motivation Group  
+**Type**: Full-stack web application for team development support  
 **Purpose**: An application that simultaneously enhances both a team's **Productivity** and **Motivation**
 
 **Target Audience**: Software development teams (Engineers, Product Managers, Designers collaborating)
 
 **Core Concept**: "Dogfooding" - We are building this for our own team first. It must be indispensable for our own success.
 
-**Current Phase**: Development  
-**Timeline**:
-
-- **Kickoff**: 2026/02/14
-- **Development Start**: 2026/03/01
-- **Code Freeze**: 2026/04/05 23:59:00
-- **Presentations**:
-  - Elimination Round (Engineering Judges): 2026/04/11 (10 min presentation + 7 min Q&A)
-  - Final Round (Product Owner): 2026/04/12 (10 min presentation + 7 min Q&A)
+**Current Phase**: Development
 
 **See Also**: 
 - `specs/business/product-brief.md` - Complete product requirements and business context
@@ -260,7 +251,7 @@ Typical feature flow:
 
 ## Business Context
 
-**Client**: Link and Motivation Group - A company focused on "Motivation Engineering" to create a meaningful society.
+**Domain Context**: Team development support with an emphasis on both productivity and motivation.
 
 **The Problem We're Solving**:
 

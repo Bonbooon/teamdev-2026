@@ -837,7 +837,7 @@ ProjectDetailPage
     │   │   ├── [カンバンビュー]
     │   │   │   └── KanbanBoard
     │   │   │       ├── Column (未着手)
-    │   │   │       │   └── IssueCard[] (ドラッグ可能)
+    │   │   │       │   └── KanbanIssueCard[] (ドラッグ可能)
     │   │   │       │       ├── IssueTitle
     │   │   │       │       ├── AssigneeChips (担当者名チップ)
     │   │   │       │       ├── StoryPointsBadge
@@ -862,7 +862,7 @@ ProjectDetailPage
     │   │           ├── TodayLine (今日の縦線)
     │   │           └── GanttGroup[] (選択したグルーピングで分割)
     │   │               ├── GroupLabel (ステータス名 / アサイン者名 / なし)
-    │   │               └── GanttRow[]
+    │   │               └── GanttTaskRow[]
     │   │                   ├── IssueName
     │   │                   ├── GanttBar (予定 + 実績、色は予実比較で green/yellow/red)
     │   │                   └── ProgressIndicator
@@ -1460,7 +1460,7 @@ src/
 │       ├── AuthGuard.tsx
 │       ├── GoogleLoginButton.tsx
 │       ├── Loading.tsx
-│       └── LogoutButton.tsx
+│       └── UserSection.tsx
 │
 ├── features/               # 機能別モジュール
 │   ├── dashboard/
@@ -1503,8 +1503,6 @@ src/
 │   ├── issues/
 │   │   ├── components/
 │   │   │   ├── IssueForm.tsx          # 作成フォーム
-│   │   │   ├── EditIssueModal.tsx     # 編集モーダル
-│   │   │   ├── IssueCard.tsx
 │   │   │   ├── IssueHeader.tsx
 │   │   │   ├── DynamicTemplateFields.tsx
 │   │   │   ├── SubtaskEditor.tsx

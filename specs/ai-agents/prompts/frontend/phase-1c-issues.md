@@ -27,8 +27,6 @@ src/
 │   │   ├── IssueCreatePage.tsx
 │   │   ├── IssueDetailPage.tsx
 │   │   ├── IssueForm.tsx
-│   │   ├── EditIssueModal.tsx
-│   │   ├── IssueCard.tsx
 │   │   ├── IssueHeader.tsx
 │   │   ├── SMARTTemplateFields.tsx
 │   │   ├── SubtaskEditor.tsx
@@ -125,11 +123,10 @@ const toggleDoD = async (dodId: string, isCompleted: boolean) => {
 - [ ] DoDの動的追加/削除が動作する
 - [ ] `/issues/[issueId]` でIssue詳細が表示される
 - [ ] DoDチェック切替で楽観的更新が動作する
-- [ ] EditIssueModalで全フィールド編集可能
 - [ ] Zodバリデーションが正しく動作する
 - [ ] `pnpm typecheck` がエラーなく通る
 
 ## やらないこと
 
 - WorkLogSection の実装（スタブのみ配置、フェーズ2）
-- カンバンボード内のIssueCard（Phase 2C）
+- カンバンボード内のカードUI（Phase 2C）

@@ -32,10 +32,10 @@ src/features/projects/components/ProgressBoard/
 ├── index.tsx              # ViewToggle + ビュー切替コンテナ
 ├── ViewToggle.tsx         # ガント/カンバン セグメントコントロール
 ├── KanbanBoard.tsx        # @dnd-kit ベースのカンバンボード
+├── KanbanIssueCard.tsx    # カンバン用ドラッグ可能カード
 ├── GanttChart.tsx         # ガントチャートビュー
 ├── GroupBySelector.tsx    # ガント用グルーピング切替
-├── IssueCard.tsx          # カンバン用ドラッグ可能カード
-└── GanttRow.tsx           # ガント用行コンポーネント
+└── MemberAssignmentPanel.tsx
 ```
 
 ### 設計方針
@@ -56,7 +56,7 @@ const KANBAN_COLUMNS = [
 ];
 ```
 
-**IssueCard 表示内容:**
+**KanbanIssueCard 表示内容:**
 - IssueTitle
 - AssigneeAvatars (アサイン者アバター)
 - StoryPointsBadge
@@ -120,8 +120,8 @@ function getGanttBarColor(issue: Issue): 'green' | 'yellow' | 'red' {
 **表示要素:**
 - TimelineHeader: 日付軸（日/週表示）
 - TodayLine: 今日の縦線
-- GanttGroup: グルーピングラベル + GanttRow[]
-- GanttRow: IssueName + GanttBar (予定+実績) + ProgressIndicator
+- GanttGroup: グルーピングラベル + Gantt task rows
+- Gantt task row: IssueName + GanttBar (予定+実績) + ProgressIndicator
 
 ### ViewToggle
 
@@ -145,11 +145,11 @@ function useViewMode(): [ViewMode, (mode: ViewMode) => void] {
 - [ ] デフォルトはガントビュー、localStorage記憶
 - [ ] カンバンでIssueカードのDnDによるステータス変更が動作する
 - [ ] DnDで楽観的更新 → 失敗時ロールバックが動作する
-- [ ] IssueCardにTitle/Avatars/Points/DueDate/ProgressBarが表示される
+- [ ] KanbanIssueCardにTitle/Avatars/Points/DueDate/ProgressBarが表示される
 - [ ] ガントにGroupBySelector (ステータス/アサイン者/フラット) が表示される
 - [ ] ガントバーの色がgreen/yellow/redで予実比較に基づく
 - [ ] TodayLineが表示される
-- [ ] IssueCard/GanttRowクリック → `/issues/[issueId]` 遷移
+- [ ] KanbanIssueCard / Gantt task row クリック → `/issues/[issueId]` 遷移
 - [ ] `pnpm typecheck` がエラーなく通る
 
 ## やらないこと

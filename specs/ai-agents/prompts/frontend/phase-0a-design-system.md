@@ -115,7 +115,6 @@ export function cn(...inputs: ClassValue[]) {
 - `AuthGuard.tsx` → `src/components/common/AuthGuard.tsx`
 - `GoogleLoginButton.tsx` → `src/components/common/GoogleLoginButton.tsx`
 - `Loading.tsx` → `src/components/common/Loading.tsx`
-- `LogoutButton.tsx` → `src/components/common/LogoutButton.tsx`
 
 移動後、`_app.tsx` など既存のimportパスを更新すること。
 

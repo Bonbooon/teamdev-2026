@@ -17,7 +17,6 @@ Human-readable documentation for the `teamdev-2026` workspace.
 - [ADR 0001](./architecture/adr/0001-adopt-clean-architecture-cqrs-tdd.md) - Clean Architecture + CQRS + TDD baseline
 - [ADR 0006](./architecture/adr/0006-openapi-l5-swagger.md) - OpenAPI generation workflow
 - [ADR 0009](./architecture/adr/0009-feature-based-frontend-organization.md) - frontend feature organization
-- [ADR 0010](./architecture/adr/0010-demo-manager-shared-google-account-until-final-presentation.md) - temporary shared demo-manager account decision for the presentation period
 
 ### Business Logic
 
@@ -29,7 +28,6 @@ Human-readable documentation for the `teamdev-2026` workspace.
 
 - [Repository README](../README.md) - practical setup and day-to-day developer commands
 - [Mise Cross-Platform Research](./development/mise-cross-platform-research.md) - host OS handling and task portability review
-- [Demo Manager Shared Account Runbook](./development/demo-manager-shared-account-runbook.md) - temporary login, checklist, and password-handling guidance for the final presentation period
 
 ### UI Documentation
 

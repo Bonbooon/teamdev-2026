@@ -48,29 +48,29 @@ echo "   Project:  $PROJECT_ID"
 echo "   Template: $TEMPLATE_ID"
 echo "   Team:     $TEAM_ID"
 
-# Resolve the demo manager email from the API's .env file
+# Resolve the demo user email from the API's .env file
 API_ENV_FILE="$ROOT_DIR/teamdev-2026-api/web/.env"
 if [ ! -f "$API_ENV_FILE" ]; then
   echo "❌ API .env file not found at $API_ENV_FILE"
   exit 1
 fi
-DEMO_MANAGER_EMAIL=$(grep '^DEMO_MANAGER_EMAIL=' "$API_ENV_FILE" | cut -d= -f2- | tr -d '\r\n')
-if [ -z "$DEMO_MANAGER_EMAIL" ]; then
-  echo "❌ DEMO_MANAGER_EMAIL not set in $API_ENV_FILE"
+DEMO_USER_EMAIL=$(grep '^DEMO_USER_EMAIL=' "$API_ENV_FILE" | cut -d= -f2- | tr -d '\r\n')
+if [ -z "$DEMO_USER_EMAIL" ]; then
+  echo "❌ DEMO_USER_EMAIL not set in $API_ENV_FILE"
   exit 1
 fi
 
-USER_ID=$(db_query "SELECT id FROM users WHERE email = '$DEMO_MANAGER_EMAIL' LIMIT 1")
+USER_ID=$(db_query "SELECT id FROM users WHERE email = '$DEMO_USER_EMAIL' LIMIT 1")
 if [ -z "$USER_ID" ]; then
-  echo "❌ Demo manager user ($DEMO_MANAGER_EMAIL) not found. Has the database been seeded?"
+  echo "❌ Seed user ($DEMO_USER_EMAIL) not found. Has the database been seeded?"
   exit 1
 fi
-echo "   User:     $USER_ID ($DEMO_MANAGER_EMAIL)"
+echo "   User:     $USER_ID ($DEMO_USER_EMAIL)"
 
-# Get assignee — the demo manager's team_member row in the engineering team
+# Get assignee — the seed user's team_member row in the engineering team
 ASSIGNEE_ID=$(db_query "SELECT id FROM team_members WHERE team_id = '$TEAM_ID' AND user_id = '$USER_ID' LIMIT 1")
 if [ -z "$ASSIGNEE_ID" ]; then
-  echo "❌ Demo manager is not a member of team $TEAM_ID"
+  echo "❌ Seed user is not a member of team $TEAM_ID"
   exit 1
 fi
 echo "   Assignee: $ASSIGNEE_ID"
