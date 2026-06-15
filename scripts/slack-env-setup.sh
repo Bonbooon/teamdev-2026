@@ -54,7 +54,7 @@ if [ ! -f "$API_ENV_FILE" ]; then
   echo "❌ API .env file not found at $API_ENV_FILE"
   exit 1
 fi
-DEMO_USER_EMAIL=$(grep '^DEMO_USER_EMAIL=' "$API_ENV_FILE" | cut -d= -f2- | tr -d '\r\n')
+DEMO_USER_EMAIL=$( (grep -E '^DEMO_USER_EMAIL=' "$API_ENV_FILE" | tail -n 1 | cut -d= -f2- | tr -d '\r\n' | sed 's/^"//;s/"$//') || true )
 if [ -z "$DEMO_USER_EMAIL" ]; then
   echo "❌ DEMO_USER_EMAIL not set in $API_ENV_FILE"
   exit 1
